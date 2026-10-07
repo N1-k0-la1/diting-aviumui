@@ -1,0 +1,15 @@
+{
+  "via": {
+    "project": "packages/apps/Via",
+    "path": "Via.apk",
+    "version": "7.3.3",
+    "version_code": 20260823,
+    "package": "mark.via.gp",
+    "official_url": "https://res.viayoo.com/v1/via-release.apk",
+    "source_page": "https://github.com/tuyafeng/Via",
+    "sha256": "245e02eb1106dfd4d97d27f5bb68e97a2db9fe543f72ab93dc6b587b0e2da4fd",
+    "certificate_sha256": "3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390",
+    "redistribution_in_this_repository": false,
+    "note": "The URL is mutable. If its hash differs, obtain the exact official version; do not bypass the check."
+  }
+}

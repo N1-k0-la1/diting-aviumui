@@ -1,0 +1,25 @@
+From b95a4b4cb7a517326ae7d08ab80b58de757b43e3 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 01:43:59 +0800
+Subject: [PATCH] Migrate platform resource namespace preserving resource IDs
+ and generated Java ABI
+
+---
+ overlay/Lineage/AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/overlay/Lineage/AndroidManifest.xml b/overlay/Lineage/AndroidManifest.xml
+index 739358e..4c6fc3a 100644
+--- a/overlay/Lineage/AndroidManifest.xml
++++ b/overlay/Lineage/AndroidManifest.xml
+@@ -4,7 +4,7 @@
+ -->
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     package="lineageos.platform.overlay.xiaomi">
+-    <overlay android:targetPackage="lineageos.platform"
++    <overlay android:targetPackage="org.system.platform"
+                    android:isStatic="true"
+                    android:priority="600"/>
+ </manifest>
+-- 
+2.34.1

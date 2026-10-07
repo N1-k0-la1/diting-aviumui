@@ -1,0 +1,30 @@
+From f3cca5c48565d68e78147c7e7e1948dc9147a59d Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 08:31:46 +0800
+Subject: [PATCH] Track opt-in diting vendor identity input files
+
+Change-Id: If3115a2400c7d00af13f8162d2655f435e1e08e1
+---
+ core/sysprop.mk | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/core/sysprop.mk b/core/sysprop.mk
+index d95270b..9c9d4a2 100644
+--- a/core/sysprop.mk
++++ b/core/sysprop.mk
+@@ -210,6 +210,12 @@ _prop_vars_ :=
+ endif
+ 
+ INSTALLED_VENDOR_BUILD_PROP_TARGET := $(TARGET_OUT_VENDOR)/build.prop
++# The opt-in identity reads these files at execution time. Track their contents
++# so an incremental vendor build cannot retain a previous build's identity.
++ifeq ($(TARGET_DITING_COHERENT_BUILD_IDENTITY),true)
++$(INSTALLED_VENDOR_BUILD_PROP_TARGET): $(BUILD_DATETIME_FILE) $(BUILD_NUMBER_FILE) $(BUILD_FINGERPRINT_FILE)
++endif
++
+ $(eval $(call build-properties,\
+     vendor,\
+     $(INSTALLED_VENDOR_BUILD_PROP_TARGET),\
+-- 
+2.34.1
+

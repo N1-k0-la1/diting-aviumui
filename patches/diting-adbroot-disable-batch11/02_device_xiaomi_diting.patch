@@ -1,0 +1,41 @@
+From 9257ed91bbf7f5f2814e0add4135ef79f798b00a Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 04:26:16 +0800
+Subject: [PATCH] Disable optional ADB root consistently for diting
+
+---
+ BoardConfig.mk    | 3 +++
+ lineage_diting.mk | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index df52cf1..e2797c1 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -15,6 +15,9 @@ include vendor/xiaomi/diting/BoardConfigVendor.mk
+ 
+ DEVICE_PATH := device/xiaomi/diting
+ 
++# Match optional ADB root package selection to its client policy.
++BOARD_SEPOLICY_M4DEFS += target_disable_adb_root=$(TARGET_DISABLE_ADB_ROOT)
++
+ # Audio
+ AUDIO_FEATURE_ENABLED_CIRRUS_CALIBRATION_RESISTANCE := true
+ 
+diff --git a/lineage_diting.mk b/lineage_diting.mk
+index 162e2b1..e59b3ed 100644
+--- a/lineage_diting.mk
++++ b/lineage_diting.mk
+@@ -7,6 +7,9 @@
+ # Inherit from diting device
+ $(call inherit-product, device/xiaomi/diting/device.mk)
+ 
++# Keep optional ADB root disabled; ordinary USB debugging remains available.
++TARGET_DISABLE_ADB_ROOT := true
++
+ # Inherit from common lineage configuration
+ $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
+ 
+-- 
+2.34.1
+

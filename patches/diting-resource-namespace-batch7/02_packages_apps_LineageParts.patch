@@ -1,0 +1,117 @@
+From d93fc39633525a607fcbe1d27b8a462b4c96202a Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 01:43:59 +0800
+Subject: [PATCH] Migrate platform resource namespace preserving resource IDs
+ and generated Java ABI
+
+Change-Id: I5766cf0806dac12b80508349ff96c5e88e2e1688
+---
+ AndroidManifest.xml                  |  2 +-
+ res/xml/charging_sounds_settings.xml |  2 +-
+ res/xml/display_rotation.xml         |  2 +-
+ res/xml/livedisplay.xml              | 10 +++++-----
+ res/xml/parts_catalog.xml            |  2 +-
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 170d2d9..2489aa7 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -98,7 +98,7 @@
+         <activity-alias
+             android:name=".livedisplay.LiveDisplaySettings"
+             android:exported="true"
+-            android:label="@*lineageos.platform:string/live_display_title"
++            android:label="@*org.system.platform:string/live_display_title"
+             android:targetActivity="PartsActivity">
+             <intent-filter>
+                 <action android:name="com.android.settings.action.IA_SETTINGS" />
+diff --git a/res/xml/charging_sounds_settings.xml b/res/xml/charging_sounds_settings.xml
+index 640b506..1269f91 100644
+--- a/res/xml/charging_sounds_settings.xml
++++ b/res/xml/charging_sounds_settings.xml
+@@ -40,7 +40,7 @@
+             android:title="@string/wireless_charging_sounds_title"
+             android:dependency="charging_sounds_enabled"
+             android:persistent="false"
+-            lineage:requiresConfig="@*lineageos.platform:bool/config_deviceSupportsWirelessCharging" />
++            lineage:requiresConfig="@*org.system.platform:bool/config_deviceSupportsWirelessCharging" />
+ 
+     </PreferenceCategory>
+ 
+diff --git a/res/xml/display_rotation.xml b/res/xml/display_rotation.xml
+index f22ab9d..efda466 100644
+--- a/res/xml/display_rotation.xml
++++ b/res/xml/display_rotation.xml
+@@ -19,7 +19,7 @@
+         android:key="lockscreen_rotation"
+         android:title="@string/display_lockscreen_rotation_title"
+         android:dependency="accelerometer"
+-        android:defaultValue="@*lineageos.platform:bool/config_lockScreenRotationEnabledByDefault"
++        android:defaultValue="@*org.system.platform:bool/config_lockScreenRotationEnabledByDefault"
+         lineage:requiresConfig="@*android:bool/config_enableLockScreenRotation" />
+ 
+     <PreferenceCategory
+diff --git a/res/xml/livedisplay.xml b/res/xml/livedisplay.xml
+index 7cb9c52..626a1ec 100644
+--- a/res/xml/livedisplay.xml
++++ b/res/xml/livedisplay.xml
+@@ -6,7 +6,7 @@
+ -->
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+         android:key="livedisplay"
+-        android:title="@*lineageos.platform:string/live_display_title">
++        android:title="@*org.system.platform:string/live_display_title">
+ 
+     <!-- Color mode preview -->
+     <com.android.settingslib.widget.LayoutPreference
+@@ -22,7 +22,7 @@
+     <org.lineageos.lineageparts.livedisplay.DisplayTemperature
+             android:key="live_display_color_temperature"
+             android:title="@string/live_display_color_temperature_title"
+-            android:dialogTitle="@*lineageos.platform:string/live_display_title"
++            android:dialogTitle="@*org.system.platform:string/live_display_title"
+             android:persistent="false" />
+ 
+     <!-- Outdoor mode / SRE -->
+@@ -30,7 +30,7 @@
+             android:key="display_auto_outdoor_mode"
+             android:title="@string/live_display_outdoor_mode_title"
+             android:summary="@string/live_display_outdoor_mode_summary"
+-            android:defaultValue="@*lineageos.platform:bool/config_defaultAutoOutdoorMode" />
++            android:defaultValue="@*org.system.platform:bool/config_defaultAutoOutdoorMode" />
+ 
+     <!-- Anti flicker mode / DC dimming -->
+     <lineageos.preference.LineageSystemSettingSwitchPreference
+@@ -72,14 +72,14 @@
+                 android:key="display_low_power"
+                 android:title="@string/live_display_low_power_title"
+                 android:summary="@string/live_display_low_power_summary"
+-                android:defaultValue="@*lineageos.platform:bool/config_defaultCABC" />
++                android:defaultValue="@*org.system.platform:bool/config_defaultCABC" />
+ 
+         <!-- Color enhancement -->
+         <lineageos.preference.LineageSystemSettingSwitchPreference
+                 android:key="display_color_enhance"
+                 android:title="@string/live_display_enhance_color_title"
+                 android:summary="@string/live_display_enhance_color_summary"
+-                android:defaultValue="@*lineageos.platform:bool/config_defaultColorEnhancement" />
++                android:defaultValue="@*org.system.platform:bool/config_defaultColorEnhancement" />
+ 
+     </PreferenceCategory>
+ 
+diff --git a/res/xml/parts_catalog.xml b/res/xml/parts_catalog.xml
+index dc4c040..735f4d0 100644
+--- a/res/xml/parts_catalog.xml
++++ b/res/xml/parts_catalog.xml
+@@ -34,7 +34,7 @@
+           lineage:xmlRes="@xml/button_settings" />
+ 
+     <part android:key="livedisplay"
+-          android:title="@*lineageos.platform:string/live_display_title"
++          android:title="@*org.system.platform:string/live_display_title"
+           android:summary="@string/live_display_summary"
+           android:fragment="org.lineageos.lineageparts.livedisplay.LiveDisplaySettings"
+           lineage:xmlRes="@xml/livedisplay" />
+-- 
+2.34.1

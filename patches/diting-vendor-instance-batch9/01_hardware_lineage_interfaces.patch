@@ -1,0 +1,83 @@
+From 9af827c4436b8578b3a496c06fe23921912d1ca3 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 03:10:49 +0800
+Subject: [PATCH] Synchronize health and touch instance aliases preserving AIDL
+ wire interfaces
+
+Change-Id: I643b7b4e515cd8ef4e71b7a21c91429170334d73
+---
+ .../compatibility_matrix.lineage.xml               | 14 +++++++++-----
+ health/aidl/default/service.cpp                    |  4 ++--
+ .../vendor.lineage.health-service.default.xml      |  2 +-
+ 3 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/compatibility_matrices/compatibility_matrix.lineage.xml b/compatibility_matrices/compatibility_matrix.lineage.xml
+index a040337..656521d 100644
+--- a/compatibility_matrices/compatibility_matrix.lineage.xml
++++ b/compatibility_matrices/compatibility_matrix.lineage.xml
+@@ -14,7 +14,7 @@
+     </hal>
+     <!-- Charging -->
+     <hal format="aidl" optional="true">
+-        <name>vendor.lineage.health</name>
++        <name>vendor.system.health</name>
+         <version>1-2</version>
+         <interface>
+             <name>IChargingControl</name>
+@@ -86,10 +86,6 @@
+             <name>IGloveMode</name>
+             <instance>default</instance>
+         </interface>
+-        <interface>
+-            <name>IHighTouchPollingRate</name>
+-            <instance>default</instance>
+-        </interface>
+         <interface>
+             <name>IKeyDisabler</name>
+             <instance>default</instance>
+@@ -107,4 +103,12 @@
+             <instance>default</instance>
+         </interface>
+     </hal>
++    <hal format="aidl" optional="true">
++        <name>vendor.system.touch</name>
++        <version>1</version>
++        <interface>
++            <name>IHighTouchPollingRate</name>
++            <instance>default</instance>
++        </interface>
++    </hal>
+ </compatibility-matrix>
+diff --git a/health/aidl/default/service.cpp b/health/aidl/default/service.cpp
+index a3df8f7..3f102d5 100644
+--- a/health/aidl/default/service.cpp
++++ b/health/aidl/default/service.cpp
+@@ -19,11 +19,11 @@ int main() {
+     std::shared_ptr<ChargingControl> lh = ndk::SharedRefBase::make<ChargingControl>();
+     std::shared_ptr<FastCharge> fc = ndk::SharedRefBase::make<FastCharge>();
+ 
+-    std::string instance = std::string() + ChargingControl::descriptor + "/default";
++    std::string instance = "vendor.system.health.IChargingControl/default";
+     binder_status_t status = AServiceManager_addService(lh->asBinder().get(), instance.c_str());
+     CHECK_EQ(status, STATUS_OK);
+ 
+-    instance = std::string() + FastCharge::descriptor + "/default";
++    instance = "vendor.system.health.IFastCharge/default";
+     status = AServiceManager_addService(fc->asBinder().get(), instance.c_str());
+     CHECK_EQ(status, STATUS_OK);
+ 
+diff --git a/health/aidl/default/vendor.lineage.health-service.default.xml b/health/aidl/default/vendor.lineage.health-service.default.xml
+index 148385b..7980a8d 100644
+--- a/health/aidl/default/vendor.lineage.health-service.default.xml
++++ b/health/aidl/default/vendor.lineage.health-service.default.xml
+@@ -1,6 +1,6 @@
+ <manifest version="1.0" type="device">
+     <hal format="aidl">
+-        <name>vendor.lineage.health</name>
++        <name>vendor.system.health</name>
+         <version>2</version>
+         <fqname>IChargingControl/default</fqname>
+         <fqname>IFastCharge/default</fqname>
+-- 
+2.34.1
+

@@ -1,0 +1,35 @@
+From 9319a639fc7726c828feb501447c600d386e08de Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 02:31:40 +0800
+Subject: [PATCH] Update official signed Via prebuilt after verified backup
+ recovery
+
+Change-Id: I7ebdb37f042b8a620a722de6fad0c53160e80191
+---
+ README.md |  12 +++++++++---
+ Via.apk   | Bin 4226047 -> 4258542 bytes
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/README.md b/README.md
+index 4f054fa..af7bda4 100644
+--- a/README.md
++++ b/README.md
+@@ -2,8 +2,14 @@
+ 
+ Via is a fast, simple, and secure browser.
+ 
+-Via Vesion: 7.1.0
++Via Version: 7.3.3 (20260823), package mark.via.gp
+ 
+-From: Google Play
++Official global release: https://res.viayoo.com/v1/via-release.apk
++Link source: https://github.com/tuyafeng/Via
+ 
+-MD5: 755ec051b8eb5a9ab4807aaa9e0f211f
+\ No newline at end of file
++SHA256: 245e02eb1106dfd4d97d27f5bb68e97a2db9fe543f72ab93dc6b587b0e2da4fd
++
++Signing certificate SHA256: 3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390
++
++The original upstream APK is preserved byte for byte with its existing signature.
++Same-package upgrade and real backup import were verified without clearing data.

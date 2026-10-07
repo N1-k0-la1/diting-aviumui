@@ -1,0 +1,55 @@
+From d76d454b92264e9788f8fd777386d990795edd8d Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 03:10:49 +0800
+Subject: [PATCH] Synchronize health and touch instance aliases preserving AIDL
+ wire interfaces
+
+Change-Id: I831c84fa3ece75d42ee4b97082e47746800d172b
+---
+ .../platform/internal/health/ChargingControlController.java     | 2 +-
+ .../platform/internal/health/FastChargeController.java          | 2 +-
+ sdk/src/java/lineageos/hardware/LineageHardwareManager.java     | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlController.java b/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlController.java
+index b6a99ef..3ad11ac 100644
+--- a/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlController.java
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlController.java
+@@ -83,7 +83,7 @@ public class ChargingControlController extends LineageHealthFeature {
+         mContentResolver = mContext.getContentResolver();
+         mChargingControl = IChargingControl.Stub.asInterface(
+                 ServiceManager.waitForDeclaredService(
+-                        IChargingControl.DESCRIPTOR + "/default"));
++                        "vendor.system.health.IChargingControl/default"));
+ 
+         if (mChargingControl == null) {
+             Log.i(TAG, "Lineage Health HAL not found");
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/health/FastChargeController.java b/lineage/lib/main/java/org/lineageos/platform/internal/health/FastChargeController.java
+index 5bb7008..f36ebc7 100644
+--- a/lineage/lib/main/java/org/lineageos/platform/internal/health/FastChargeController.java
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/health/FastChargeController.java
+@@ -45,7 +45,7 @@ public class FastChargeController extends LineageHealthFeature {
+         mContentResolver = mContext.getContentResolver();
+         mFastCharge = IFastCharge.Stub.asInterface(
+                 ServiceManager.waitForDeclaredService(
+-                        IFastCharge.DESCRIPTOR + "/default"));
++                        "vendor.system.health.IFastCharge/default"));
+ 
+         Resources res = mContext.getResources();
+         mChargingSpeedValues = Stream.of(res.getStringArray(R.array.charging_speed_values))
+diff --git a/sdk/src/java/lineageos/hardware/LineageHardwareManager.java b/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
+index 9e1c894..c7b33f6 100644
+--- a/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
++++ b/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
+@@ -293,7 +293,7 @@ public final class LineageHardwareManager {
+                         IDisplayModes.DESCRIPTOR + "/default");
+             case FEATURE_HIGH_TOUCH_POLLING_RATE:
+                 return ServiceManager.waitForDeclaredService(
+-                        IHighTouchPollingRate.DESCRIPTOR + "/default");
++                        "vendor.system.touch.IHighTouchPollingRate/default");
+             case FEATURE_HIGH_TOUCH_SENSITIVITY:
+                 return ServiceManager.waitForDeclaredService(
+                         IGloveMode.DESCRIPTOR + "/default");
+-- 
+2.34.1
+

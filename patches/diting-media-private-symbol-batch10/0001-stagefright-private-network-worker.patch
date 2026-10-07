@@ -1,0 +1,26 @@
+From 590c7ae662372afae401c1938adbcd60c6eb51b7 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 03:59:34 +0800
+Subject: [PATCH] stagefright: keep network worker helper private
+
+Change-Id: Id8d27bd2d1010117f6db9d9365749ade6c88edbd
+---
+ .../libstagefright/include/media/stagefright/ANetworkSession.h  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/libstagefright/include/media/stagefright/ANetworkSession.h b/media/libstagefright/include/media/stagefright/ANetworkSession.h
+index fd3ebaa..84d0a3d 100644
+--- a/media/libstagefright/include/media/stagefright/ANetworkSession.h
++++ b/media/libstagefright/include/media/stagefright/ANetworkSession.h
+@@ -122,7 +122,7 @@ private:
+             const sp<AMessage> &notify,
+             int32_t *sessionID);
+ 
+-    void threadLoop();
++    __attribute__((visibility("hidden"))) void threadLoop();
+     void interrupt();
+ 
+     static status_t MakeSocketNonBlocking(int s);
+-- 
+2.34.1
+

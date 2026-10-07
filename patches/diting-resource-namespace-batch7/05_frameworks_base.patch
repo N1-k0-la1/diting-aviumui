@@ -1,0 +1,54 @@
+From 0244287aae2fff2f77cfe4e352bb1e4cd2a0b8ba Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 01:43:59 +0800
+Subject: [PATCH] Migrate platform resource namespace preserving resource IDs
+ and generated Java ABI
+
+Change-Id: I3c3cf98446a81d4c3e6e3e4b605ddf4c3623e993
+---
+ core/java/com/android/internal/content/om/OverlayConfig.java    | 2 +-
+ .../java/com/android/server/om/OverlayManagerServiceImpl.java   | 2 +-
+ tools/aapt/ResourceTable.cpp                                    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/core/java/com/android/internal/content/om/OverlayConfig.java b/core/java/com/android/internal/content/om/OverlayConfig.java
+index dac700247..354f7653d 100644
+--- a/core/java/com/android/internal/content/om/OverlayConfig.java
++++ b/core/java/com/android/internal/content/om/OverlayConfig.java
+@@ -539,7 +539,7 @@ public class OverlayConfig {
+ 
+         for (Map.Entry<String, String> target : new HashMap<String, String>() {{
+                 put(AssetManager.FRAMEWORK_APK_PATH, "android");
+-                put("/system/framework/org.system.platform-res.apk", "lineageos.platform");
++                put("/system/framework/org.system.platform-res.apk", "org.system.platform");
+         }}.entrySet()) {
+             final String targetPath = target.getKey();
+             final String targetPackageName = target.getValue();
+diff --git a/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java b/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
+index b71841f69..1b0dce975 100644
+--- a/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
++++ b/services/core/java/com/android/server/om/OverlayManagerServiceImpl.java
+@@ -1040,7 +1040,7 @@ final class OverlayManagerServiceImpl {
+         // Idmaps for immutable RROs targeting "android", i.e. framework-res.apk, are created at
+         // boot time in OverlayConfig.createImmutableFrameworkIdmapsInZygote().
+         return targetPackage != null && !(("android".equals(info.getTargetPackageName()) ||
+-                                           "lineageos.platform".equals(info.getTargetPackageName()))
++                                           "org.system.platform".equals(info.getTargetPackageName()))
+                 && !isPackageConfiguredMutable(overlayPackage));
+     }
+ 
+diff --git a/tools/aapt/ResourceTable.cpp b/tools/aapt/ResourceTable.cpp
+index 4d833aa21..f216c3aef 100644
+--- a/tools/aapt/ResourceTable.cpp
++++ b/tools/aapt/ResourceTable.cpp
+@@ -2896,7 +2896,7 @@ status_t ResourceTable::flatten(Bundle* bundle, const sp<const ResourceFilter>&
+         String16 packageName(table.getBasePackageName(i));
+         if (packageId > 0x01 && packageId != 0x7f && packageId != 0x3f &&
+                 packageName != String16("android") &&
+-                packageName != String16("lineageos.platform")) {
++                packageName != String16("org.system.platform")) {
+             libraryPackages.add(sp<Package>(new Package(packageName, packageId)));
+         }
+     }
+-- 
+2.34.1

@@ -1,0 +1,105 @@
+diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
+index 57a0817..fa894db 100644
+--- a/cmds/servicemanager/ServiceManager.cpp
++++ b/cmds/servicemanager/ServiceManager.cpp
+@@ -608,7 +608,8 @@ Status ServiceManager::addService(const std::string& name, const sp<IBinder>& bi
+ Status ServiceManager::listServices(int32_t dumpPriority, std::vector<std::string>* outList) {
+     SM_PERFETTO_TRACE_FUNC();
+ 
+-    if (!mAccess->canList(mAccess->getCallingContext())) {
++    const auto ctx = mAccess->getCallingContext();
++    if (!mAccess->canList(ctx)) {
+         return Status::fromExceptionCode(Status::EX_SECURITY, "SELinux denied.");
+     }
+ 
+@@ -625,7 +626,12 @@ Status ServiceManager::listServices(int32_t dumpPriority, std::vector<std::strin
+     for (auto const& [name, service] : mNameToService) {
+         (void) service;
+ 
+-        if (service.dumpPriority & dumpPriority) {
++        if (!(service.dumpPriority & dumpPriority)) continue;
++        if (!service.allowIsolated && is_multiuser_uid_isolated(ctx.uid)) continue;
++
++        // Enumeration must not disclose services the caller cannot look up.
++        // Apply the same policy as getService/checkService, without app-name lists.
++        if (mAccess->canFind(ctx, name)) {
+             outList->push_back(name);
+         }
+     }
+diff --git a/cmds/servicemanager/test_sm.cpp b/cmds/servicemanager/test_sm.cpp
+index 7ad84fa..4874fdf 100644
+--- a/cmds/servicemanager/test_sm.cpp
++++ b/cmds/servicemanager/test_sm.cpp
+@@ -337,6 +337,72 @@ TEST(ListServices, AllServices) {
+     EXPECT_THAT(out, ElementsAre("sa", "sb", "sc", "sd"));
+ }
+ 
++TEST(ListServices, OnlyFindableServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "a_allowed")).WillOnce(Return(true));
++    EXPECT_CALL(*access, canFind(_, "b_denied")).WillOnce(Return(false));
++    EXPECT_CALL(*access, canFind(_, "c_allowed")).WillOnce(Return(true));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    for (const auto* name : {"a_allowed", "b_denied", "c_allowed"}) {
++        ASSERT_TRUE(sm->addService(name, getBinder(), false,
++                                  IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    }
++    std::vector<std::string> out;
++    ASSERT_TRUE(sm->listServices(IServiceManager::DUMP_FLAG_PRIORITY_ALL, &out).isOk());
++    EXPECT_THAT(out, ElementsAre("a_allowed", "c_allowed"));
++}
++
++TEST(ListServices, NoFindableServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, _)).WillRepeatedly(Return(false));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    ASSERT_TRUE(sm->addService("denied", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    std::vector<std::string> out;
++    ASSERT_TRUE(sm->listServices(IServiceManager::DUMP_FLAG_PRIORITY_ALL, &out).isOk());
++    EXPECT_TRUE(out.empty());
++}
++
++TEST(ListServices, PriorityFilterBeforeFind) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "normal")).Times(0);
++    EXPECT_CALL(*access, canFind(_, "critical")).WillOnce(Return(true));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    ASSERT_TRUE(sm->addService("normal", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    ASSERT_TRUE(sm->addService("critical", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_CRITICAL).isOk());
++    std::vector<std::string> out;
++    ASSERT_TRUE(sm->listServices(IServiceManager::DUMP_FLAG_PRIORITY_CRITICAL, &out).isOk());
++    EXPECT_THAT(out, ElementsAre("critical"));
++}
++
++TEST(ListServices, IsolatedCallerOnlySeesAllowedServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    auto* accessPtr = access.get();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "private")).Times(0);
++    EXPECT_CALL(*access, canFind(_, "isolated_allowed")).WillOnce(Return(true));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    ASSERT_TRUE(sm->addService("private", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    ASSERT_TRUE(sm->addService("isolated_allowed", getBinder(), true,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    Access::CallingContext ctx{};
++    ctx.uid = 100000 + AID_ISOLATED_START;
++    ON_CALL(*accessPtr, getCallingContext()).WillByDefault(Return(ctx));
++    std::vector<std::string> out;
++    ASSERT_TRUE(sm->listServices(IServiceManager::DUMP_FLAG_PRIORITY_ALL, &out).isOk());
++    EXPECT_THAT(out, ElementsAre("isolated_allowed"));
++}
++
+ TEST(ListServices, CriticalServices) {
+     auto sm = getPermissiveServiceManager();
+ 

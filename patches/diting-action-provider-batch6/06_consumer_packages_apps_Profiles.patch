@@ -1,0 +1,26 @@
+From 90c5b19401b01fb76096795eaf0f9f7d807a8881 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:39:21 +0800
+Subject: [PATCH] Synchronize migrated platform action consumers and
+ declarations
+
+Change-Id: I5e03a30060aeeae082f91bc6b02cc69bb76ffbe3
+---
+ AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index af2c963..bbe0b0b 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -45,7 +45,7 @@
+                   android:excludeFromRecents="true"
+                   android:exported="true">
+             <intent-filter>
+-                <action android:name="lineageos.platform.intent.action.PROFILE_PICKER" />
++                <action android:name="org.system.platform.intent.action.PROFILE_PICKER" />
+                 <category android:name="android.intent.category.DEFAULT" />
+             </intent-filter>
+         </activity>
+-- 
+2.34.1

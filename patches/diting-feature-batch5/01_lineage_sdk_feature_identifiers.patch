@@ -1,0 +1,80 @@
+From 3b4bc3f9c0713680cf07cdbe1520aa9b1e7683c4 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 17:35:37 +0800
+Subject: [PATCH] Migrate platform feature identifiers with matching SDK
+ consumers
+
+Change-Id: I951d4738b43f4661698fcf951776156e95fb2243
+---
+ .../lineageos/app/LineageContextConstants.java     | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/sdk/src/java/lineageos/app/LineageContextConstants.java b/sdk/src/java/lineageos/app/LineageContextConstants.java
+index 713778e..c359db4 100644
+--- a/sdk/src/java/lineageos/app/LineageContextConstants.java
++++ b/sdk/src/java/lineageos/app/LineageContextConstants.java
+@@ -80,7 +80,7 @@ public final class LineageContextConstants {
+          * framework service utilized by the lineage sdk.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String HARDWARE_ABSTRACTION = "org.lineageos.hardware";
++        public static final String HARDWARE_ABSTRACTION = "org.system.platform.feature.hardware";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -88,7 +88,7 @@ public final class LineageContextConstants {
+          * utilized by the lineage sdk.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String PROFILES = "org.lineageos.profiles";
++        public static final String PROFILES = "org.system.platform.feature.profiles";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -96,7 +96,7 @@ public final class LineageContextConstants {
+          * utilized by the lineage sdk.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String LIVEDISPLAY = "org.lineageos.livedisplay";
++        public static final String LIVEDISPLAY = "org.system.platform.feature.livedisplay";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -104,7 +104,7 @@ public final class LineageContextConstants {
+          * utilized by the lineage sdk.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String TRUST = "org.lineageos.trust";
++        public static final String TRUST = "org.system.platform.feature.trust";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -112,7 +112,7 @@ public final class LineageContextConstants {
+          * utilized by the lineage sdk.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String SETTINGS = "org.lineageos.settings";
++        public static final String SETTINGS = "org.system.platform.feature.settings";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -120,7 +120,7 @@ public final class LineageContextConstants {
+          * service utilized by the lineage sdk and LineageParts.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String GLOBAL_ACTIONS = "org.lineageos.globalactions";
++        public static final String GLOBAL_ACTIONS = "org.system.platform.feature.globalactions";
+ 
+         /**
+          * Feature for {@link PackageManager#getSystemAvailableFeatures} and
+@@ -128,6 +128,6 @@ public final class LineageContextConstants {
+          * service utilized by the lineage sdk and LineageParts.
+          */
+         @SdkConstant(SdkConstant.SdkConstantType.FEATURE)
+-        public static final String HEALTH = "org.lineageos.health";
++        public static final String HEALTH = "org.system.platform.feature.health";
+     }
+ }
+-- 
+2.34.1
+

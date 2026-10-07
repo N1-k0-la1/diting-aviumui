@@ -1,0 +1,33 @@
+From c2d37c67e351599334df8c5e6a17c5e6a8faa3d1 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 08:05:54 +0800
+Subject: [PATCH] Generate opt-in diting identity from actual build
+ configuration
+
+Change-Id: I4f019de0dc7a053f68a05698b8a58ab253805eaf
+---
+ scripts/gen_build_prop.py | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/scripts/gen_build_prop.py b/scripts/gen_build_prop.py
+index e818132..5570653 100644
+--- a/scripts/gen_build_prop.py
++++ b/scripts/gen_build_prop.py
+@@ -137,6 +137,14 @@ def parse_args():
+ 
+   override_config(config)
+ 
++  if config.get("DitingCoherentBuildIdentity", False):
++    # Product overrides and the normalized number must precede public identity.
++    config["BuildDesc"] = f"{config['DeviceProduct']}-{config['BuildVariant']} " \
++                          f"{config['Platform_version_name']} {config['BuildId']} " \
++                          f"{config['BuildNumber']} {config['BuildVersionTags']}"
++    config["BuildFlavor"] = config["DeviceProduct"] + "-" + config["BuildVariant"]
++    config["LineageDesc"] = config["BuildDesc"]
++
+   append_additional_system_props(args)
+   append_additional_vendor_props(args)
+   append_additional_product_props(args)
+-- 
+2.34.1
+

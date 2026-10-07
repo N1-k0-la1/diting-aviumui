@@ -1,0 +1,31 @@
+From 5d68639ab1c6711ca347ec2947e7734d59300bf1 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 06:10:09 +0800
+Subject: [PATCH] Test SELinux policy input file contexts and partition aliases
+
+Change-Id: I4c1fd227a3cdac20ccea34826ce45dc50d06f4bd
+---
+ contexts/file_contexts_test_data | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/contexts/file_contexts_test_data b/contexts/file_contexts_test_data
+index 5974570..5a987f2 100644
+--- a/contexts/file_contexts_test_data
++++ b/contexts/file_contexts_test_data
+@@ -1365,3 +1365,13 @@
+ /mnt/pre_reboot_dexopt                                            pre_reboot_dexopt_file
+ 
+ /second_stage_resources/overlay_remounter                         overlay_remounter_exec
++
++# Policy inputs loaded by trusted SELinux consumers.
++/vendor/etc/selinux/vendor_sepolicy.cil                            sepolicy_file
++/vendor/etc/selinux/vendor_file_contexts                           file_contexts_file
++/vendor/etc/selinux/vendor_hwservice_contexts                      hwservice_contexts_file
++/system/vendor/etc/selinux/vendor_sepolicy.cil                     sepolicy_file
++/system/vendor/etc/selinux/vendor_file_contexts                    file_contexts_file
++/system/vendor/etc/selinux/vendor_hwservice_contexts               hwservice_contexts_file
++/system_ext/etc/selinux/system_ext_sepolicy.cil                    sepolicy_file
++/system/system_ext/etc/selinux/system_ext_sepolicy.cil             sepolicy_file
+-- 
+2.34.1
+

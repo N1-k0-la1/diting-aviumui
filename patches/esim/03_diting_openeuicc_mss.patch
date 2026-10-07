@@ -1,0 +1,73 @@
+From 7d1092f68e4890575ba9bf392f7484ade9aaa3c2 Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 05:52:11 +0800
+Subject: [PATCH] Default optional diting OpenEUICC transfers to MSS 255
+
+---
+ device.mk                                   | 3 ++-
+ overlay/OpenEuiccEsim/Android.bp            | 6 ++++++
+ overlay/OpenEuiccEsim/AndroidManifest.xml   | 9 +++++++++
+ overlay/OpenEuiccEsim/res/values/config.xml | 8 ++++++++
+ 4 files changed, 25 insertions(+), 1 deletion(-)
+ create mode 100644 overlay/OpenEuiccEsim/Android.bp
+ create mode 100644 overlay/OpenEuiccEsim/AndroidManifest.xml
+ create mode 100644 overlay/OpenEuiccEsim/res/values/config.xml
+
+diff --git a/device.mk b/device.mk
+index 8152aea..6cfb92c 100644
+--- a/device.mk
++++ b/device.mk
+@@ -23,7 +23,8 @@ PRODUCT_COPY_FILES += \
+ ifeq ($(TARGET_DITING_ESIM),true)
+ PRODUCT_PACKAGES += \
+     OpenEUICC \
+-    FrameworksResDitingEsim
++    FrameworksResDitingEsim \
++    OpenEuiccResDitingEsim
+ 
+ PRODUCT_COPY_FILES += \
+     frameworks/native/data/etc/android.hardware.telephony.euicc.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.euicc.xml
+diff --git a/overlay/OpenEuiccEsim/Android.bp b/overlay/OpenEuiccEsim/Android.bp
+new file mode 100644
+index 0000000..95b3b1e
+--- /dev/null
++++ b/overlay/OpenEuiccEsim/Android.bp
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: Apache-2.0
++runtime_resource_overlay {
++    name: "OpenEuiccResDitingEsim",
++    // OpenEUICC permits vendor overlays, while ODM is a distinct policy.
++    vendor: true,
++}
+diff --git a/overlay/OpenEuiccEsim/AndroidManifest.xml b/overlay/OpenEuiccEsim/AndroidManifest.xml
+new file mode 100644
+index 0000000..393ac10
+--- /dev/null
++++ b/overlay/OpenEuiccEsim/AndroidManifest.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="im.angry.openeuicc.overlay.diting.esim">
++    <overlay android:targetPackage="im.angry.openeuicc"
++        android:targetName="OpenEUICC"
++        android:isStatic="true"
++        android:priority="701" />
++</manifest>
+diff --git a/overlay/OpenEuiccEsim/res/values/config.xml b/overlay/OpenEuiccEsim/res/values/config.xml
+new file mode 100644
+index 0000000..191ddfa
+--- /dev/null
++++ b/overlay/OpenEuiccEsim/res/values/config.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <!-- The verified diting eUICC rejects the first 63-byte LoadBPP fragment.
++         MSS 255 permits the 184-byte InitialiseSecureChannel command in one
++         final STORE DATA APDU; Vodafone UK download succeeded on the phone. -->
++    <integer name="config_es10x_mss_default">255</integer>
++</resources>
+-- 
+2.34.1
+

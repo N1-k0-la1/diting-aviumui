@@ -1,0 +1,25 @@
+From 24d3687ec11c525c308d3f958e662d90669471ee Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:20:17 +0800
+Subject: [PATCH] Rename profile settings activity action
+
+Change-Id: I48ee77b22e72bce59343c626b61d83e796157c97
+---
+ .../src/com/android/systemui/qs/tiles/ProfilesTile.java         | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tiles/ProfilesTile.java b/packages/SystemUI/src/com/android/systemui/qs/tiles/ProfilesTile.java
+index c36c479d2..621ba38a9 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/tiles/ProfilesTile.java
++++ b/packages/SystemUI/src/com/android/systemui/qs/tiles/ProfilesTile.java
+@@ -79,7 +79,7 @@ public class ProfilesTile extends QSTileImpl<State> {
+     private static final String INTERACTION_JANK_TAG = "profiles";
+ 
+     private static final Intent PROFILES_SETTINGS =
+-            new Intent("org.lineageos.lineageparts.PROFILES_SETTINGS");
++            new Intent("org.system.platform.PROFILES_SETTINGS");
+ 
+     @Nullable
+     private Icon mIcon = null;
+-- 
+2.34.1

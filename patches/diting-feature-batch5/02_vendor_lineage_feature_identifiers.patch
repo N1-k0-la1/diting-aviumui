@@ -1,0 +1,108 @@
+From 0a6f4f5c25194fef648b58d832bbe7a97d2e6777 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 17:35:37 +0800
+Subject: [PATCH] Migrate platform feature identifiers with matching SDK
+ consumers
+
+Change-Id: I4b07aa7df2f53671d807b937a0a7e66d7f109b0f
+---
+ config/permissions/org.lineageos.android.xml       | 2 +-
+ config/permissions/org.lineageos.globalactions.xml | 2 +-
+ config/permissions/org.lineageos.hardware.xml      | 2 +-
+ config/permissions/org.lineageos.health.xml        | 2 +-
+ config/permissions/org.lineageos.livedisplay.xml   | 2 +-
+ config/permissions/org.lineageos.profiles.xml      | 2 +-
+ config/permissions/org.lineageos.settings.xml      | 2 +-
+ config/permissions/org.lineageos.trust.xml         | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/config/permissions/org.lineageos.android.xml b/config/permissions/org.lineageos.android.xml
+index 816ded9..2991ae4 100644
+--- a/config/permissions/org.lineageos.android.xml
++++ b/config/permissions/org.lineageos.android.xml
+@@ -16,5 +16,5 @@
+ 
+ <!-- This feature shows that this is LineageOS -->
+ <permissions>
+-    <feature name="org.lineageos.android" />
++    <feature name="org.system.platform.feature.android" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.globalactions.xml b/config/permissions/org.lineageos.globalactions.xml
+index 4e03183..70c49b0 100644
+--- a/config/permissions/org.lineageos.globalactions.xml
++++ b/config/permissions/org.lineageos.globalactions.xml
+@@ -19,5 +19,5 @@
+         part of the external lineage service init in SystemServer. If this xml isn't present
+         on the device, the service will not be published as a binder service!
+     -->
+-    <feature name="org.lineageos.globalactions" />
++    <feature name="org.system.platform.feature.globalactions" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.hardware.xml b/config/permissions/org.lineageos.hardware.xml
+index 7c79e82..6be3e68 100644
+--- a/config/permissions/org.lineageos.hardware.xml
++++ b/config/permissions/org.lineageos.hardware.xml
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <permissions>
+-    <feature name="org.lineageos.hardware" />
++    <feature name="org.system.platform.feature.hardware" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.health.xml b/config/permissions/org.lineageos.health.xml
+index 2825d76..47d9073 100644
+--- a/config/permissions/org.lineageos.health.xml
++++ b/config/permissions/org.lineageos.health.xml
+@@ -19,5 +19,5 @@
+         part of the external lineage service init in SystemServer. If this xml isn't present
+         on the device, the service will not be published as a binder service!
+     -->
+-    <feature name="org.lineageos.health" />
++    <feature name="org.system.platform.feature.health" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.livedisplay.xml b/config/permissions/org.lineageos.livedisplay.xml
+index 22adee5..07cf248 100644
+--- a/config/permissions/org.lineageos.livedisplay.xml
++++ b/config/permissions/org.lineageos.livedisplay.xml
+@@ -19,5 +19,5 @@
+         part of the external lineage service init in SystemServer. If this xml isn't present
+         on the device, the service will not be published as a binder service!
+     -->
+-    <feature name="org.lineageos.livedisplay" />
++    <feature name="org.system.platform.feature.livedisplay" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.profiles.xml b/config/permissions/org.lineageos.profiles.xml
+index 2e55912..9368695 100644
+--- a/config/permissions/org.lineageos.profiles.xml
++++ b/config/permissions/org.lineageos.profiles.xml
+@@ -19,5 +19,5 @@
+          part of the external lineage service init in SystemServer. If this xml isn't present
+          on the device, the service will not be published as a binder service!
+      -->
+-    <feature name="org.lineageos.profiles" />
++    <feature name="org.system.platform.feature.profiles" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.settings.xml b/config/permissions/org.lineageos.settings.xml
+index f9dc00f..aa19cad 100644
+--- a/config/permissions/org.lineageos.settings.xml
++++ b/config/permissions/org.lineageos.settings.xml
+@@ -15,5 +15,5 @@
+ -->
+ 
+ <permissions>
+-    <feature name="org.lineageos.settings" />
++    <feature name="org.system.platform.feature.settings" />
+ </permissions>
+diff --git a/config/permissions/org.lineageos.trust.xml b/config/permissions/org.lineageos.trust.xml
+index 12b5b76..ba17d85 100644
+--- a/config/permissions/org.lineageos.trust.xml
++++ b/config/permissions/org.lineageos.trust.xml
+@@ -19,5 +19,5 @@
+         part of the external lineage service init in SystemServer. If this xml isn't present
+         on the device, the service will not be published as a binder service!
+     -->
+-    <feature name="org.lineageos.trust" />
++    <feature name="org.system.platform.feature.trust" />
+ </permissions>
+-- 
+2.34.1
+

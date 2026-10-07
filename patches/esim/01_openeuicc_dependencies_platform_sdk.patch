@@ -1,0 +1,112 @@
+diff --git a/Android.bp b/Android.bp
+index dbc3862..6ba0145 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -8,7 +8,7 @@
+ java_import {
+     name: "OpenEUICC_com.google.errorprone_error_prone_annotations-nodeps",
+     jars: ["com/google/errorprone/error_prone_annotations/2.15.0/error_prone_annotations-2.15.0.jar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -18,7 +18,7 @@ java_import {
+ 
+ java_library_static {
+     name: "OpenEUICC_com.google.errorprone_error_prone_annotations",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -33,7 +33,7 @@ java_library_static {
+ java_import {
+     name: "OpenEUICC_com.google.guava_listenablefuture-nodeps",
+     jars: ["com/google/guava/listenablefuture/1.0/listenablefuture-1.0.jar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -43,7 +43,7 @@ java_import {
+ 
+ java_library_static {
+     name: "OpenEUICC_com.google.guava_listenablefuture",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -58,7 +58,7 @@ java_library_static {
+ java_import {
+     name: "OpenEUICC_com.google.zxing_core-nodeps",
+     jars: ["com/google/zxing/core/3.4.1/core-3.4.1.jar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -68,7 +68,7 @@ java_import {
+ 
+ java_library_static {
+     name: "OpenEUICC_com.google.zxing_core",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -83,7 +83,7 @@ java_library_static {
+ android_library_import {
+     name: "OpenEUICC_com.journeyapps_zxing-android-embedded-nodeps",
+     aars: ["com/journeyapps/zxing-android-embedded/4.3.0/zxing-android-embedded-4.3.0.aar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -96,7 +96,7 @@ android_library_import {
+ 
+ android_library {
+     name: "OpenEUICC_com.journeyapps_zxing-android-embedded",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -113,7 +113,7 @@ android_library {
+ java_import {
+     name: "OpenEUICC_com.squareup.okio_okio-jvm-nodeps",
+     jars: ["com/squareup/okio/okio-jvm/3.9.1/okio-jvm-3.9.1.jar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -123,7 +123,7 @@ java_import {
+ 
+ java_library_static {
+     name: "OpenEUICC_com.squareup.okio_okio-jvm",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -139,7 +139,7 @@ java_library_static {
+ java_import {
+     name: "OpenEUICC_org.jspecify_jspecify-nodeps",
+     jars: ["org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar"],
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",
+@@ -149,7 +149,7 @@ java_import {
+ 
+ java_library_static {
+     name: "OpenEUICC_org.jspecify_jspecify",
+-    sdk_version: "37",
++    sdk_version: "current",
+     min_sdk_version: "14",
+     apex_available: [
+         "//apex_available:platform",

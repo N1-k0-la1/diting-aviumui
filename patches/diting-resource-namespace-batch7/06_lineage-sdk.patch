@@ -1,0 +1,55 @@
+From 01c0cc2bcab198a6d8dfe5c4aae55c51ebf3cb55 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 01:43:59 +0800
+Subject: [PATCH] Migrate platform resource namespace preserving resource IDs
+ and generated Java ABI
+
+Change-Id: I96ca7f7deab07ffa75661735f5c9139a6f057f25
+---
+ Android.bp                              | 3 +++
+ lineage/res/AndroidManifest.xml         | 2 +-
+ sdk/src/java/lineageos/app/Profile.java | 2 +-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 5cff33f..de38900 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -23,6 +23,9 @@ android_app {
+     // the libraries in /system/framework, while stem controls the filename.
+ 
+     aaptflags: [
++        // Keep generated public R/Manifest classes stable while migrating the resource package.
++        "--custom-package",
++        "lineageos.platform",
+         "--private-symbols",
+         "org.lineageos.platform.internal",
+ 
+diff --git a/lineage/res/AndroidManifest.xml b/lineage/res/AndroidManifest.xml
+index 67aa872..c6e3873 100644
+--- a/lineage/res/AndroidManifest.xml
++++ b/lineage/res/AndroidManifest.xml
+@@ -7,7 +7,7 @@
+ <manifest
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+-    package="lineageos.platform"
++    package="org.system.platform"
+     coreApp="true" android:sharedUserId="android.uid.system"
+     android:sharedUserLabel="@string/lineageos_system_label">
+ 
+diff --git a/sdk/src/java/lineageos/app/Profile.java b/sdk/src/java/lineageos/app/Profile.java
+index 55e95cc..38b015c 100644
+--- a/sdk/src/java/lineageos/app/Profile.java
++++ b/sdk/src/java/lineageos/app/Profile.java
+@@ -1028,7 +1028,7 @@ public final class Profile implements Parcelable, Comparable {
+ 
+         if (value != null) {
+             profileNameResId = context.getResources().getIdentifier(value, "string",
+-                    "lineageos.platform");
++                    "org.system.platform");
+             if (profileNameResId > 0) {
+                 profileName = context.getResources().getString(profileNameResId);
+             }
+-- 
+2.34.1

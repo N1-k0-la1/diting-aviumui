@@ -1,0 +1,30 @@
+From ad9ba06dc1e65c0de7f82089e840c9bcae4b5508 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 04:26:16 +0800
+Subject: [PATCH] Disable optional ADB root consistently for diting
+
+Change-Id: I63b0f6f36fb025904a3e760eac8ccbbb70724fa7
+---
+ config/common.mk | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index 765bbf0..1b8cf7c 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -212,9 +212,11 @@ PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+     system/bin/procmem
+ endif
+ 
+-# Root
++# Optional ADB root
++ifneq ($(TARGET_DISABLE_ADB_ROOT),true)
+ PRODUCT_PACKAGES += \
+     adb_root
++endif
+ ifneq ($(TARGET_BUILD_VARIANT),user)
+ ifeq ($(WITH_SU),true)
+ PRODUCT_PACKAGES += \
+-- 
+2.34.1
+

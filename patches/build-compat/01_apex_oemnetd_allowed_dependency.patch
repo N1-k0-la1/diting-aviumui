@@ -1,0 +1,25 @@
+From 320d46bda2edb31f4378948a91169df8aad86b18 Mon Sep 17 00:00:00 2001
+From: Local ROM Build <rom-builder@localhost>
+Date: Mon, 5 Oct 2026 19:10:30 +0800
+Subject: [PATCH] Record existing OEM netd Java dependency of Tethering APEX
+
+Change-Id: I6345fa7b33a62f81760c6835885dbe98213e7ee2
+---
+ build/allowed_deps.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/allowed_deps.txt b/build/allowed_deps.txt
+index bc841d7..8599db1 100644
+--- a/build/allowed_deps.txt
++++ b/build/allowed_deps.txt
+@@ -1497,6 +1497,7 @@ NfcNciApex(minSdkVersion:36)
+ NfcNciApexGoogle(minSdkVersion:36)
+ note_memtag_heap_async(minSdkVersion:21)
+ note_memtag_heap_sync(minSdkVersion:21)
++oemnetd_aidl_interface-java(minSdkVersion:30)
+ offlinelocationtimezoneprovider(minSdkVersion:31)
+ okhttp(minSdkVersion:31)
+ okhttp-norepackage(minSdkVersion:30)
+-- 
+2.34.1
+

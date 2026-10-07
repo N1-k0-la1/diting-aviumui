@@ -1,0 +1,96 @@
+diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
+index fa894db..9a7fd2f 100644
+--- a/cmds/servicemanager/ServiceManager.cpp
++++ b/cmds/servicemanager/ServiceManager.cpp
+@@ -1169,12 +1169,16 @@ Status ServiceManager::canFindService(const Access::CallingContext& ctx, const s
+ 
+ Status ServiceManager::getServiceDebugInfo(std::vector<ServiceDebugInfo>* outReturn) {
+     SM_PERFETTO_TRACE_FUNC();
+-    if (!mAccess->canList(mAccess->getCallingContext())) {
++    const auto ctx = mAccess->getCallingContext();
++    if (!mAccess->canList(ctx)) {
+         return Status::fromExceptionCode(Status::EX_SECURITY, "SELinux denied.");
+     }
+ 
+     outReturn->reserve(mNameToService.size());
+     for (auto const& [name, service] : mNameToService) {
++        // Debug enumeration follows the same visibility as ordinary lookup.
++        if (!service.allowIsolated && is_multiuser_uid_isolated(ctx.uid)) continue;
++        if (!mAccess->canFind(ctx, name)) continue;
+         ServiceDebugInfo info;
+         info.name = name;
+         info.debugPid = service.ctx.debugPid;
+diff --git a/cmds/servicemanager/test_sm.cpp b/cmds/servicemanager/test_sm.cpp
+index 4874fdf..c214f52 100644
+--- a/cmds/servicemanager/test_sm.cpp
++++ b/cmds/servicemanager/test_sm.cpp
+@@ -422,6 +422,69 @@ TEST(ListServices, CriticalServices) {
+     EXPECT_THAT(out, ElementsAre("sa"));
+ }
+ 
++TEST(GetServiceDebugInfo, NoPermissions) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    EXPECT_CALL(*access, canList(_)).WillOnce(Return(false));
++    EXPECT_CALL(*access, canFind(_, _)).Times(0);
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    std::vector<android::os::ServiceDebugInfo> out;
++    EXPECT_FALSE(sm->getServiceDebugInfo(&out).isOk());
++    EXPECT_TRUE(out.empty());
++}
++
++TEST(GetServiceDebugInfo, OnlyFindableServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "a_allowed")).WillOnce(Return(true));
++    EXPECT_CALL(*access, canFind(_, "b_denied")).WillOnce(Return(false));
++    EXPECT_CALL(*access, canFind(_, "c_allowed")).WillOnce(Return(true));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    for (const auto* name : {"a_allowed", "b_denied", "c_allowed"}) {
++        ASSERT_TRUE(sm->addService(name, getBinder(), false,
++                                  IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    }
++    std::vector<android::os::ServiceDebugInfo> out;
++    ASSERT_TRUE(sm->getServiceDebugInfo(&out).isOk());
++    ASSERT_EQ(2u, out.size());
++    EXPECT_EQ("a_allowed", out[0].name);
++    EXPECT_EQ("c_allowed", out[1].name);
++}
++
++TEST(GetServiceDebugInfo, NoFindableServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "denied")).WillOnce(Return(false));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    ASSERT_TRUE(sm->addService("denied", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    std::vector<android::os::ServiceDebugInfo> out;
++    ASSERT_TRUE(sm->getServiceDebugInfo(&out).isOk());
++    EXPECT_TRUE(out.empty());
++}
++
++TEST(GetServiceDebugInfo, IsolatedCallerOnlySeesAllowedServices) {
++    auto access = std::make_unique<NiceMock<MockAccess>>();
++    auto* accessPtr = access.get();
++    ON_CALL(*access, canAdd(_, _)).WillByDefault(Return(true));
++    ON_CALL(*access, canList(_)).WillByDefault(Return(true));
++    EXPECT_CALL(*access, canFind(_, "private")).Times(0);
++    EXPECT_CALL(*access, canFind(_, "isolated_allowed")).WillOnce(Return(true));
++    auto sm = sp<NiceMock<MockServiceManager>>::make(std::move(access));
++    ASSERT_TRUE(sm->addService("private", getBinder(), false,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    ASSERT_TRUE(sm->addService("isolated_allowed", getBinder(), true,
++                              IServiceManager::DUMP_FLAG_PRIORITY_NORMAL).isOk());
++    Access::CallingContext ctx{};
++    ctx.uid = 100000 + AID_ISOLATED_START;
++    ON_CALL(*accessPtr, getCallingContext()).WillByDefault(Return(ctx));
++    std::vector<android::os::ServiceDebugInfo> out;
++    ASSERT_TRUE(sm->getServiceDebugInfo(&out).isOk());
++    ASSERT_EQ(1u, out.size());
++    EXPECT_EQ("isolated_allowed", out[0].name);
++}
++
+ TEST(Vintf, UpdatableViaApex) {
+     if (!isCuttlefishPhone()) GTEST_SKIP() << "Skipping non-Cuttlefish-phone devices";
+ 

@@ -1,0 +1,26 @@
+From 6ea270414cb948271eed48e7dd5d9c3be3b03f67 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 08:05:54 +0800
+Subject: [PATCH] Generate opt-in diting identity from actual build
+ configuration
+
+Change-Id: Id7b7885b1b29891bf88723cb14dba2e88b974eb9
+---
+ core/soong_extra_config.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/core/soong_extra_config.mk b/core/soong_extra_config.mk
+index 4c0a963..3f94208 100644
+--- a/core/soong_extra_config.mk
++++ b/core/soong_extra_config.mk
+@@ -38,6 +38,7 @@ $(call add_json_list, PRODUCT_PROPERTY_OVERRIDES,        $(call collapse-prop-pa
+ $(call add_json_list, PRODUCT_DEFAULT_PROPERTY_OVERRIDES,        $(call collapse-prop-pairs,PRODUCT_DEFAULT_PROPERTY_OVERRIDES))
+ 
+ $(call add_json_list, PRODUCT_BUILD_PROP_OVERRIDES,      $(call collapse-prop-pairs,PRODUCT_BUILD_PROP_OVERRIDES))
++$(call add_json_bool, DitingCoherentBuildIdentity,       $(filter true,$(TARGET_DITING_COHERENT_BUILD_IDENTITY)))
+ 
+ $(call add_json_str, BootloaderBoardName, $(TARGET_BOOTLOADER_BOARD_NAME))
+ 
+-- 
+2.34.1
+

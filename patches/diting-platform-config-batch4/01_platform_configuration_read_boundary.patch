@@ -1,0 +1,158 @@
+From be7d3d55ade5cedbf50c0993f7fdc16de5396c82 Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 16:26:32 +0800
+Subject: [PATCH] Restrict exact platform configuration contents to existing
+ trusted readers
+
+Change-Id: I1b31dd710280aa2c35a03d2b7dd31a995b83bb00
+---
+ contexts/file_contexts_test_data | 62 ++++++++++++++++++++++++++++++++
+ private/app_neverallows.te       |  4 +++
+ private/file_contexts            | 32 +++++++++++++++++
+ private/rom_configuration.te     |  9 +++++
+ 4 files changed, 107 insertions(+)
+ create mode 100644 private/rom_configuration.te
+
+diff --git a/contexts/file_contexts_test_data b/contexts/file_contexts_test_data
+index 5a987f2..8bb0ca7 100644
+--- a/contexts/file_contexts_test_data
++++ b/contexts/file_contexts_test_data
+@@ -1375,3 +1375,65 @@
+ /system/vendor/etc/selinux/vendor_hwservice_contexts               hwservice_contexts_file
+ /system_ext/etc/selinux/system_ext_sepolicy.cil                    sepolicy_file
+ /system/system_ext/etc/selinux/system_ext_sepolicy.cil             sepolicy_file
++
++# Exact platform configuration paths and partition aliases.
++/product/etc/default-permissions/com.android.deskclock_default-permissions.xml rom_framework_config_file
++/system/product/etc/default-permissions/com.android.deskclock_default-permissions.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.android.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.android.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.globalactions.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.globalactions.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.hardware.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.hardware.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.health.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.health.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.livedisplay.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.livedisplay.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.profiles.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.profiles.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.settings.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.settings.xml rom_framework_config_file
++/product/etc/permissions/org.lineageos.trust.xml rom_framework_config_file
++/system/product/etc/permissions/org.lineageos.trust.xml rom_framework_config_file
++/product/etc/permissions/privapp_whitelist_com.android.dialer-ext.xml rom_framework_config_file
++/system/product/etc/permissions/privapp_whitelist_com.android.dialer-ext.xml rom_framework_config_file
++/product/etc/sysconfig/com.android.deskclock_allowlist.xml rom_framework_config_file
++/system/product/etc/sysconfig/com.android.deskclock_allowlist.xml rom_framework_config_file
++/product/etc/sysconfig/com.android.messaging.allowlist.xml rom_framework_config_file
++/system/product/etc/sysconfig/com.android.messaging.allowlist.xml rom_framework_config_file
++/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.aperture.xml rom_framework_config_file
++/system/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.aperture.xml rom_framework_config_file
++/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.etar.xml rom_framework_config_file
++/system/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.etar.xml rom_framework_config_file
++/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.glimpse.xml rom_framework_config_file
++/system/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.glimpse.xml rom_framework_config_file
++/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.twelve.xml rom_framework_config_file
++/system/product/etc/sysconfig/initial-package-stopped-states-org.lineageos.twelve.xml rom_framework_config_file
++/product/etc/sysconfig/lineage-component-overrides.xml rom_framework_config_file
++/system/product/etc/sysconfig/lineage-component-overrides.xml rom_framework_config_file
++/product/etc/sysconfig/lineage-sysconfig.xml rom_framework_config_file
++/system/product/etc/sysconfig/lineage-sysconfig.xml rom_framework_config_file
++/product/etc/sysconfig/org.lineageos.etar.allowlist.xml rom_framework_config_file
++/system/product/etc/sysconfig/org.lineageos.etar.allowlist.xml rom_framework_config_file
++/product/etc/sysconfig/preinstalled-packages-org.lineageos.aperture.xml rom_framework_config_file
++/system/product/etc/sysconfig/preinstalled-packages-org.lineageos.aperture.xml rom_framework_config_file
++/product/etc/sysconfig/preinstalled-packages-org.lineageos.etar.xml rom_framework_config_file
++/system/product/etc/sysconfig/preinstalled-packages-org.lineageos.etar.xml rom_framework_config_file
++/product/etc/sysconfig/preinstalled-packages-org.lineageos.glimpse.xml rom_framework_config_file
++/system/product/etc/sysconfig/preinstalled-packages-org.lineageos.glimpse.xml rom_framework_config_file
++/product/etc/sysconfig/preinstalled-packages-org.lineageos.twelve.xml rom_framework_config_file
++/system/product/etc/sysconfig/preinstalled-packages-org.lineageos.twelve.xml rom_framework_config_file
++/product/etc/sysconfig/preinstalled-packages-platform-avium-product.xml rom_framework_config_file
++/system/product/etc/sysconfig/preinstalled-packages-platform-avium-product.xml rom_framework_config_file
++/product/etc/vintf/compatibility_matrix.lineage.xml rom_framework_config_file
++/system/product/etc/vintf/compatibility_matrix.lineage.xml rom_framework_config_file
++/system_ext/etc/default-permissions/default-permissions_org.lineageos.profiles.xml rom_framework_config_file
++/system/system_ext/etc/default-permissions/default-permissions_org.lineageos.profiles.xml rom_framework_config_file
++/system_ext/etc/init/init.lineage-system_ext.rc rom_framework_config_file
++/system/system_ext/etc/init/init.lineage-system_ext.rc rom_framework_config_file
++/system_ext/etc/permissions/LineageParts.xml rom_framework_config_file
++/system/system_ext/etc/permissions/LineageParts.xml rom_framework_config_file
++/system_ext/etc/permissions/LineageSettingsProvider.xml rom_framework_config_file
++/system/system_ext/etc/permissions/LineageSettingsProvider.xml rom_framework_config_file
++/system_ext/etc/permissions/LineageSetupWizard.xml rom_framework_config_file
++/system/system_ext/etc/permissions/LineageSetupWizard.xml rom_framework_config_file
+diff --git a/private/app_neverallows.te b/private/app_neverallows.te
+index 17a9b22..ee7a967 100644
+--- a/private/app_neverallows.te
++++ b/private/app_neverallows.te
+@@ -21,6 +21,10 @@ neverallow all_untrusted_apps {
+   sepolicy_file file_contexts_file hwservice_contexts_file
+ }:file { open read map };
+ 
++# Framework XML and init configuration are not ordinary application inputs.
++neverallow { all_untrusted_apps sdk_sandbox_all }
++  rom_framework_config_file:file { open read map };
++
+ # Receive or send uevent messages.
+ neverallow all_untrusted_apps domain:netlink_kobject_uevent_socket *;
+ 
+diff --git a/private/file_contexts b/private/file_contexts
+index 927661b..1825723 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -976,3 +976,35 @@
+ #############################
+ # For overlays
+ /second_stage_resources/overlay_remounter u:object_r:overlay_remounter_exec:s0
++
++# Platform configuration contents are private to existing trusted readers.
++/(product|system/product)/etc/default\-permissions/com\.android\.deskclock_default\-permissions\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.android\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.globalactions\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.hardware\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.health\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.livedisplay\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.profiles\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.settings\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/org\.lineageos\.trust\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/permissions/privapp_whitelist_com\.android\.dialer\-ext\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/com\.android\.deskclock_allowlist\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/com\.android\.messaging\.allowlist\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/initial\-package\-stopped\-states\-org\.lineageos\.aperture\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/initial\-package\-stopped\-states\-org\.lineageos\.etar\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/initial\-package\-stopped\-states\-org\.lineageos\.glimpse\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/initial\-package\-stopped\-states\-org\.lineageos\.twelve\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/lineage\-component\-overrides\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/lineage\-sysconfig\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/org\.lineageos\.etar\.allowlist\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/preinstalled\-packages\-org\.lineageos\.aperture\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/preinstalled\-packages\-org\.lineageos\.etar\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/preinstalled\-packages\-org\.lineageos\.glimpse\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/preinstalled\-packages\-org\.lineageos\.twelve\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/sysconfig/preinstalled\-packages\-platform\-avium\-product\.xml    u:object_r:rom_framework_config_file:s0
++/(product|system/product)/etc/vintf/compatibility_matrix\.lineage\.xml    u:object_r:rom_framework_config_file:s0
++/(system_ext|system/system_ext)/etc/default\-permissions/default\-permissions_org\.lineageos\.profiles\.xml    u:object_r:rom_framework_config_file:s0
++/(system_ext|system/system_ext)/etc/init/init\.lineage\-system_ext\.rc    u:object_r:rom_framework_config_file:s0
++/(system_ext|system/system_ext)/etc/permissions/LineageParts\.xml    u:object_r:rom_framework_config_file:s0
++/(system_ext|system/system_ext)/etc/permissions/LineageSettingsProvider\.xml    u:object_r:rom_framework_config_file:s0
++/(system_ext|system/system_ext)/etc/permissions/LineageSetupWizard\.xml    u:object_r:rom_framework_config_file:s0
+diff --git a/private/rom_configuration.te b/private/rom_configuration.te
+new file mode 100644
+index 0000000..7a51e39
+--- /dev/null
++++ b/private/rom_configuration.te
+@@ -0,0 +1,9 @@
++# Exact platform configuration inputs are consumed by trusted framework loaders.
++# Retain the old system_file reader classes; ordinary app processes and SDK
++# sandboxes receive no content access. No executable or directory is relabeled.
++type rom_framework_config_file, file_type, system_file_type;
++allow {
++  appdomain coredomain
++  -all_untrusted_apps
++  -sdk_sandbox_all
++} rom_framework_config_file:file { getattr open read map };
+-- 
+2.34.1
+

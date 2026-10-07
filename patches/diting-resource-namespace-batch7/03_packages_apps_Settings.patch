@@ -1,0 +1,108 @@
+From 84507f50870679def59bd9cd590a342e40faf768 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 01:43:59 +0800
+Subject: [PATCH] Migrate platform resource namespace preserving resource IDs
+ and generated Java ABI
+
+Change-Id: I0a1c100ed07668ed8d43feb35342d8fb93f7ba10
+---
+ res/xml/display_settings.xml    | 14 +++++++-------
+ res/xml/my_device_info.xml      |  2 +-
+ res/xml/power_usage_summary.xml |  8 ++++----
+ 3 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/res/xml/display_settings.xml b/res/xml/display_settings.xml
+index 05e7c2a..d25b0a2 100644
+--- a/res/xml/display_settings.xml
++++ b/res/xml/display_settings.xml
+@@ -140,7 +140,7 @@
+         <lineageos.preference.LineagePartsPreference
+             android:key="live_display_color_profile"
+             settings:replacesKey="color_mode"
+-            settings:requiresConfig="@*lineageos.platform:bool/config_enableLiveDisplay"
++            settings:requiresConfig="@*org.system.platform:bool/config_enableLiveDisplay"
+             settings:requiresFeature="lineagehardware:FEATURE_DISPLAY_MODES" />
+ 
+         <Preference
+@@ -181,7 +181,7 @@
+         <lineageos.preference.LineagePartsPreference
+             android:key="rotation"
+             settings:replacesKey="auto_rotate"
+-            settings:requiresConfig="@*lineageos.platform:bool/config_enableAdvancedRotationSettings"
++            settings:requiresConfig="@*org.system.platform:bool/config_enableAdvancedRotationSettings"
+             settings:requiresFeature="android.hardware.sensor.accelerometer" />
+ 
+         <Preference
+@@ -222,7 +222,7 @@
+ 
+         <lineageos.preference.LineagePartsPreference
+             android:key="long_screen_settings"
+-            settings:requiresConfig="@*lineageos.platform:bool/config_haveHigherAspectRatioScreen" />
++            settings:requiresConfig="@*org.system.platform:bool/config_haveHigherAspectRatioScreen" />
+ 
+         <Preference
+             android:key="screensaver"
+@@ -250,16 +250,16 @@
+             android:key="proximity_on_wake"
+             android:title="@string/proximity_wake_title"
+             android:summary="@string/proximity_wake_summary"
+-            android:defaultValue="@*lineageos.platform:bool/config_proximityCheckOnWakeEnabledByDefault"
+-            settings:requiresConfig="@*lineageos.platform:bool/config_proximityCheckOnWake" />
++            android:defaultValue="@*org.system.platform:bool/config_proximityCheckOnWakeEnabledByDefault"
++            settings:requiresConfig="@*org.system.platform:bool/config_proximityCheckOnWake" />
+ 
+         <!-- Double tap to sleep -->
+         <lineageos.preference.LineageSystemSettingSwitchPreference
+             android:key="double_tap_sleep_gesture"
+             android:title="@string/status_bar_double_tap_to_sleep_title"
+             android:summary="@string/status_bar_double_tap_to_sleep_summary"
+-            android:defaultValue="@*lineageos.platform:bool/config_dt2sGestureEnabledByDefault"
+-            settings:requiresConfig="@*lineageos.platform:bool/config_dt2sGestureAvailable" />
++            android:defaultValue="@*org.system.platform:bool/config_dt2sGestureEnabledByDefault"
++            settings:requiresConfig="@*org.system.platform:bool/config_dt2sGestureAvailable" />
+ 
+         <lineageos.preference.LineageGlobalSettingSwitchPreference
+             android:key="wake_when_plugged_or_unplugged"
+diff --git a/res/xml/my_device_info.xml b/res/xml/my_device_info.xml
+index f58c6c6..828da21 100644
+--- a/res/xml/my_device_info.xml
++++ b/res/xml/my_device_info.xml
+@@ -171,7 +171,7 @@
+         <Preference
+             android:key="lineage_os_version"
+             android:order="43"
+-            android:title="@*lineageos.platform:string/lineage_version"
++            android:title="@*org.system.platform:string/lineage_version"
+             android:summary="@string/summary_placeholder"
+             settings:enableCopying="true"
+             settings:controller="com.android.settings.deviceinfo.firmwareversion.LineageVersionDetailPreferenceController"
+diff --git a/res/xml/power_usage_summary.xml b/res/xml/power_usage_summary.xml
+index 950ca2d..daf20e1 100644
+--- a/res/xml/power_usage_summary.xml
++++ b/res/xml/power_usage_summary.xml
+@@ -70,7 +70,7 @@
+         <!-- Battery light -->
+         <lineageos.preference.LineagePartsPreference
+             android:key="battery_lights"
+-            settings:requiresConfig="@*lineageos.platform:integer/config_deviceLightCapabilities"
++            settings:requiresConfig="@*org.system.platform:integer/config_deviceLightCapabilities"
+             settings:requiresConfigMask="64" />
+     </com.android.settingslib.widget.UntitledPreferenceCategory>
+ 
+@@ -83,11 +83,11 @@
+ 
+         <!-- Charging speed -->
+         <ListPreference
+-            android:entries="@*lineageos.platform:array/charging_speed_entries"
+-            android:entryValues="@*lineageos.platform:array/charging_speed_values"
++            android:entries="@*org.system.platform:array/charging_speed_entries"
++            android:entryValues="@*org.system.platform:array/charging_speed_values"
+             android:key="charging_speed"
+             android:summary="%s"
+-            android:title="@*lineageos.platform:string/charging_speed"
++            android:title="@*org.system.platform:string/charging_speed"
+             settings:controller="com.android.settings.fuelgauge.ChargingSpeedPreferenceController"
+             settings:requiresService="lineagehealth" />
+     </com.android.settingslib.widget.UntitledPreferenceCategory>
+-- 
+2.34.1

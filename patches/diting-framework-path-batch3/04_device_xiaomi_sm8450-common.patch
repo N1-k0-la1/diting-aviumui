@@ -1,0 +1,39 @@
+From 0668c06a3b155ec5cca7dad01b7ebdc4d91aefc6 Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:19 +0800
+Subject: [PATCH] Give the Xiaomi platform resource overlay a neutral output
+ identity
+
+---
+ common.mk                  | 2 +-
+ overlay/Lineage/Android.bp | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common.mk b/common.mk
+index 125837c..3736d10 100644
+--- a/common.mk
++++ b/common.mk
+@@ -294,7 +294,7 @@ PRODUCT_PACKAGES += \
+ PRODUCT_PACKAGES += \
+     FrameworksResTarget \
+     FrameworksResXiaomi \
+-    LineageResXiaomi \
++    SystemResXiaomi \
+     SettingsProviderResXiaomi \
+     SettingsResXiaomi
+ 
+diff --git a/overlay/Lineage/Android.bp b/overlay/Lineage/Android.bp
+index 3e04ab8..947c6f3 100644
+--- a/overlay/Lineage/Android.bp
++++ b/overlay/Lineage/Android.bp
+@@ -5,6 +5,6 @@
+ //
+ 
+ runtime_resource_overlay {
+-    name: "LineageResXiaomi",
++    name: "SystemResXiaomi",
+     vendor: true,
+ }
+-- 
+2.34.1
+

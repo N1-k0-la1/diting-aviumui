@@ -1,0 +1,62 @@
+diff --git a/device.mk b/device.mk
+index b803d30..8152aea 100644
+--- a/device.mk
++++ b/device.mk
+@@ -17,6 +17,18 @@ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/audio/resourcemanager_waipio_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_cape/resourcemanager_waipio_mtp.xml \
+     $(LOCAL_PATH)/audio/usecaseKvManager.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usecaseKvManager.xml
+ 
++# Optional built-in eUICC support. Enable only on the verified eSIM variant.
++# Physical slot 1 was reported as eUICC on the target phone. Other variants
++# keep the baseline configuration unless explicitly opted in at build time.
++ifeq ($(TARGET_DITING_ESIM),true)
++PRODUCT_PACKAGES += \
++    OpenEUICC \
++    FrameworksResDitingEsim
++
++PRODUCT_COPY_FILES += \
++    frameworks/native/data/etc/android.hardware.telephony.euicc.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.euicc.xml
++endif
++
+ # Overlay
+ PRODUCT_PACKAGES += \
+     ApertureResDiting \
+diff --git a/overlay/FrameworksEsim/Android.bp b/overlay/FrameworksEsim/Android.bp
+new file mode 100644
+index 0000000..761e873
+--- /dev/null
++++ b/overlay/FrameworksEsim/Android.bp
+@@ -0,0 +1,5 @@
++// SPDX-License-Identifier: Apache-2.0
++runtime_resource_overlay {
++    name: "FrameworksResDitingEsim",
++    device_specific: true,
++}
+diff --git a/overlay/FrameworksEsim/AndroidManifest.xml b/overlay/FrameworksEsim/AndroidManifest.xml
+new file mode 100644
+index 0000000..3e6e042
+--- /dev/null
++++ b/overlay/FrameworksEsim/AndroidManifest.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="android.overlay.diting.esim">
++    <overlay android:targetPackage="android"
++        android:isStatic="true"
++        android:priority="701" />
++</manifest>
+diff --git a/overlay/FrameworksEsim/res/values/arrays.xml b/overlay/FrameworksEsim/res/values/arrays.xml
+new file mode 100644
+index 0000000..ba5fa40
+--- /dev/null
++++ b/overlay/FrameworksEsim/res/values/arrays.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <!-- Zero-based physical slot, verified on the built-in eSIM variant. -->
++    <integer-array name="non_removable_euicc_slots">
++        <item>1</item>
++    </integer-array>
++</resources>

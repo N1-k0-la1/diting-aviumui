@@ -1,0 +1,29 @@
+From daa2faaf79fcb19b41528cd762a0ec4a4e441f1f Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:19 +0800
+Subject: [PATCH] Give the black theme overlay a neutral installed module and
+ directory
+
+Change-Id: Ie49d2decad7a97382eca3b34eb90b86e6ed21594
+---
+ customizations/BlackTheme/Android.bp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/customizations/BlackTheme/Android.bp b/customizations/BlackTheme/Android.bp
+index 1b135d3..eceb1b5 100644
+--- a/customizations/BlackTheme/Android.bp
++++ b/customizations/BlackTheme/Android.bp
+@@ -4,8 +4,8 @@
+ //
+ 
+ runtime_resource_overlay {
+-    name: "LineageBlackTheme",
++    name: "SystemBlackTheme",
+ 
+-    theme: "LineageBlackTheme",
++    theme: "SystemBlackTheme",
+     product_specific: true,
+ }
+-- 
+2.34.1
+

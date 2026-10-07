@@ -1,0 +1,25 @@
+From 8f870a67852cdcaac6aa1667de676986978c03d9 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 04:26:16 +0800
+Subject: [PATCH] Disable optional ADB root consistently for diting
+
+Change-Id: I1f182e4dfd3f4c823f3839f50d12bf380ea0ca27
+---
+ daemon/restart_service.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/daemon/restart_service.cpp b/daemon/restart_service.cpp
+index 8934db3..45d76dc 100644
+--- a/daemon/restart_service.cpp
++++ b/daemon/restart_service.cpp
+@@ -45,6 +45,7 @@ void restart_root_service(unique_fd fd) {
+             aidl::android::adbroot::IADBRootService::fromBinder(binder);
+     if (!service) {
+         LOG(ERROR) << "Failed to get adbroot_service interface";
++        WriteFdExactly(fd.get(), "adbd cannot run as root: optional ADB root service is unavailable\n");
+         return;
+     }
+ #endif
+-- 
+2.34.1
+

@@ -1,0 +1,54 @@
+From bdf1a11933c7f9db93f0f95ecd2610838e72b66f Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 05:18:31 +0800
+Subject: [PATCH] Label SELinux policy inputs for trusted loaders
+
+Change-Id: Iab4edc2b53c3261b54316883ed068a06dcc97890
+---
+ private/app_neverallows.te | 5 +++++
+ private/file_contexts      | 6 ++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/private/app_neverallows.te b/private/app_neverallows.te
+index 846527a..17a9b22 100644
+--- a/private/app_neverallows.te
++++ b/private/app_neverallows.te
+@@ -16,6 +16,11 @@ define(`all_untrusted_apps',`{
+   untrusted_app_30
+   untrusted_app_all
+ }')
++# Compiled policy inputs and context maps are consumed by trusted loaders.
++neverallow all_untrusted_apps {
++  sepolicy_file file_contexts_file hwservice_contexts_file
++}:file { open read map };
++
+ # Receive or send uevent messages.
+ neverallow all_untrusted_apps domain:netlink_kobject_uevent_socket *;
+ 
+diff --git a/private/file_contexts b/private/file_contexts
+index bc79eeb..927661b 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -427,6 +427,11 @@
+ /(vendor|system/vendor)/bin/toybox_vendor      u:object_r:vendor_toolbox_exec:s0
+ /(vendor|system/vendor)/bin/toolbox            u:object_r:vendor_toolbox_exec:s0
+ /(vendor|system/vendor)/etc(/.*)?              u:object_r:vendor_configs_file:s0
++
++# SELinux inputs have dedicated types for trusted policy/context loaders.
++/(vendor|system/vendor)/etc/selinux/vendor_sepolicy\.cil      u:object_r:sepolicy_file:s0
++/(vendor|system/vendor)/etc/selinux/vendor_file_contexts       u:object_r:file_contexts_file:s0
++/(vendor|system/vendor)/etc/selinux/vendor_hwservice_contexts  u:object_r:hwservice_contexts_file:s0
+ /(vendor|system/vendor)/etc/cgroups\.json      u:object_r:vendor_cgroup_desc_file:s0
+ /(vendor|system/vendor)/etc/task_profiles\.json    u:object_r:vendor_task_profiles_file:s0
+ /(vendor|system/vendor)/etc/avf/microdroid(/.*)?   u:object_r:vendor_microdroid_file:s0
+@@ -534,6 +539,7 @@
+ /(system_ext|system/system_ext)/etc/passwd          u:object_r:system_passwd_file:s0
+ /(system_ext|system/system_ext)/overlay(/.*)?       u:object_r:vendor_overlay_file:s0
+ 
++/(system_ext|system/system_ext)/etc/selinux/system_ext_sepolicy\.cil         u:object_r:sepolicy_file:s0
+ /(system_ext|system/system_ext)/etc/selinux/system_ext_file_contexts        u:object_r:file_contexts_file:s0
+ /(system_ext|system/system_ext)/etc/selinux/system_ext_hwservice_contexts   u:object_r:hwservice_contexts_file:s0
+ /(system_ext|system/system_ext)/etc/selinux/system_ext_keystore2_key_contexts u:object_r:keystore2_key_contexts_file:s0
+-- 
+2.34.1
+

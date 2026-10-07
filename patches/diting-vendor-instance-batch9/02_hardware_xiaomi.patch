@@ -1,0 +1,39 @@
+From ed685d7d615cb991411d61135071ef985533d641 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 03:10:49 +0800
+Subject: [PATCH] Synchronize health and touch instance aliases preserving AIDL
+ wire interfaces
+
+---
+ aidl/touch/service.cpp                                  | 2 +-
+ aidl/touch/vendor.lineage.touch-service.xiaomi-htpr.xml | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/aidl/touch/service.cpp b/aidl/touch/service.cpp
+index b025864..376f265 100644
+--- a/aidl/touch/service.cpp
++++ b/aidl/touch/service.cpp
+@@ -24,7 +24,7 @@ int main() {
+ 
+ #ifdef HTPR_CONTROL_PATH
+     std::shared_ptr<HighTouchPollingRate> htpr = ndk::SharedRefBase::make<HighTouchPollingRate>();
+-    const std::string htpr_instance = std::string(HighTouchPollingRate::descriptor) + "/default";
++    const std::string htpr_instance = "vendor.system.touch.IHighTouchPollingRate/default";
+     status = AServiceManager_addService(htpr->asBinder().get(), htpr_instance.c_str());
+     CHECK_EQ(status, STATUS_OK) << "Failed to add service " << htpr_instance << " " << status;
+ #endif
+diff --git a/aidl/touch/vendor.lineage.touch-service.xiaomi-htpr.xml b/aidl/touch/vendor.lineage.touch-service.xiaomi-htpr.xml
+index 3c2cd7c..1e3e664 100644
+--- a/aidl/touch/vendor.lineage.touch-service.xiaomi-htpr.xml
++++ b/aidl/touch/vendor.lineage.touch-service.xiaomi-htpr.xml
+@@ -1,6 +1,6 @@
+ <manifest version="1.0" type="device">
+     <hal format="aidl">
+-        <name>vendor.lineage.touch</name>
++        <name>vendor.system.touch</name>
+         <version>1</version>
+         <interface>
+             <name>IHighTouchPollingRate</name>
+-- 
+2.34.1
+

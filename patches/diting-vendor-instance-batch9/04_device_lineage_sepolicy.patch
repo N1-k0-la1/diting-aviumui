@@ -1,0 +1,35 @@
+From 96842d8bd6c6832bfd61dc178199d1eb037ab831 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 03:10:49 +0800
+Subject: [PATCH] Synchronize health and touch instance aliases preserving AIDL
+ wire interfaces
+
+Change-Id: Id17f2a78918ab304db25fb494c429a317f0cf89c
+---
+ common/dynamic/service_contexts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/common/dynamic/service_contexts b/common/dynamic/service_contexts
+index bdc2533..078ad84 100644
+--- a/common/dynamic/service_contexts
++++ b/common/dynamic/service_contexts
+@@ -1,5 +1,5 @@
+-vendor.lineage.health.IChargingControl/default                 u:object_r:hal_lineage_health_service:s0
+-vendor.lineage.health.IFastCharge/default                      u:object_r:hal_lineage_health_service:s0
++vendor.system.health.IChargingControl/default                 u:object_r:hal_lineage_health_service:s0
++vendor.system.health.IFastCharge/default                      u:object_r:hal_lineage_health_service:s0
+ vendor.lineage.livedisplay.IAdaptiveBacklight/default          u:object_r:hal_lineage_livedisplay_service:s0
+ vendor.lineage.livedisplay.IAntiFlicker/default                u:object_r:hal_lineage_livedisplay_service:s0
+ vendor.lineage.livedisplay.IAutoContrast/default               u:object_r:hal_lineage_livedisplay_service:s0
+@@ -12,7 +12,7 @@ vendor.lineage.livedisplay.IReadingEnhancement/default         u:object_r:hal_li
+ vendor.lineage.livedisplay.ISunlightEnhancement/default        u:object_r:hal_lineage_livedisplay_service:s0
+ vendor.lineage.powershare.IPowerShare/default                  u:object_r:hal_lineage_powershare_service:s0
+ vendor.lineage.touch.IGloveMode/default                        u:object_r:hal_lineage_touch_service:s0
+-vendor.lineage.touch.IHighTouchPollingRate/default             u:object_r:hal_lineage_touch_service:s0
++vendor.system.touch.IHighTouchPollingRate/default             u:object_r:hal_lineage_touch_service:s0
+ vendor.lineage.touch.IKeyDisabler/default                      u:object_r:hal_lineage_touch_service:s0
+ vendor.lineage.touch.IKeySwapper/default                       u:object_r:hal_lineage_touch_service:s0
+ vendor.lineage.touch.IStylusMode/default                       u:object_r:hal_lineage_touch_service:s0
+-- 
+2.34.1
+

@@ -1,0 +1,159 @@
+From 8fa5ad9c2f2a92c93df72dab0b0d529d802cd37d Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:19 +0800
+Subject: [PATCH] Honor configured system-server JAR locations in dexpreopt
+ contexts
+
+Change-Id: I131e5fd79512551ba9c9d07b8286f2f8bf8dcfa7
+---
+ dexpreopt/dexpreopt.go      | 45 +++++++++++++++----------
+ dexpreopt/dexpreopt_test.go | 65 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 93 insertions(+), 17 deletions(-)
+
+diff --git a/dexpreopt/dexpreopt.go b/dexpreopt/dexpreopt.go
+index bd5d65a..932cbc0 100644
+--- a/dexpreopt/dexpreopt.go
++++ b/dexpreopt/dexpreopt.go
+@@ -209,31 +209,42 @@ func bootProfileCommand(ctx android.PathContext, globalSoong *GlobalSoongConfig,
+ 	return profilePath
+ }
+ 
+-// Returns the dex location of a system server java library.
+-func GetSystemServerDexLocation(ctx android.PathContext, global *GlobalConfig, lib string) string {
+-	if apex := global.AllApexSystemServerJars(ctx).ApexOfJar(lib); apex != "" {
+-		return fmt.Sprintf("/apex/%s/javalib/%s.jar", apex, lib)
++// Resolve the same configured location used by the generated classpath.
++func systemServerJarLocation(ctx android.PathContext, global *GlobalConfig, lib string) (string, string) {
++	apex := global.AllApexSystemServerJars(ctx).ApexOfJar(lib)
++	if apex == "" {
++		apex = global.AllPlatformSystemServerJars(ctx).ApexOfJar(lib)
+ 	}
+-
+-	if apex := global.AllPlatformSystemServerJars(ctx).ApexOfJar(lib); apex == "system_ext" {
+-		return fmt.Sprintf("/system_ext/framework/%s.jar", lib)
++	if apex == "" {
++		apex = "platform"
+ 	}
++	return android.OverrideConfiguredJarLocationFor(ctx.Config(), apex, lib)
++}
+ 
+-	return fmt.Sprintf("/system/framework/%s.jar", lib)
++// Returns the dex location of a system server java library.
++func GetSystemServerDexLocation(ctx android.PathContext, global *GlobalConfig, lib string) string {
++	apex, jar := systemServerJarLocation(ctx, global, lib)
++	switch apex {
++	case "platform":
++		return fmt.Sprintf("/system/framework/%s.jar", jar)
++	case "system_ext":
++		return fmt.Sprintf("/system_ext/framework/%s.jar", jar)
++	default:
++		return fmt.Sprintf("/apex/%s/javalib/%s.jar", apex, jar)
++	}
+ }
+ 
+ // Returns the dex install location of a system server java library.
+ func GetSystemServerDexInstallLocation(ctx android.ModuleContext, lib string) string {
+-	global := GetGlobalConfig(ctx)
+-	if apex := global.AllApexSystemServerJars(ctx).ApexOfJar(lib); apex != "" {
+-		return fmt.Sprintf("/apex/%s/javalib/%s.jar", apex, lib)
+-	}
+-
+-	if apex := global.AllPlatformSystemServerJars(ctx).ApexOfJar(lib); apex == "system_ext" {
+-		return fmt.Sprintf("/%s/framework/%s.jar", ctx.DeviceConfig().SystemExtPath(), lib)
++	apex, jar := systemServerJarLocation(ctx, GetGlobalConfig(ctx), lib)
++	switch apex {
++	case "platform":
++		return fmt.Sprintf("/system/framework/%s.jar", jar)
++	case "system_ext":
++		return fmt.Sprintf("/%s/framework/%s.jar", ctx.DeviceConfig().SystemExtPath(), jar)
++	default:
++		return fmt.Sprintf("/apex/%s/javalib/%s.jar", apex, jar)
+ 	}
+-
+-	return fmt.Sprintf("/system/framework/%s.jar", lib)
+ }
+ 
+ // Returns the location to the odex file for the dex file at `path`.
+diff --git a/dexpreopt/dexpreopt_test.go b/dexpreopt/dexpreopt_test.go
+index bbf08fe..dac83b8 100644
+--- a/dexpreopt/dexpreopt_test.go
++++ b/dexpreopt/dexpreopt_test.go
+@@ -16,6 +16,7 @@ package dexpreopt
+ 
+ import (
+ 	"fmt"
++	"strings"
+ 	"testing"
+ 
+ 	"android/soong/android"
+@@ -421,3 +422,67 @@ func TestUffdGcFlagBogus(t *testing.T) {
+ 			"Unknown value of PRODUCT_ENABLE_UFFD_GC: bogus")).
+ 		RunTest(t)
+ }
++
++func TestSystemServerConfiguredJarLocations(t *testing.T) {
++	cases := []struct {
++		name, pair, override, expected string
++	}{
++		{"platform unchanged", "platform:library", "", "/system/framework/library.jar"},
++		{"system_ext unchanged", "system_ext:library", "", "/system_ext/framework/library.jar"},
++		{"apex unchanged", "com.android.example:library", "", "/apex/com.android.example/javalib/library.jar"},
++		{"platform renamed", "platform:library", "platform:library:platform:renamed", "/system/framework/renamed.jar"},
++		{"system_ext renamed", "system_ext:library", "system_ext:library:system_ext:renamed", "/system_ext/framework/renamed.jar"},
++		{"apex renamed", "com.android.example:library", "com.android.example:library:com.android.example:renamed", "/apex/com.android.example/javalib/renamed.jar"},
++		{"platform to system_ext", "platform:library", "platform:library:system_ext:renamed", "/system_ext/framework/renamed.jar"},
++		{"system_ext to platform", "system_ext:library", "system_ext:library:platform:renamed", "/system/framework/renamed.jar"},
++		{"platform to apex", "platform:library", "platform:library:com.android.example:renamed", "/apex/com.android.example/javalib/renamed.jar"},
++		{"different owner", "platform:library", "com.android.example:library:platform:renamed", "/system/framework/library.jar"},
++	}
++	for _, test := range cases {
++		t.Run(test.name, func(t *testing.T) {
++			config := android.TestConfig("out", nil, "", nil)
++			if test.override != "" {
++				config.TestProductVariables.ConfiguredJarLocationOverrides = []string{test.override}
++			}
++			ctx := android.BuilderContextForTesting(config)
++			global := GlobalConfigForTests(ctx)
++			jars := android.CreateTestConfiguredJarList([]string{test.pair})
++			if strings.HasPrefix(test.pair, "com.android.") {
++				global.ApexSystemServerJars = jars
++			} else {
++				global.SystemServerJars = jars
++			}
++			android.AssertStringEquals(t, "dex location", test.expected,
++				GetSystemServerDexLocation(ctx, global, "library"))
++			android.AssertStringEquals(t, "same location as runtime classpath", test.expected,
++				jars.DevicePaths(config, android.Android)[0])
++		})
++	}
++}
++
++func TestDexPreoptRenamedSystemServerJarContext(t *testing.T) {
++	previous := DexpreoptRunningInSoong
++	DexpreoptRunningInSoong = true
++	t.Cleanup(func() { DexpreoptRunningInSoong = previous })
++	config := android.TestConfig("out", nil, "", nil)
++	config.TestProductVariables.ConfiguredJarLocationOverrides = []string{
++		"platform:library:platform:renamed",
++	}
++	ctx := android.BuilderContextForTesting(config)
++	global := GlobalConfigForTests(ctx)
++	global.SystemServerJars = android.CreateTestConfiguredJarList([]string{
++		"platform:library", "platform:following",
++	})
++	module := testPlatformSystemServerModuleConfig(ctx, "following")
++	rule, err := GenerateDexpreoptRule(ctx, globalSoongConfigForTests(ctx), global,
++		module, android.PathForTesting("product_packages.txt"))
++	if err != nil {
++		t.Fatal(err)
++	}
++	commands := strings.Join(rule.Commands(), " ")
++	android.AssertStringDoesContain(t, "renamed preceding JAR in device classloader context", commands,
++		`stored_class_loader_context_arg=--stored-class-loader-context="PCL[/system/framework/renamed.jar]"`)
++	if strings.Contains(commands, "/system/framework/library.jar") {
++		t.Fatal("dexpreopt still stores the obsolete device path")
++	}
++}
+-- 
+2.34.1
+

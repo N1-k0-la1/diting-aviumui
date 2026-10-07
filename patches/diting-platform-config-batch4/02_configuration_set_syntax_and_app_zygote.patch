@@ -1,0 +1,58 @@
+From 32241e027f1aab238b18e1f004767abe0854fd5e Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 16:38:10 +0800
+Subject: [PATCH] Fix set exclusions and protect configuration contents from
+ app-owned zygotes
+
+Change-Id: I6d85dcd7b8c3ca4d781d97838c74634f80c26271
+---
+ private/app_neverallows.te   |  2 +-
+ private/rom_configuration.te | 20 ++++++++++++++++----
+ 2 files changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/private/app_neverallows.te b/private/app_neverallows.te
+index ee7a967..6bd0a11 100644
+--- a/private/app_neverallows.te
++++ b/private/app_neverallows.te
+@@ -22,7 +22,7 @@ neverallow all_untrusted_apps {
+ }:file { open read map };
+ 
+ # Framework XML and init configuration are not ordinary application inputs.
+-neverallow { all_untrusted_apps sdk_sandbox_all }
++neverallow { all_untrusted_apps sdk_sandbox_all app_zygote }
+   rom_framework_config_file:file { open read map };
+ 
+ # Receive or send uevent messages.
+diff --git a/private/rom_configuration.te b/private/rom_configuration.te
+index 7a51e39..546d784 100644
+--- a/private/rom_configuration.te
++++ b/private/rom_configuration.te
+@@ -1,9 +1,21 @@
+-# Exact platform configuration inputs are consumed by trusted framework loaders.
+-# Retain the old system_file reader classes; ordinary app processes and SDK
+-# sandboxes receive no content access. No executable or directory is relabeled.
++# Exact configuration inputs are read by the existing framework loaders.
++# all_untrusted_apps expands to a set, so subtract its pinned members individually.
++# App Zygote is application-owned; retain all its upstream transition/query rules.
+ type rom_framework_config_file, file_type, system_file_type;
+ allow {
+   appdomain coredomain
+-  -all_untrusted_apps
++  -ephemeral_app
++  -isolated_app
++  -isolated_compute_app
++  -mediaprovider
++  -mediaprovider_app
++  -runas_app
++  -untrusted_app
++  -untrusted_app_25
++  -untrusted_app_27
++  -untrusted_app_29
++  -untrusted_app_30
++  -untrusted_app_32
+   -sdk_sandbox_all
++  -app_zygote
+ } rom_framework_config_file:file { getattr open read map };
+-- 
+2.34.1
+

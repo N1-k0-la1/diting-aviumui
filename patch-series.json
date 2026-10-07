@@ -1,0 +1,390 @@
+{
+  "format": 1,
+  "source_projects": 1187,
+  "patches": [
+    {
+      "project": "build/soong",
+      "base": "2e5b2070e5c672dce237ef0118e1d7bb43f6773d",
+      "original_commit": "fc16d07c224228232a70ba5794f9062d24f84d1f",
+      "patch": "patches/host-build/00_soong_host_memory_environment.patch",
+      "sha256": "c20fa683c39ef0c4d572f811d94376875da6b59e2c26dbbb08997c1d0e376a87"
+    },
+    {
+      "project": "packages/modules/common",
+      "base": "987c0721db72b408414bcdd491c8d921ffdfcc5e",
+      "original_commit": "320d46bda2edb31f4378948a91169df8aad86b18",
+      "patch": "patches/build-compat/01_apex_oemnetd_allowed_dependency.patch",
+      "sha256": "e50ad68b1714cf2857a05def29fc4c9367e4051e57f2825edaba0ec4813b8a42"
+    },
+    {
+      "project": "prebuilts/openeuicc-deps",
+      "base": "540216793010cabc49782bd01844cd8dd28a4c7c",
+      "original_commit": "5624506682f476fafab2e2a68ab00f4166609b41",
+      "patch": "patches/esim/01_openeuicc_dependencies_platform_sdk.patch",
+      "sha256": "4817ba99aeb0e7a4fc3cd51e9d062e5a646ac5d5b368e8b4ddf8412768081b89"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "2eb240c467044ae2eced770903a311dd1011883a",
+      "original_commit": "bce64816460d287b37671f0511e11403af714239",
+      "patch": "patches/esim/02_diting_optional_internal_euicc.patch",
+      "sha256": "1c0353d58ebfa494a88b91c4adf1ad85230e82ef8b22c237f0136c73bc739d50"
+    },
+    {
+      "project": "frameworks/native",
+      "base": "4a3fb78292645131e71a4ccb553e8f215c83f074",
+      "original_commit": "7cf67e9d0a70d66e698e928b6d875d1e8f7038b3",
+      "patch": "patches/diting-visibility-batch1/01_frameworks_native.patch",
+      "sha256": "e8353b30f0fb3282dec8f5d24b1067b9a7d38df8a1ede47161aca57da2bc15f7"
+    },
+    {
+      "project": "device/lineage/sepolicy",
+      "base": "20220286342d89b6b169faa09fb20bdeac937d79",
+      "original_commit": "386c09dc85604e864cea93b25fad517bfb185f93",
+      "patch": "patches/diting-visibility-batch1/02_device_lineage_sepolicy.patch",
+      "sha256": "3a9b913e118fa7abd5f439b20161aa1096fa0c944c24c32d646b6460f4d8d83b"
+    },
+    {
+      "project": "frameworks/native",
+      "base": "7cf67e9d0a70d66e698e928b6d875d1e8f7038b3",
+      "original_commit": "f81d10c6065f44dad5e9b18fc332d510177769a5",
+      "patch": "patches/diting-visibility-batch1/03_frameworks_native_debug_enumeration.patch",
+      "sha256": "ff89e5aec339114f105ce6398cd1453aaeed0dec6feb46e3d328ad2182ce690a"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "4a20f6188e7b36f5aa5df8ca0f4339b6c4a1b3c1",
+      "original_commit": "bdf1a11933c7f9db93f0f95ecd2610838e72b66f",
+      "patch": "patches/diting-policy-file-batch2/01_system_sepolicy_policy_inputs.patch",
+      "sha256": "c822bd5b62e3f692e22cc0990dd38684eb5babe2797d3dfb55d0ac6bc01f5cc1"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "bdf1a11933c7f9db93f0f95ecd2610838e72b66f",
+      "original_commit": "5d68639ab1c6711ca347ec2947e7734d59300bf1",
+      "patch": "patches/diting-policy-file-batch2/02_system_sepolicy_context_tests.patch",
+      "sha256": "f894b169af5cfa209836744683debc3f45a367b32c0fc6c85a6c16ee6c48d58e"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "bce64816460d287b37671f0511e11403af714239",
+      "original_commit": "7d1092f68e4890575ba9bf392f7484ade9aaa3c2",
+      "patch": "patches/esim/03_diting_openeuicc_mss.patch",
+      "sha256": "9e4218969aec4efb7e58e9c65a3567a7985ac9b21e3d848fd26e75247197fbb7"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "f8e317d0719cabd6ff6b7b982b7ea522e7bb3be0",
+      "original_commit": "ddc8e9ead9bcc70f885c09f3695e7353aeb9934a",
+      "patch": "patches/diting-framework-path-batch3/01_lineage-sdk.patch",
+      "sha256": "452abd5bf03dbc0bf6e9746083f059713c0c513fa075c0e620d67c8933879096"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "7d9112e58438f05f62a3a87af46c819eb5b7b85b",
+      "original_commit": "ca8d052197cb5c7686eeb2c6b6893dbf01c22223",
+      "patch": "patches/diting-framework-path-batch3/02_frameworks_base.patch",
+      "sha256": "7d68daa618f7c0e1e8fdb7b4445cdd59d909cdd8d611afcb783d44ac994fbfdf"
+    },
+    {
+      "project": "vendor/lineage",
+      "base": "36da916729523a84b91730fc4ab665bc65367a87",
+      "original_commit": "ffed69c21ddd79cbd10cfdb34c9b22c8cdedcadc",
+      "patch": "patches/diting-framework-path-batch3/03_vendor_lineage.patch",
+      "sha256": "eff12a0bad0bccf999625e2043a088686837253ba0eaa7e5b372640ab233dda5"
+    },
+    {
+      "project": "device/xiaomi/sm8450-common",
+      "base": "6783fcfabe4670b5e6d5963c85c9dd0fbdbab3ee",
+      "original_commit": "0668c06a3b155ec5cca7dad01b7ebdc4d91aefc6",
+      "patch": "patches/diting-framework-path-batch3/04_device_xiaomi_sm8450-common.patch",
+      "sha256": "bed6af5e3f1933cafb7a1450835836c95e004d1cde84ec817ba2c15348d9f343"
+    },
+    {
+      "project": "packages/overlays/Lineage",
+      "base": "806dd920c3735ead72bb1eb67049c46cb3597d2d",
+      "original_commit": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
+      "patch": "patches/diting-framework-path-batch3/05_packages_overlays_Lineage.patch",
+      "sha256": "debaff5a9e0563fadbfca88629808b3b9c4924e2e58174637c4e2e788669619e"
+    },
+    {
+      "project": "build/soong",
+      "base": "fc16d07c224228232a70ba5794f9062d24f84d1f",
+      "original_commit": "8fa5ad9c2f2a92c93df72dab0b0d529d802cd37d",
+      "patch": "patches/diting-framework-path-batch3/06_build_soong.patch",
+      "sha256": "40c351e1712ce3fa78e4918052e763793e6b52c180b8c9ed7287e3fe9aa797d2"
+    },
+    {
+      "project": "vendor/lineage",
+      "base": "ffed69c21ddd79cbd10cfdb34c9b22c8cdedcadc",
+      "original_commit": "5a38e1a0191f9a3e6240acd7bb2cb4d020801e05",
+      "patch": "patches/diting-framework-path-batch3/07_vendor_lineage_product_module.patch",
+      "sha256": "bae77545bf6ed9b443501a2f85826fdbb8600bb395a39aedc93cc10a3b137e90"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "5d68639ab1c6711ca347ec2947e7734d59300bf1",
+      "original_commit": "be7d3d55ade5cedbf50c0993f7fdc16de5396c82",
+      "patch": "patches/diting-platform-config-batch4/01_platform_configuration_read_boundary.patch",
+      "sha256": "399d8f8e919a99b782a1d38c9e0b32c42c38e1b25e5b0865b07e13debd552959"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "be7d3d55ade5cedbf50c0993f7fdc16de5396c82",
+      "original_commit": "32241e027f1aab238b18e1f004767abe0854fd5e",
+      "patch": "patches/diting-platform-config-batch4/02_configuration_set_syntax_and_app_zygote.patch",
+      "sha256": "8acb6cf7b8c764d0b225a5f7430b57423c6a01418bc9e7fb16fa97cc9ab0d742"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "ddc8e9ead9bcc70f885c09f3695e7353aeb9934a",
+      "original_commit": "3b4bc3f9c0713680cf07cdbe1520aa9b1e7683c4",
+      "patch": "patches/diting-feature-batch5/01_lineage_sdk_feature_identifiers.patch",
+      "sha256": "ccfff086bd1b9d1d6517dd3993a56aa62e0b89ed02edaff7598bc8b0eb1a7751"
+    },
+    {
+      "project": "vendor/lineage",
+      "base": "5a38e1a0191f9a3e6240acd7bb2cb4d020801e05",
+      "original_commit": "0a6f4f5c25194fef648b58d832bbe7a97d2e6777",
+      "patch": "patches/diting-feature-batch5/02_vendor_lineage_feature_identifiers.patch",
+      "sha256": "bd966338b5d171a61423c6a041b7a0a6196d3d6404abdf7fdef712cbd306b932"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "3b4bc3f9c0713680cf07cdbe1520aa9b1e7683c4",
+      "original_commit": "90c14b76745ad1106b34f37030489763b0bb87c7",
+      "patch": "patches/diting-action-provider-batch6/01_initial_lineage-sdk.patch",
+      "sha256": "8bcb8ac629a58a1cc02d9974bd60c97fee9016e054be5f5f90727dbbe31c5c7f"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "ca8d052197cb5c7686eeb2c6b6893dbf01c22223",
+      "original_commit": "24d3687ec11c525c308d3f958e662d90669471ee",
+      "patch": "patches/diting-action-provider-batch6/02_initial_frameworks_base.patch",
+      "sha256": "86c8b5b7b9b327b7f5d604b6801ad6f9fee0e9e586bf21863080a6d306d0a525"
+    },
+    {
+      "project": "packages/apps/LineageParts",
+      "base": "cfb3070ec390bd21296842e4cf7ed3d31819f26d",
+      "original_commit": "327247f3c4c6d407f59a9acfb2527403c143e37f",
+      "patch": "patches/diting-action-provider-batch6/03_initial_packages_apps_LineageParts.patch",
+      "sha256": "0151893895508b939548674ab26948ef4447797a9f7a2759ce7bcd2f3606c157"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "90c14b76745ad1106b34f37030489763b0bb87c7",
+      "original_commit": "d3cf74e0c0c502f41d446350ba50a307a426ee17",
+      "patch": "patches/diting-action-provider-batch6/04_consumer_lineage-sdk.patch",
+      "sha256": "32295a11664c14740d7ad6281b3a97f02c2827bc2fc7233da207b5e823f32e9b"
+    },
+    {
+      "project": "packages/apps/LineageParts",
+      "base": "327247f3c4c6d407f59a9acfb2527403c143e37f",
+      "original_commit": "5f74b93a2cddfafcfe1ee3106d13704691312125",
+      "patch": "patches/diting-action-provider-batch6/05_consumer_packages_apps_LineageParts.patch",
+      "sha256": "299f05cb41c8ed0e24e462e296145e91f581f11f24d3dc0fb46e5ccded3a7264"
+    },
+    {
+      "project": "packages/apps/Profiles",
+      "base": "0abb3a177f1532b6b85621a7250a6431027f02a6",
+      "original_commit": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
+      "patch": "patches/diting-action-provider-batch6/06_consumer_packages_apps_Profiles.patch",
+      "sha256": "d4d445ffd5785bdcaa9902380b7d2236a51cd154fe09447700d86e40db6224f3"
+    },
+    {
+      "project": "vendor/lineage",
+      "base": "0a6f4f5c25194fef648b58d832bbe7a97d2e6777",
+      "original_commit": "bdd899a05ed8cc6273563296d3aea176daedc56e",
+      "patch": "patches/diting-action-provider-batch6/07_consumer_vendor_lineage.patch",
+      "sha256": "a880a14505e1327fd9793dc732f5a01577c4005a2148f7e58a098a784882d792"
+    },
+    {
+      "project": "device/xiaomi/sm8450-common",
+      "base": "0668c06a3b155ec5cca7dad01b7ebdc4d91aefc6",
+      "original_commit": "b95a4b4cb7a517326ae7d08ab80b58de757b43e3",
+      "patch": "patches/diting-resource-namespace-batch7/01_device_xiaomi_sm8450-common.patch",
+      "sha256": "0ac5a0acdc3f52095edf327e483168eeb51d1bd17e9b04cd4a11c46f5801928c"
+    },
+    {
+      "project": "packages/apps/LineageParts",
+      "base": "5f74b93a2cddfafcfe1ee3106d13704691312125",
+      "original_commit": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
+      "patch": "patches/diting-resource-namespace-batch7/02_packages_apps_LineageParts.patch",
+      "sha256": "a698766154a49f0f81cd081fce1994b0b1d00d7fbcaeb328f8ac7522fba0653a"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "af3fc6c57a5e598397cd0d22493d490e49d87263",
+      "original_commit": "84507f50870679def59bd9cd590a342e40faf768",
+      "patch": "patches/diting-resource-namespace-batch7/03_packages_apps_Settings.patch",
+      "sha256": "c4da3dc127d209fd150c60e160d408c68560aa7192b1db48c2a351a2445bb260"
+    },
+    {
+      "project": "packages/apps/TvSettings",
+      "base": "4c6b6b8363344ae10ef210e4266d72e97ef706fa",
+      "original_commit": "2fcd1053d348887fde308378ba363350543b2c9d",
+      "patch": "patches/diting-resource-namespace-batch7/04_packages_apps_TvSettings.patch",
+      "sha256": "58570a5e21cc858cacaa821d9bc489b6df77994cd0bdf410f23ffc7573f72ee9"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "24d3687ec11c525c308d3f958e662d90669471ee",
+      "original_commit": "0244287aae2fff2f77cfe4e352bb1e4cd2a0b8ba",
+      "patch": "patches/diting-resource-namespace-batch7/05_frameworks_base.patch",
+      "sha256": "6ca4b544814100c322c7662c96465017be0d4417b1138e4df007e5428328f3f9"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "d3cf74e0c0c502f41d446350ba50a307a426ee17",
+      "original_commit": "01c0cc2bcab198a6d8dfe5c4aae55c51ebf3cb55",
+      "patch": "patches/diting-resource-namespace-batch7/06_lineage-sdk.patch",
+      "sha256": "86e5041e9b751c07cf0c698f572a4031593e6830bf8ffd6945572a4a4a8dc0e2"
+    },
+    {
+      "project": "packages/apps/Via",
+      "base": "0f904563c36aa667adffdc6fd7d73a3eaa73e19e",
+      "original_commit": "9319a639fc7726c828feb501447c600d386e08de",
+      "patch": "patches/diting-via-prebuilt-batch8/01_packages_apps_Via_metadata.patch",
+      "sha256": "db45c2156b1c0c90cf1a4eb71ab54164c2778f2616b69af32fe9320a77964db0"
+    },
+    {
+      "project": "hardware/lineage/interfaces",
+      "base": "805d25348106e8cc6f378c0b153789f3cf8da667",
+      "original_commit": "9af827c4436b8578b3a496c06fe23921912d1ca3",
+      "patch": "patches/diting-vendor-instance-batch9/01_hardware_lineage_interfaces.patch",
+      "sha256": "e278cd4fe59c8bd599c7d755c1478a08c60d967c609de6c562bd004706962280"
+    },
+    {
+      "project": "hardware/xiaomi",
+      "base": "af5766acc6d6766eddeb52574996247128428ff6",
+      "original_commit": "ed685d7d615cb991411d61135071ef985533d641",
+      "patch": "patches/diting-vendor-instance-batch9/02_hardware_xiaomi.patch",
+      "sha256": "3408b17356a1fd7707d10da0872d201018c782ab8526b63c0fcab3179b562af4"
+    },
+    {
+      "project": "lineage-sdk",
+      "base": "01c0cc2bcab198a6d8dfe5c4aae55c51ebf3cb55",
+      "original_commit": "d76d454b92264e9788f8fd777386d990795edd8d",
+      "patch": "patches/diting-vendor-instance-batch9/03_lineage-sdk.patch",
+      "sha256": "5df195d230080def9e96989152586f79b11badeb93ef5ca56f24f97724d4aac2"
+    },
+    {
+      "project": "device/lineage/sepolicy",
+      "base": "386c09dc85604e864cea93b25fad517bfb185f93",
+      "original_commit": "96842d8bd6c6832bfd61dc178199d1eb037ab831",
+      "patch": "patches/diting-vendor-instance-batch9/04_device_lineage_sepolicy.patch",
+      "sha256": "8c9e4c3b0162aa373149507758e3a13a7092fa90b50ffb85bcaf3db6695c9b17"
+    },
+    {
+      "project": "frameworks/av",
+      "base": "8df18dcdc9b2479605234eedbd1aee88feb181d0",
+      "original_commit": "590c7ae662372afae401c1938adbcd60c6eb51b7",
+      "patch": "patches/diting-media-private-symbol-batch10/0001-stagefright-private-network-worker.patch",
+      "sha256": "c7233a1c612b0b81f8d3de51354eb2e8003d7fc1704daa5ae3493b4ff332705d"
+    },
+    {
+      "project": "device/lineage/sepolicy",
+      "base": "96842d8bd6c6832bfd61dc178199d1eb037ab831",
+      "original_commit": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
+      "patch": "patches/diting-adbroot-disable-batch11/01_device_lineage_sepolicy.patch",
+      "sha256": "c16261903c4b4cfdd055c08f8010bd9f604ccee720a2c695b7fe8be9a529cb0b"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "7d1092f68e4890575ba9bf392f7484ade9aaa3c2",
+      "original_commit": "9257ed91bbf7f5f2814e0add4135ef79f798b00a",
+      "patch": "patches/diting-adbroot-disable-batch11/02_device_xiaomi_diting.patch",
+      "sha256": "1ac17ed55d06d388fb5ce02618f20d8d79940781ec161496b9a0ba3fb6fbc0e3"
+    },
+    {
+      "project": "packages/modules/adb",
+      "base": "e7ed41a85f5a0a8c9db0ed7ba21c6ebd277b5db6",
+      "original_commit": "8f870a67852cdcaac6aa1667de676986978c03d9",
+      "patch": "patches/diting-adbroot-disable-batch11/03_packages_modules_adb.patch",
+      "sha256": "595a3438943594bb3f7dc95e4a37d8f71b0abbfc5396d2525cc63f0a28b28ca5"
+    },
+    {
+      "project": "vendor/lineage",
+      "base": "bdd899a05ed8cc6273563296d3aea176daedc56e",
+      "original_commit": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
+      "patch": "patches/diting-adbroot-disable-batch11/04_vendor_lineage.patch",
+      "sha256": "c468db91b7a9bac4ed147382a2617b1af982f8aba390bcef0985d37e8ea67fbb"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "9257ed91bbf7f5f2814e0add4135ef79f798b00a",
+      "original_commit": "683ab8588c1ff3687df44db6e274fda8c3b0b680",
+      "patch": "patches/diting-coherent-identity-batch12/01_device_xiaomi_diting.patch",
+      "sha256": "2502fb58301d779f0a2fe43f1a88652c69eacefb52982f6cb31e1f988fce455c"
+    },
+    {
+      "project": "build/make",
+      "base": "b404a57290647f7970db489301efd4f241ce4691",
+      "original_commit": "6ea270414cb948271eed48e7dd5d9c3be3b03f67",
+      "patch": "patches/diting-coherent-identity-batch12/02_build_make.patch",
+      "sha256": "a0b6f188d42e6c134c92c81a14a06524ce1d5a9e38edeaf95bd40f0893e92b64"
+    },
+    {
+      "project": "build/soong",
+      "base": "8fa5ad9c2f2a92c93df72dab0b0d529d802cd37d",
+      "original_commit": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
+      "patch": "patches/diting-coherent-identity-batch12/03_build_soong.patch",
+      "sha256": "02be8f707610507760ed3304ebfd4c414d7d4457abfbb05d52d1496da23a488b"
+    },
+    {
+      "project": "build/make",
+      "base": "6ea270414cb948271eed48e7dd5d9c3be3b03f67",
+      "original_commit": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
+      "patch": "patches/diting-coherent-identity-batch12/04_build_make_vendor_dependencies.patch",
+      "sha256": "98cbdd962db70962bde2145fdf952f31cd1cc60240f102d73b523988ecc13e02"
+    }
+  ],
+  "upstream_bases": {
+    "build/soong": "2e5b2070e5c672dce237ef0118e1d7bb43f6773d",
+    "packages/modules/common": "987c0721db72b408414bcdd491c8d921ffdfcc5e",
+    "prebuilts/openeuicc-deps": "540216793010cabc49782bd01844cd8dd28a4c7c",
+    "device/xiaomi/diting": "2eb240c467044ae2eced770903a311dd1011883a",
+    "frameworks/native": "4a3fb78292645131e71a4ccb553e8f215c83f074",
+    "device/lineage/sepolicy": "20220286342d89b6b169faa09fb20bdeac937d79",
+    "system/sepolicy": "4a20f6188e7b36f5aa5df8ca0f4339b6c4a1b3c1",
+    "lineage-sdk": "f8e317d0719cabd6ff6b7b982b7ea522e7bb3be0",
+    "frameworks/base": "7d9112e58438f05f62a3a87af46c819eb5b7b85b",
+    "vendor/lineage": "36da916729523a84b91730fc4ab665bc65367a87",
+    "device/xiaomi/sm8450-common": "6783fcfabe4670b5e6d5963c85c9dd0fbdbab3ee",
+    "packages/overlays/Lineage": "806dd920c3735ead72bb1eb67049c46cb3597d2d",
+    "packages/apps/LineageParts": "cfb3070ec390bd21296842e4cf7ed3d31819f26d",
+    "packages/apps/Profiles": "0abb3a177f1532b6b85621a7250a6431027f02a6",
+    "packages/apps/Settings": "af3fc6c57a5e598397cd0d22493d490e49d87263",
+    "packages/apps/TvSettings": "4c6b6b8363344ae10ef210e4266d72e97ef706fa",
+    "packages/apps/Via": "0f904563c36aa667adffdc6fd7d73a3eaa73e19e",
+    "hardware/lineage/interfaces": "805d25348106e8cc6f378c0b153789f3cf8da667",
+    "hardware/xiaomi": "af5766acc6d6766eddeb52574996247128428ff6",
+    "frameworks/av": "8df18dcdc9b2479605234eedbd1aee88feb181d0",
+    "packages/modules/adb": "e7ed41a85f5a0a8c9db0ed7ba21c6ebd277b5db6",
+    "build/make": "b404a57290647f7970db489301efd4f241ce4691"
+  },
+  "original_final_revisions": {
+    "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
+    "packages/modules/common": "320d46bda2edb31f4378948a91169df8aad86b18",
+    "prebuilts/openeuicc-deps": "5624506682f476fafab2e2a68ab00f4166609b41",
+    "device/xiaomi/diting": "683ab8588c1ff3687df44db6e274fda8c3b0b680",
+    "frameworks/native": "f81d10c6065f44dad5e9b18fc332d510177769a5",
+    "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
+    "system/sepolicy": "32241e027f1aab238b18e1f004767abe0854fd5e",
+    "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
+    "frameworks/base": "0244287aae2fff2f77cfe4e352bb1e4cd2a0b8ba",
+    "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
+    "device/xiaomi/sm8450-common": "b95a4b4cb7a517326ae7d08ab80b58de757b43e3",
+    "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
+    "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
+    "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
+    "packages/apps/Settings": "84507f50870679def59bd9cd590a342e40faf768",
+    "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
+    "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
+    "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
+    "hardware/xiaomi": "ed685d7d615cb991411d61135071ef985533d641",
+    "frameworks/av": "590c7ae662372afae401c1938adbcd60c6eb51b7",
+    "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
+    "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d"
+  }
+}

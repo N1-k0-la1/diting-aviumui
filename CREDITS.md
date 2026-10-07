@@ -1,0 +1,19 @@
+# 源码关系与鸣谢 / Credits
+
+- [AviumUI](https://github.com/AviumUI)：当前系统源码与功能基础，采用 avium-16.2 系列。
+- [AOSP](https://source.android.com/) 与 [LineageOS](https://github.com/LineageOS)：Android 基础、框架、diting / sm8450 设备支持和内核。
+- [TheMuppets](https://github.com/TheMuppets) 及相关小米设备维护者：清单中的专有组件仓库。
+- [OpenEUICC / PeterCxy](https://gitea.angry.im/PeterCxy/OpenEUICC)：集成的 eSIM 管理组件。
+- [Via / tuyafeng](https://github.com/tuyafeng/Via)：官方签名浏览器；此次解决了原备份导入问题。
+- **[WeiguangTWK](https://github.com/WeiguangTWK)**：感谢其 [patches_for_build_marble_AOSP](https://github.com/WeiguangTWK/patches_for_build_marble_AOSP) 提供 LineageOS 可见痕迹、框架文件边界和 vendor 服务实例迁移的设计参考。参考版本为 `898603cae89c1ab3d92fa3dd8eaa100b3788b798`；按 diting 的依赖重新适配，没有整体导入 marble 设备、相机、TEE 模拟器或 mimalloc 方案。
+- 早期 **AviumUI 16.2.1 diting UNOFFICIAL** 构建及维护者：作为使用版本、恢复材料和功能对照。尚未取得该版本完整定制源码，因此不将其描述为当前源码分支的直接来源。
+
+## English
+
+This build uses AviumUI sources with pinned LineageOS diting/sm8450 support,
+TheMuppets vendor repositories, OpenEUICC, and project-local patches.
+WeiguangTWK's marble AOSP patches informed the design and adaptation of selected changes;
+the marble device tree and unrelated patch sets were not imported wholesale.
+The earlier unofficial AviumUI 16.2.1 image was a reference and recovery source,
+not the direct source checkout or kernel binary used for this build.
+User-installed root and hiding modules are separate from the ROM.

@@ -1,0 +1,31 @@
+From 683ab8588c1ff3687df44db6e274fda8c3b0b680 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 08:05:54 +0800
+Subject: [PATCH] Generate opt-in diting identity from actual build
+ configuration
+
+---
+ lineage_diting.mk | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/lineage_diting.mk b/lineage_diting.mk
+index e59b3ed..237f2eb 100644
+--- a/lineage_diting.mk
++++ b/lineage_diting.mk
+@@ -19,9 +19,11 @@ PRODUCT_MANUFACTURER := Xiaomi
+ PRODUCT_BRAND := Xiaomi
+ PRODUCT_MODEL := 22081212UG
+ 
++# Generate identity from the real Android version, variant and signing configuration.
++TARGET_DITING_COHERENT_BUILD_IDENTITY := true
++BUILD_FINGERPRINT = $(PRODUCT_BRAND)/diting/$(PRODUCT_DEVICE):$(PLATFORM_VERSION)/$(BUILD_ID)/$$(number=$(BUILD_NUMBER_FROM_FILE); case "$$number" in eng.*) cat $(BUILD_DATETIME_FILE) ;; *) printf '%s' "$$number" ;; esac):$(TARGET_BUILD_VARIANT)/$(BUILD_VERSION_TAGS)
++
+ PRODUCT_BUILD_PROP_OVERRIDES += \
+-    BuildDesc="diting_global-user 15 AQ3A.250226.002 OS3.0.6.0.VLFMIXM release-keys" \
+-    BuildFingerprint=Xiaomi/diting_global/diting:15/AQ3A.250226.002/OS3.0.6.0.VLFMIXM:user/release-keys \
+     DeviceProduct=diting \
+     SystemName=diting_global
+ 
+-- 
+2.34.1
+

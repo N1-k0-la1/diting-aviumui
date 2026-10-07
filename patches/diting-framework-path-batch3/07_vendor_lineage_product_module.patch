@@ -1,0 +1,26 @@
+From 5a38e1a0191f9a3e6240acd7bb2cb4d020801e05 Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:57:04 +0800
+Subject: [PATCH] Select the Make-exported platform resource APK module
+
+Change-Id: I4c940f690bf82170ec07eae6f228554580e53c26
+---
+ config/lineage_sdk_common.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/lineage_sdk_common.mk b/config/lineage_sdk_common.mk
+index 2eacc4a..5084c52 100644
+--- a/config/lineage_sdk_common.mk
++++ b/config/lineage_sdk_common.mk
+@@ -14,7 +14,7 @@ PRODUCT_CONFIGURED_JAR_LOCATION_OVERRIDES += \
+ 
+ # Lineage Platform Library
+ PRODUCT_PACKAGES += \
+-    org.lineageos.platform-res \
++    org.system.platform-res \
+     org.lineageos.platform
+ 
+ # AOSP has no support of loading framework resources from /system_ext
+-- 
+2.34.1
+

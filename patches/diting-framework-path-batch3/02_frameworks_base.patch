@@ -1,0 +1,83 @@
+From ca8d052197cb5c7686eeb2c6b6893dbf01c22223 Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:19 +0800
+Subject: [PATCH] Load platform extension assets from their installed artifact
+ path
+
+Change-Id: I991fbd76ca441237997d4ea53166a0e334e77e8f
+---
+ cmds/idmap2/idmap2d/Idmap2Service.cpp                        | 2 +-
+ core/java/android/content/res/AssetManager.java              | 2 +-
+ core/java/com/android/internal/content/om/OverlayConfig.java | 2 +-
+ core/jni/fd_utils.cpp                                        | 2 +-
+ libs/androidfw/AssetManager.cpp                              | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/cmds/idmap2/idmap2d/Idmap2Service.cpp b/cmds/idmap2/idmap2d/Idmap2Service.cpp
+index ee2656edf..b029c620d 100644
+--- a/cmds/idmap2/idmap2d/Idmap2Service.cpp
++++ b/cmds/idmap2/idmap2d/Idmap2Service.cpp
+@@ -62,7 +62,7 @@ using PolicyBitmask = android::ResTable_overlayable_policy_header::PolicyBitmask
+ namespace {
+ 
+ constexpr std::string_view kFrameworkPath = "/system/framework/framework-res.apk";
+-constexpr std::string_view kLineagePath = "/system/framework/org.lineageos.platform-res.apk";
++constexpr std::string_view kLineagePath = "/system/framework/org.system.platform-res.apk";
+ 
+ Status ok() {
+   return Status::ok();
+diff --git a/core/java/android/content/res/AssetManager.java b/core/java/android/content/res/AssetManager.java
+index a500ced2c..cd36646fd 100644
+--- a/core/java/android/content/res/AssetManager.java
++++ b/core/java/android/content/res/AssetManager.java
+@@ -84,7 +84,7 @@ public final class AssetManager implements AutoCloseable {
+     public static final String FRAMEWORK_APK_PATH = getFrameworkApkPath();
+     private static final String FRAMEWORK_APK_PATH_DEVICE = "/system/framework/framework-res.apk";
+     private static final String FRAMEWORK_APK_PATH_RAVENWOOD = "ravenwood-data/framework-res.apk";
+-    private static final String LINEAGE_APK_PATH = "/system/framework/org.lineageos.platform-res.apk";
++    private static final String LINEAGE_APK_PATH = "/system/framework/org.system.platform-res.apk";
+ 
+     private static final Object sSync = new Object();
+ 
+diff --git a/core/java/com/android/internal/content/om/OverlayConfig.java b/core/java/com/android/internal/content/om/OverlayConfig.java
+index 537cd0f09..dac700247 100644
+--- a/core/java/com/android/internal/content/om/OverlayConfig.java
++++ b/core/java/com/android/internal/content/om/OverlayConfig.java
+@@ -539,7 +539,7 @@ public class OverlayConfig {
+ 
+         for (Map.Entry<String, String> target : new HashMap<String, String>() {{
+                 put(AssetManager.FRAMEWORK_APK_PATH, "android");
+-                put("/system/framework/org.lineageos.platform-res.apk", "lineageos.platform");
++                put("/system/framework/org.system.platform-res.apk", "lineageos.platform");
+         }}.entrySet()) {
+             final String targetPath = target.getKey();
+             final String targetPackageName = target.getValue();
+diff --git a/core/jni/fd_utils.cpp b/core/jni/fd_utils.cpp
+index 74e44c760..1122f0605 100644
+--- a/core/jni/fd_utils.cpp
++++ b/core/jni/fd_utils.cpp
+@@ -44,7 +44,7 @@ static const char* kPathAllowlist[] = {
+         "/sys/kernel/debug/tracing/trace_marker",
+         "/sys/kernel/tracing/trace_marker",
+         "/system/framework/framework-res.apk",
+-        "/system/framework/org.lineageos.platform-res.apk",
++        "/system/framework/org.system.platform-res.apk",
+         "/dev/urandom",
+         "/dev/ion",
+         "/dev/dri/renderD129", // Fixes b/31172436
+diff --git a/libs/androidfw/AssetManager.cpp b/libs/androidfw/AssetManager.cpp
+index 348a609ec..6cc6d8d36 100644
+--- a/libs/androidfw/AssetManager.cpp
++++ b/libs/androidfw/AssetManager.cpp
+@@ -63,7 +63,7 @@ static const bool kIsDebug = false;
+ static const char* kAssetsRoot = "assets";
+ static const char* kAppZipName = NULL; //"classes.jar";
+ static const char* kSystemAssets = "framework/framework-res.apk";
+-static const char* kLineageAssets = "framework/org.lineageos.platform-res.apk";
++static const char* kLineageAssets = "framework/org.system.platform-res.apk";
+ static const char* kResourceCache = "resource-cache";
+ 
+ static const char* kExcludeExtension = ".EXCLUDE";
+-- 
+2.34.1
+

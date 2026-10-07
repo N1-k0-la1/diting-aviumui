@@ -1,0 +1,70 @@
+From d3cf74e0c0c502f41d446350ba50a307a426ee17 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:39:21 +0800
+Subject: [PATCH] Synchronize migrated platform action consumers and
+ declarations
+
+Change-Id: I33b49f10b93555a34feb044c301641b12121fd15
+---
+ .../platform/internal/display/TwilightTracker.java          | 2 +-
+ .../internal/health/ChargingControlNotification.java        | 2 +-
+ sdk/src/java/lineageos/content/Intent.java                  | 6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/display/TwilightTracker.java b/lineage/lib/main/java/org/lineageos/platform/internal/display/TwilightTracker.java
+index c601bcd..b554665 100644
+--- a/lineage/lib/main/java/org/lineageos/platform/internal/display/TwilightTracker.java
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/display/TwilightTracker.java
+@@ -39,7 +39,7 @@ public final class TwilightTracker {
+     private static final String TAG = "TwilightTracker";
+     private static final boolean DEBUG = false;
+     private static final String ACTION_UPDATE_TWILIGHT_STATE =
+-            "lineageos.platform.intent.action.UPDATE_TWILIGHT_STATE";
++            "org.system.platform.intent.action.UPDATE_TWILIGHT_STATE";
+ 
+     private final Object mLock = new Object();
+ 
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlNotification.java b/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlNotification.java
+index 7eecbb5..06418f9 100644
+--- a/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlNotification.java
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/health/ChargingControlNotification.java
+@@ -27,7 +27,7 @@ public class ChargingControlNotification {
+ 
+     private static final int CHARGING_CONTROL_NOTIFICATION_ID = 1000;
+     private static final String ACTION_CHARGING_CONTROL_CANCEL_ONCE =
+-            "lineageos.platform.intent.action.CHARGING_CONTROL_CANCEL_ONCE";
++            "org.system.platform.intent.action.CHARGING_CONTROL_CANCEL_ONCE";
+     private static final String CHARGING_CONTROL_CHANNEL_ID = "LineageHealthChargingControl";
+ 
+     private final ChargingControlController mChargingControlController;
+diff --git a/sdk/src/java/lineageos/content/Intent.java b/sdk/src/java/lineageos/content/Intent.java
+index 21b7b50..10bc126 100644
+--- a/sdk/src/java/lineageos/content/Intent.java
++++ b/sdk/src/java/lineageos/content/Intent.java
+@@ -35,7 +35,7 @@ public class Intent {
+      * {@link Manifest.permission#STATUS_BAR_SERVICE} permission.
+      */
+     public static final String ACTION_SCREEN_CAMERA_GESTURE =
+-            "lineageos.intent.action.SCREEN_CAMERA_GESTURE";
++            "org.system.platform.intent.action.SCREEN_CAMERA_GESTURE";
+ 
+     /**
+      * Broadcast action: perform any initialization required for LineageHW services.
+@@ -45,7 +45,7 @@ public class Intent {
+      * Requires {@link lineageos.platform.Manifest.permission#HARDWARE_ABSTRACTION_ACCESS}.
+      */
+     public static final String ACTION_INITIALIZE_LINEAGE_HARDWARE =
+-            "lineageos.intent.action.INITIALIZE_LINEAGE_HARDWARE";
++            "org.system.platform.intent.action.INITIALIZE_LINEAGE_HARDWARE";
+ 
+     /**
+      * Broadcast action: lid state changed
+@@ -64,5 +64,5 @@ public class Intent {
+      * Broadcast action: notify SystemUI that LiveDisplay service has finished initialization.
+      */
+     public static final String ACTION_INITIALIZE_LIVEDISPLAY =
+-            "lineageos.intent.action.INITIALIZE_LIVEDISPLAY";
++            "org.system.platform.intent.action.INITIALIZE_LIVEDISPLAY";
+ }
+-- 
+2.34.1

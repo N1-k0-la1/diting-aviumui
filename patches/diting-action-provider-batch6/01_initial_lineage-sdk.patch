@@ -1,0 +1,178 @@
+From 90c14b76745ad1106b34f37030489763b0bb87c7 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:20:17 +0800
+Subject: [PATCH] Rename public platform actions and settings authority
+
+Change-Id: I5f918d46e57bccb4bd111d840f12933085258a22
+---
+ lineage/res/AndroidManifest.xml               | 20 +++++++++----------
+ .../preference/RemotePreference.java          |  4 ++--
+ .../AndroidManifest.xml                       |  2 +-
+ .../java/lineageos/app/ProfileManager.java    | 18 ++++++++---------
+ .../lineageos/providers/LineageSettings.java  |  2 +-
+ 5 files changed, 23 insertions(+), 23 deletions(-)
+
+diff --git a/lineage/res/AndroidManifest.xml b/lineage/res/AndroidManifest.xml
+index 7973d67..67aa872 100644
+--- a/lineage/res/AndroidManifest.xml
++++ b/lineage/res/AndroidManifest.xml
+@@ -11,20 +11,20 @@
+     coreApp="true" android:sharedUserId="android.uid.system"
+     android:sharedUserLabel="@string/lineageos_system_label">
+ 
+-    <protected-broadcast android:name="lineageos.intent.action.SCREEN_CAMERA_GESTURE" />
+-    <protected-broadcast android:name="lineageos.intent.action.INITIALIZE_LINEAGE_HARDWARE" />
+-    <protected-broadcast android:name="lineageos.intent.action.INITIALIZE_LIVEDISPLAY" />
+-    <protected-broadcast android:name="lineageos.platform.intent.action.PROFILE_SELECTED" />
++    <protected-broadcast android:name="org.system.platform.intent.action.SCREEN_CAMERA_GESTURE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.INITIALIZE_LINEAGE_HARDWARE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.INITIALIZE_LIVEDISPLAY" />
++    <protected-broadcast android:name="org.system.platform.intent.action.PROFILE_SELECTED" />
+ 
+-    <protected-broadcast android:name="lineageos.intent.action.UPDATE_PREFERENCE" />
+-    <protected-broadcast android:name="lineageos.intent.action.REFRESH_PREFERENCE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.UPDATE_PREFERENCE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.REFRESH_PREFERENCE" />
+ 
+-    <protected-broadcast android:name="lineageos.platform.intent.action.PROFILE_UPDATED" />
+-    <protected-broadcast android:name="lineageos.platform.intent.action.INTENT_ACTION_PROFILE_TRIGGER_STATE_CHANGED" />
++    <protected-broadcast android:name="org.system.platform.intent.action.PROFILE_UPDATED" />
++    <protected-broadcast android:name="org.system.platform.intent.action.INTENT_ACTION_PROFILE_TRIGGER_STATE_CHANGED" />
+ 
+-    <protected-broadcast android:name="lineageos.platform.intent.action.UPDATE_TWILIGHT_STATE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.UPDATE_TWILIGHT_STATE" />
+ 
+-    <protected-broadcast android:name="lineageos.platform.intent.action.CHARGING_CONTROL_CANCEL_ONCE" />
++    <protected-broadcast android:name="org.system.platform.intent.action.CHARGING_CONTROL_CANCEL_ONCE" />
+ 
+     <!-- Allows an application access to the Lineage hardware abstraction framework
+         <p>Not for use by third-party applications. -->
+diff --git a/packages/LineagePreferenceLib/java/lineageos/preference/RemotePreference.java b/packages/LineagePreferenceLib/java/lineageos/preference/RemotePreference.java
+index 211cc17..a62c9dd 100644
+--- a/packages/LineagePreferenceLib/java/lineageos/preference/RemotePreference.java
++++ b/packages/LineagePreferenceLib/java/lineageos/preference/RemotePreference.java
+@@ -54,10 +54,10 @@ public class RemotePreference extends SelfRemovingPreference
+     private static final boolean DEBUG = Log.isLoggable(TAG, Log.VERBOSE);
+ 
+     public static final String ACTION_REFRESH_PREFERENCE =
+-            "lineageos.intent.action.REFRESH_PREFERENCE";
++            "org.system.platform.intent.action.REFRESH_PREFERENCE";
+ 
+     public static final String ACTION_UPDATE_PREFERENCE =
+-            "lineageos.intent.action.UPDATE_PREFERENCE";
++            "org.system.platform.intent.action.UPDATE_PREFERENCE";
+ 
+     public static final String META_REMOTE_RECEIVER =
+             "org.lineageos.settings.summary.receiver";
+diff --git a/packages/LineageSettingsProvider/AndroidManifest.xml b/packages/LineageSettingsProvider/AndroidManifest.xml
+index 19b4bb5..840efdf 100644
+--- a/packages/LineageSettingsProvider/AndroidManifest.xml
++++ b/packages/LineageSettingsProvider/AndroidManifest.xml
+@@ -25,7 +25,7 @@
+                  android:directBootAware="true">
+ 
+         <provider android:name="LineageSettingsProvider"
+-                  android:authorities="lineagesettings"
++                  android:authorities="systemplatformsettings"
+                   android:multiprocess="false"
+                   android:exported="true"
+                   android:writePermission="lineageos.permission.WRITE_SETTINGS"
+diff --git a/sdk/src/java/lineageos/app/ProfileManager.java b/sdk/src/java/lineageos/app/ProfileManager.java
+index c36edae..b03c6b1 100644
+--- a/sdk/src/java/lineageos/app/ProfileManager.java
++++ b/sdk/src/java/lineageos/app/ProfileManager.java
+@@ -55,7 +55,7 @@ public class ProfileManager {
+      * or by calls to the ProfileManagerService / Profile.</p>
+      */
+     public static final String INTENT_ACTION_PROFILE_SELECTED =
+-            "lineageos.platform.intent.action.PROFILE_SELECTED";
++            "org.system.platform.intent.action.PROFILE_SELECTED";
+ 
+     /**
+      * <p>Broadcast Action: Current profile has been updated. This is triggered every time the
+@@ -64,14 +64,14 @@ public class ProfileManager {
+      * trigger a profile selection, but causes its name to change.</p>
+      */
+     public static final String INTENT_ACTION_PROFILE_UPDATED =
+-            "lineageos.platform.intent.action.PROFILE_UPDATED";
++            "org.system.platform.intent.action.PROFILE_UPDATED";
+ 
+ 
+     /**
+      * @hide
+      */
+     public static final String INTENT_ACTION_PROFILE_TRIGGER_STATE_CHANGED =
+-            "lineageos.platform.intent.action.INTENT_ACTION_PROFILE_TRIGGER_STATE_CHANGED";
++            "org.system.platform.intent.action.INTENT_ACTION_PROFILE_TRIGGER_STATE_CHANGED";
+ 
+     /**
+      * @hide
+@@ -123,7 +123,7 @@ public class ProfileManager {
+      */
+     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+     public static final String ACTION_PROFILE_PICKER =
+-            "lineageos.platform.intent.action.PROFILE_PICKER";
++            "org.system.platform.intent.action.PROFILE_PICKER";
+ 
+     /**
+      * Constant for NO_PROFILE
+@@ -139,7 +139,7 @@ public class ProfileManager {
+      * @see #ACTION_PROFILE_PICKER
+      */
+     public static final String EXTRA_PROFILE_SHOW_NONE =
+-            "lineageos.platform.intent.extra.profile.SHOW_NONE";
++            "org.system.platform.intent.extra.profile.SHOW_NONE";
+ 
+     /**
+      * Given to the profile picker as a {@link UUID} string representation. The {@link UUID}
+@@ -161,7 +161,7 @@ public class ProfileManager {
+      * @see #ACTION_PROFILE_PICKER
+      */
+     public static final String EXTRA_PROFILE_TITLE =
+-            "lineageos.platform.intent.extra.profile.TITLE";
++            "org.system.platform.intent.extra.profile.TITLE";
+ 
+     /**
+      * Returned from the profile picker as a {@link UUID} string representation.
+@@ -173,7 +173,7 @@ public class ProfileManager {
+      * @see #ACTION_PROFILE_PICKER
+      */
+     public static final String EXTRA_PROFILE_PICKED_UUID =
+-            "lineageos.platform.intent.extra.profile.PICKED_UUID";
++            "org.system.platform.intent.extra.profile.PICKED_UUID";
+ 
+     /**
+      * Broadcast intent action indicating that Profiles has been enabled or disabled.
+@@ -183,7 +183,7 @@ public class ProfileManager {
+      */
+     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+     public static final String PROFILES_STATE_CHANGED_ACTION =
+-        "lineageos.platform.app.profiles.PROFILES_STATE_CHANGED";
++        "org.system.platform.app.profiles.PROFILES_STATE_CHANGED";
+ 
+     /**
+      * The lookup key for an int that indicates whether Profiles are enabled or
+@@ -201,7 +201,7 @@ public class ProfileManager {
+      * @see #ACTION_PROFILE_PICKER
+      */
+     public static final String EXTRA_PROFILE_DIALOG_THEME =
+-            "lineageos.platform.intent.extra.profile.DIALOG_THEME";
++            "org.system.platform.intent.extra.profile.DIALOG_THEME";
+ 
+     /**
+      * Profiles are disabled.
+diff --git a/sdk/src/java/lineageos/providers/LineageSettings.java b/sdk/src/java/lineageos/providers/LineageSettings.java
+index 5875ab5..643f138 100644
+--- a/sdk/src/java/lineageos/providers/LineageSettings.java
++++ b/sdk/src/java/lineageos/providers/LineageSettings.java
+@@ -41,7 +41,7 @@ public final class LineageSettings {
+     private static final String TAG = "LineageSettings";
+     private static final boolean LOCAL_LOGV = false;
+ 
+-    public static final String AUTHORITY = "lineagesettings";
++    public static final String AUTHORITY = "systemplatformsettings";
+ 
+     public static class LineageSettingNotFoundException extends AndroidException {
+         public LineageSettingNotFoundException(String msg) {
+-- 
+2.34.1

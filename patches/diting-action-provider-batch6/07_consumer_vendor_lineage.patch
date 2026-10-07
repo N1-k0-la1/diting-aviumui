@@ -1,0 +1,26 @@
+From bdd899a05ed8cc6273563296d3aea176daedc56e Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:39:21 +0800
+Subject: [PATCH] Synchronize migrated platform action consumers and
+ declarations
+
+Change-Id: I1dd76b1fc37c95cc21f454f265556c6476641867
+---
+ config/permissions/lineage-sysconfig.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/permissions/lineage-sysconfig.xml b/config/permissions/lineage-sysconfig.xml
+index 3330b1b..af91e24 100644
+--- a/config/permissions/lineage-sysconfig.xml
++++ b/config/permissions/lineage-sysconfig.xml
+@@ -19,7 +19,7 @@
+     <!-- Broadcast actions that are currently exempted from O+ background
+          delivery restrictions. -->
+     <allow-implicit-broadcast action="android.intent.action.CAMERA_BUTTON" />
+-    <allow-implicit-broadcast action="lineageos.intent.action.INITIALIZE_LINEAGE_HARDWARE" />
++    <allow-implicit-broadcast action="org.system.platform.intent.action.INITIALIZE_LINEAGE_HARDWARE" />
+     <allow-implicit-broadcast action="lineageos.intent.action.LID_STATE_CHANGED" />
+ 
+ </config>
+-- 
+2.34.1

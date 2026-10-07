@@ -1,0 +1,9 @@
+*.apk
+*.img
+*.zip
+*.pk8
+*.pem
+*.key
+out/
+__pycache__/
+.patch-application-in-progress

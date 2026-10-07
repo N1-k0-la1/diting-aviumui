@@ -1,0 +1,35 @@
+From 5f74b93a2cddfafcfe1ee3106d13704691312125 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 20:39:21 +0800
+Subject: [PATCH] Synchronize migrated platform action consumers and
+ declarations
+
+Change-Id: I398459d750f2112d45d2fbc0e0561b665bebb28a
+---
+ AndroidManifest.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 2c93cf8..170d2d9 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -24,7 +24,7 @@
+ 
+     <uses-permission android:name="lineageos.permission.MANAGE_REMOTE_PREFERENCES" />
+ 
+-    <protected-broadcast android:name="lineageos.platform.app.profiles.PROFILES_STATE_CHANGED" />
++    <protected-broadcast android:name="org.system.platform.app.profiles.PROFILES_STATE_CHANGED" />
+     <protected-broadcast android:name="org.lineageos.lineageparts.PART_CHANGED" />
+     <protected-broadcast android:name="org.lineageos.lineageparts.REFRESH_PART" />
+     <protected-broadcast android:name="org.lineageos.lineageparts.gestures.UPDATE_SETTINGS" />
+@@ -65,7 +65,7 @@
+             android:enabled="true"
+             android:exported="false">
+             <intent-filter>
+-                <action android:name="lineageos.intent.action.UPDATE_PREFERENCE" />
++                <action android:name="org.system.platform.intent.action.UPDATE_PREFERENCE" />
+                 <category android:name="android.intent.category.DEFAULT" />
+             </intent-filter>
+         </receiver>
+-- 
+2.34.1

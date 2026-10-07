@@ -1,0 +1,42 @@
+From ddc8e9ead9bcc70f885c09f3695e7353aeb9934a Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:18 +0800
+Subject: [PATCH] Use neutral installed names for platform extension artifacts
+
+Change-Id: Ifd64c3c959dd2f32759141f6ddd97c5383328937
+---
+ Android.bp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Android.bp b/Android.bp
+index 074a4cc..5cff33f 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -5,6 +5,7 @@
+ 
+ android_app {
+     name: "org.lineageos.platform-res",
++    stem: "org.system.platform-res",
+     use_resource_processor: false,
+     sdk_version: "core_platform",
+     certificate: "platform",
+@@ -19,7 +20,7 @@ android_app {
+     },
+ 
+     // Soong special-cases org.lineageos.platform-res to install this alongside
+-    // the libraries at /system_ext/framework/org.lineageos.platform-res.apk.
++    // the libraries in /system/framework, while stem controls the filename.
+ 
+     aaptflags: [
+         "--private-symbols",
+@@ -96,6 +97,7 @@ java_defaults {
+ 
+ java_library {
+     name: "org.lineageos.platform",
++    stem: "org.system.platform",
+     defaults: ["lineage-sdk-defaults"],
+     installable: true,
+     sdk_version: "core_platform",
+-- 
+2.34.1
+

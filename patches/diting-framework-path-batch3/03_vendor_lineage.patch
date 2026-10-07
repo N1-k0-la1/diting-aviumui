@@ -1,0 +1,61 @@
+From ffed69c21ddd79cbd10cfdb34c9b22c8cdedcadc Mon Sep 17 00:00:00 2001
+From: ROM Builder <rombuilder@localhost>
+Date: Tue, 6 Oct 2026 07:49:19 +0800
+Subject: [PATCH] Track platform extension and theme output paths in product
+ configuration
+
+Change-Id: Ib08d5f848e82a6b77c847694f5239169c7cb2963
+---
+ config/common_mobile.mk      |  2 +-
+ config/lineage_sdk_common.mk | 12 ++++++++----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/config/common_mobile.mk b/config/common_mobile.mk
+index d81f613..81ae120 100644
+--- a/config/common_mobile.mk
++++ b/config/common_mobile.mk
+@@ -81,6 +81,6 @@ PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+ 
+ # Themes
+ PRODUCT_PACKAGES += \
+-    LineageBlackTheme \
++    SystemBlackTheme \
+     ThemePicker \
+     ThemesStub
+diff --git a/config/lineage_sdk_common.mk b/config/lineage_sdk_common.mk
+index 217f837..2eacc4a 100644
+--- a/config/lineage_sdk_common.mk
++++ b/config/lineage_sdk_common.mk
+@@ -8,6 +8,10 @@ PRODUCT_COPY_FILES += \
+     vendor/lineage/config/permissions/org.lineageos.settings.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.settings.xml \
+     vendor/lineage/config/permissions/org.lineageos.trust.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.trust.xml
+ 
++# Keep module identities while mapping the installed system-server JAR.
++PRODUCT_CONFIGURED_JAR_LOCATION_OVERRIDES += \
++    platform:org.lineageos.platform:platform:org.system.platform
++
+ # Lineage Platform Library
+ PRODUCT_PACKAGES += \
+     org.lineageos.platform-res \
+@@ -16,14 +20,14 @@ PRODUCT_PACKAGES += \
+ # AOSP has no support of loading framework resources from /system_ext
+ # so the SDK has to stay in /system for now
+ PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+-    system/framework/org.lineageos.platform-res.apk \
+-    system/framework/org.lineageos.platform.jar
++    system/framework/org.system.platform-res.apk \
++    system/framework/org.system.platform.jar
+ 
+ # Allow-list odex and vdex when OVERRIDE_DISABLE_DEXOPT_ALL isn't set.
+ # OVERRIDE_DISABLE_DEXOPT_ALL is usually set to true for eng builds. We allow-list the below mainly for user and userdebug builds.
+ # Refer build/target/product/runtime_libart.mk.
+ ifneq ($(OVERRIDE_DISABLE_DEXOPT_ALL),true)
+ PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+-    system/framework/oat/%/org.lineageos.platform.odex \
+-    system/framework/oat/%/org.lineageos.platform.vdex
++    system/framework/oat/%/org.system.platform.odex \
++    system/framework/oat/%/org.system.platform.vdex
+ endif
+-- 
+2.34.1
+
