@@ -1,8 +1,12 @@
 {
-  "pinned_projects": 1187,
-  "ordered_patches": 48,
-  "independently_fetched_upstream_files": 77,
+  "pinned_base_projects": 1187,
+  "optional_gms_projects": 3,
+  "pinned_projects_with_gms": 1190,
+  "ordered_patches": 50,
+  "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
+  "batch14_gms_build_complete": false,
+  "k50_ultra_phone_tested": false,
   "via_binary_redistributed": false
 }
