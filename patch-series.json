@@ -337,6 +337,20 @@
       "original_commit": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
       "patch": "patches/diting-coherent-identity-batch12/04_build_make_vendor_dependencies.patch",
       "sha256": "98cbdd962db70962bde2145fdf952f31cd1cc60240f102d73b523988ecc13e02"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "683ab8588c1ff3687df44db6e274fda8c3b0b680",
+      "original_commit": "611eb5a10c819307f6e54746442c1edc64ec1ad8",
+      "patch": "patches/diting-release-variants-batch14/01_device_xiaomi_diting_esim_sku.patch",
+      "sha256": "7c6706b07f6e36c801b6f3a301e23d4d039f494f1d15a3217b36d2fc4a5faebe"
+    },
+    {
+      "project": "kernel/xiaomi/sm8450",
+      "base": "eff4b40407a1b6f1b1ab84554cbb540bcb495175",
+      "original_commit": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
+      "patch": "patches/diting-release-variants-batch14/02_kernel_android12_kmi9_naming.patch",
+      "sha256": "1cd14ed0c56605b98c953cabacf4f848559c195b04a4278e8fa7f5434b689768"
     }
   ],
   "upstream_bases": {
@@ -361,13 +375,14 @@
     "hardware/xiaomi": "af5766acc6d6766eddeb52574996247128428ff6",
     "frameworks/av": "8df18dcdc9b2479605234eedbd1aee88feb181d0",
     "packages/modules/adb": "e7ed41a85f5a0a8c9db0ed7ba21c6ebd277b5db6",
-    "build/make": "b404a57290647f7970db489301efd4f241ce4691"
+    "build/make": "b404a57290647f7970db489301efd4f241ce4691",
+    "kernel/xiaomi/sm8450": "eff4b40407a1b6f1b1ab84554cbb540bcb495175"
   },
   "original_final_revisions": {
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
     "packages/modules/common": "320d46bda2edb31f4378948a91169df8aad86b18",
     "prebuilts/openeuicc-deps": "5624506682f476fafab2e2a68ab00f4166609b41",
-    "device/xiaomi/diting": "683ab8588c1ff3687df44db6e274fda8c3b0b680",
+    "device/xiaomi/diting": "611eb5a10c819307f6e54746442c1edc64ec1ad8",
     "frameworks/native": "f81d10c6065f44dad5e9b18fc332d510177769a5",
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "32241e027f1aab238b18e1f004767abe0854fd5e",
@@ -385,6 +400,10 @@
     "hardware/xiaomi": "ed685d7d615cb991411d61135071ef985533d641",
     "frameworks/av": "590c7ae662372afae401c1938adbcd60c6eb51b7",
     "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
-    "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d"
-  }
+    "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
+    "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9"
+  },
+  "optional_gms_projects": 3,
+  "candidate": "batch14-build-in-progress",
+  "source_projects_with_gms": 1190
 }

@@ -9,7 +9,8 @@ batch13 原始 boot：`5.10.269-gki-geff4b40407a1`。
 - 分支标识：`BRANCH=android12-5.10`；`KMI_GENERATION=9`。
 
 早期 16.2.1 boot 的内核为 `5.10.246-gki-g313dfdb07e51`，与本版不是同一二进制。
-将本版规范为 `5.10.269-android12-9-g<实际提交>` 是后续计划，尚未实现或测试。
+第十四批源码已设置 Android 12 / KMI 9 命名默认值并去掉重复 `-gki`，候选预计为 `5.10.269-android12-9-g930e6f73f237`。
+对应修改在公开补丁 `patches/diting-release-variants-batch14/02_kernel_android12_kmi9_naming.patch`，基于上述固定源码；实际镜像、模块与启动验收仍在进行。
 命名修改需要重新验证模块版本匹配及实机启动，不伪造原厂提交或宣称原厂锁定状态。
 
 ## English
@@ -17,5 +18,7 @@ batch13 原始 boot：`5.10.269-gki-geff4b40407a1`。
 The batch13 unmodified boot kernel identifies as `5.10.269-gki-geff4b40407a1`.
 The exact upstream kernel, device-tree and module commits are linked above and pinned in the manifest.
 The older reference image uses a different 5.10.246 kernel binary.
-Kernel naming normalization is planned, not present in this candidate.
+Batch14 adds Android 12 / KMI 9 naming defaults in the published kernel patch.
+Its expected release is `5.10.269-android12-9-g930e6f73f237`; image, module and phone checks are pending.
+The verified batch13 binary remains unchanged.
 The Android 12 kernel branch label is independent of the Android 16 userspace version.

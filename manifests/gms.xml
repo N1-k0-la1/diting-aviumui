@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="release-pixel-gitlab" fetch="https://gitlab.com/" />
+  <project path="vendor/pixel/gms" name="proprietary_vendor_pixel_gms" remote="avium" revision="729ad4d0e9a3c0fe2f7e548fce00bda76190b0fd" upstream="refs/heads/avium-16.2" clone-depth="1" />
+  <project path="vendor/pixel/clocks" name="proprietary_vendor_pixel_clocks" remote="avium" revision="e3beb954fd54d82798f34002425ff58f9a115714" upstream="refs/heads/avium-16.2" clone-depth="1" />
+  <project path="vendor/pixel/sounds" name="PixelOS-AOSP/proprietary_vendor_pixel_sounds" remote="release-pixel-gitlab" revision="3fa4964358186344d12259db6809081def36469f" upstream="refs/heads/sixteen-qpr2" clone-depth="1" />
+</manifest>

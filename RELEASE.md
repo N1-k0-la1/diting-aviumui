@@ -1,3 +1,14 @@
+# 第十四批双 flavour 候选准备
+
+Vanilla / GMS 正在构建准备阶段，还没有新的发布 ZIP。
+第十三批在 12T Pro 的实测结论不能直接作为第十四批验收结果。
+K50 至尊版（22081212C）源码包含区域型号、相机及 SIM 配置，但未完成实机测试。
+第十四批将 eSIM feature 限于 ditingp SKU、相关 RRO 限于 GL；原 CN / GL 型号选择和固件二进制保留。
+两种候选需各自验收；K50 的启动、108MP 相机、双实体 SIM 和固件兼容是发布前的单独检查项。
+GMS 不保证 Google 认证、Play Integrity 或硬件认证通过；不预装 root。
+
+---
+
 # batch13 测试候选 / Testing candidate
 
 **ROM 下载尚未发布。此文档不构成现成刷机包的发布公告。**

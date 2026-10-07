@@ -1,0 +1,53 @@
+From 611eb5a10c819307f6e54746442c1edc64ec1ad8 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 7 Oct 2026 22:02:08 +0800
+Subject: [PATCH] Scope internal eUICC configuration to ditingp global hardware
+
+---
+ device.mk                                  | 2 +-
+ overlay/FrameworksEsim/AndroidManifest.xml | 4 +++-
+ overlay/OpenEuiccEsim/AndroidManifest.xml  | 4 +++-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/device.mk b/device.mk
+index 6cfb92c..6bfaf9f 100644
+--- a/device.mk
++++ b/device.mk
+@@ -27,7 +27,7 @@ PRODUCT_PACKAGES += \
+     OpenEuiccResDitingEsim
+ 
+ PRODUCT_COPY_FILES += \
+-    frameworks/native/data/etc/android.hardware.telephony.euicc.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.euicc.xml
++    frameworks/native/data/etc/android.hardware.telephony.euicc.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/sku_ditingp/android.hardware.telephony.euicc.xml
+ endif
+ 
+ # Overlay
+diff --git a/overlay/FrameworksEsim/AndroidManifest.xml b/overlay/FrameworksEsim/AndroidManifest.xml
+index 3e6e042..abfbfed 100644
+--- a/overlay/FrameworksEsim/AndroidManifest.xml
++++ b/overlay/FrameworksEsim/AndroidManifest.xml
+@@ -4,5 +4,7 @@
+     package="android.overlay.diting.esim">
+     <overlay android:targetPackage="android"
+         android:isStatic="true"
+-        android:priority="701" />
++        android:priority="701"
++        android:requiredSystemPropertyName="ro.boot.hwc"
++        android:requiredSystemPropertyValue="GL" />
+ </manifest>
+diff --git a/overlay/OpenEuiccEsim/AndroidManifest.xml b/overlay/OpenEuiccEsim/AndroidManifest.xml
+index 393ac10..f2ba7b8 100644
+--- a/overlay/OpenEuiccEsim/AndroidManifest.xml
++++ b/overlay/OpenEuiccEsim/AndroidManifest.xml
+@@ -5,5 +5,7 @@
+     <overlay android:targetPackage="im.angry.openeuicc"
+         android:targetName="OpenEUICC"
+         android:isStatic="true"
+-        android:priority="701" />
++        android:priority="701"
++        android:requiredSystemPropertyName="ro.boot.hwc"
++        android:requiredSystemPropertyValue="GL" />
+ </manifest>
+-- 
+2.34.1
+
