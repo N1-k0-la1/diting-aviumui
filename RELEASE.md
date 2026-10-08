@@ -1,11 +1,33 @@
-# 第十四批双 flavour 候选准备
+# 第十四批 Vanilla / GMS 候选
 
-Vanilla / GMS 正在构建准备阶段，还没有新的发布 ZIP。
-第十三批在 12T Pro 的实测结论不能直接作为第十四批验收结果。
-K50 至尊版（22081212C）源码包含区域型号、相机及 SIM 配置，但未完成实机测试。
-第十四批将 eSIM feature 限于 ditingp SKU、相关 RRO 限于 GL；原 CN / GL 型号选择和固件二进制保留。
-两种候选需各自验收；K50 的启动、108MP 相机、双实体 SIM 和固件兼容是发布前的单独检查项。
-GMS 不保证 Google 认证、Play Integrity 或硬件认证通过；不预装 root。
+两个私有签名 `user/release-keys` 候选均已完成编译、签名、OTA/payload、实际镜像、模块和 Windows 独立回读检查。
+**两版本均未完成第十四批全面实机验收；本仓库暂未提供 ROM 下载链接。维护者决定先分发测试候选并按反馈迭代。**
+
+2026-10-08：GMS 版已在 12T Pro 完成首次启动，实际内核／user/release-keys／SELinux Enforcing 匹配；维护者反馈相机、eSIM、Google 登录及商店下载正常。完整 GMS Classic Integrity 回执为 BASIC / PLAY_RECOGNIZED / LICENSED，启用内置 BL 伪装仍未获得 DEVICE／STRONG。其他硬件、推送和待机验收仍有缺项。Vanilla 第十四批和 K50 至尊版尚未实测，不能继承另一版本／机型的通过状态。
+
+本次按测试版分发，不标稳定版。GMS 需在系统自带“启用GMS服务”开关中启用，不内置 root，不承诺 Google 认证。通用安装／恢复说明见 [INSTALL.md](INSTALL.md)，成品元数据见 [MANIFEST.json](MANIFEST.json)，原始二进制 SHA256 见 [ROM-SHA256SUMS](ROM-SHA256SUMS)。整包和同版本六镜像由维护者另行提供下载；个人固定序列号安装脚本不作为通用公开安装器。
+
+| 版本 | 文件名 | 字节数 | SHA256 |
+|---|---|---:|---|
+| vanilla | `AviumUI-16.2.2-diting-vanilla-user-batch14.zip` | 2238123471 | `9853a48c17c2c1fa4bcd3620ef9fb61aa5c8a417ab9d31b165786146726f8c1c` |
+| gms | `AviumUI-16.2.2-diting-gms-user-batch14.zip` | 3069512451 | `5cd3a7a955a04080da8d504cfa72ac96247a136f6ba432d4d5ff52b54d9d0789` |
+
+两版本的 boot 内核和全部 727 个模块字节一致，内核为 `5.10.269-android12-9-g930e6f73f237`。
+21 个 OEM 固件保持一致。recovery 按原 BoardConfig 不含独立内核，需使用同版配套 boot。
+不内置 root；GMS 包保留外部预签名 Google APK，不承诺 Google 认证或 Play Integrity。
+
+12T Pro 第十三批实测记录保留，不能作为第十四批验收。K50 至尊版暂为源码支持、未实测。
+共用 diting 代号不代替 K50 启动、108MP 相机、双实体 SIM 和固件兼容实测。
+计划两份通用候选，不拆成四份包。eUICC feature 限于 ditingp SKU，相关 RRO 限于 GL。
+已测／未测范围以本页为准，安装准备见 [INSTALL.md](INSTALL.md)。
+
+## English
+
+Both Vanilla and GMS batch14 candidates passed host signing, full OTA/payload, actual-image,
+kernel/module and independent Windows readback checks. GMS has booted on 12T Pro with preliminary camera/eSIM, Google login and Play Store download checks; full hardware acceptance remains incomplete. Batch14 Vanilla is untested.
+The shared kernel release and all 727 matching modules were verified; 21 OEM firmware images remain unchanged.
+Batch13 results remain historical evidence and do not qualify untested batch14 features. K50 Ultra support has no hardware acceptance. The fresh complete-GMS Classic Integrity response is BASIC only, with PLAY_RECOGNIZED and LICENSED.
+The maintainer is distributing testing candidates and collecting feedback; this repository does not yet provide ROM download links. See INSTALL.md, MANIFEST.json and ROM-SHA256SUMS for installation preparation and exact artifacts. GMS inclusion does not guarantee certification or Play Integrity.
 
 ---
 

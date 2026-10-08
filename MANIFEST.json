@@ -1,0 +1,146 @@
+{
+  "recorded_at": "2026-10-08T08:11:43.405115+08:00",
+  "phone_test_update_date": "2026-10-08",
+  "phone_acceptance_complete": false,
+  "candidates": [
+    {
+      "flavour": "vanilla",
+      "file": "AviumUI-16.2.2-diting-vanilla-user-batch14.zip",
+      "bytes": 2238123471,
+      "sha256": "9853a48c17c2c1fa4bcd3620ef9fb61aa5c8a417ab9d31b165786146726f8c1c",
+      "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+      "build_type": "user",
+      "build_tags": "release-keys",
+      "bundled_root": false,
+      "gms_bundled": false,
+      "host_qualified": true,
+      "phone_tested": false,
+      "matching_image_folder": "release-vanilla-batch14-boot"
+    },
+    {
+      "flavour": "gms",
+      "file": "AviumUI-16.2.2-diting-gms-user-batch14.zip",
+      "bytes": 3069512451,
+      "sha256": "5cd3a7a955a04080da8d504cfa72ac96247a136f6ba432d4d5ff52b54d9d0789",
+      "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+      "build_type": "user",
+      "build_tags": "release-keys",
+      "bundled_root": false,
+      "gms_bundled": true,
+      "host_qualified": true,
+      "phone_tested": true,
+      "phone_acceptance_complete": false,
+      "tested_model": "Xiaomi 12T Pro / 22081212UG / GL",
+      "phone_test_scope": [
+        "boot and expected kernel",
+        "user/release-keys and SELinux Enforcing",
+        "camera and eSIM user report",
+        "Google login and Play Store download",
+        "Classic Integrity BASIC; PLAY_RECOGNIZED and LICENSED"
+      ],
+      "full_hardware_and_standby_regression": "pending",
+      "matching_image_folder": "release-gms-batch14-boot"
+    }
+  ],
+  "same_kernel_and_all_727_module_bytes": true,
+  "same_21_oem_firmware": true,
+  "same_retained_private_keys": true,
+  "planned_models": [
+    "Xiaomi 12T Pro / 22081212UG / GL",
+    "Redmi K50 Ultra / 22081212C / CN"
+  ],
+  "batch14_phone_tested": true,
+  "k50_ultra_phone_tested": false,
+  "rom_download_published": false,
+  "gms_certification_or_play_integrity_guarantee": false,
+  "assets": [
+    {
+      "flavour": "vanilla",
+      "path": "AviumUI-16.2.2-diting-vanilla-user-batch14.zip",
+      "bytes": 2238123471,
+      "sha256": "9853a48c17c2c1fa4bcd3620ef9fb61aa5c8a417ab9d31b165786146726f8c1c"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/boot.img",
+      "bytes": 201326592,
+      "sha256": "351a9547bf9e3abbf4a8ce6aae6d612701ef560052957b69a46b01d2922b837c"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/dtbo.img",
+      "bytes": 25165824,
+      "sha256": "f206704641a9d35445b5a5e6463a8e9b2ac5906a4a7154b6f6b079a8c46ab342"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vendor_boot.img",
+      "bytes": 100663296,
+      "sha256": "5b66e75a1057b737f05113160e1c24a6e9ea53b6fa29a8b3373682fe4f578d55"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/recovery.img",
+      "bytes": 104857600,
+      "sha256": "5f2a7002c6b480d8c206f183b5851ed719b12f8e746ad23bea5a255a3aeeb887"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vbmeta.img",
+      "bytes": 8192,
+      "sha256": "88d6a869e61a040f5d1dd1d80dee418fd4df0c11a43358e827d18291fe6248f9"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vbmeta_system.img",
+      "bytes": 4096,
+      "sha256": "2576ddb4c4a105390ffef315d063b9b0f7ddcd92cbd907252cbdf37a6aa39261"
+    },
+    {
+      "flavour": "gms",
+      "path": "AviumUI-16.2.2-diting-gms-user-batch14.zip",
+      "bytes": 3069512451,
+      "sha256": "5cd3a7a955a04080da8d504cfa72ac96247a136f6ba432d4d5ff52b54d9d0789"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/boot.img",
+      "bytes": 201326592,
+      "sha256": "0ebfd14fac19a063498a5ccb367d36daf734e2f1f557f1e85181191df7ca5275"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/dtbo.img",
+      "bytes": 25165824,
+      "sha256": "e477daa96393ea4d2d0601cd680d13d49a04725806f51bf07a13c56107315822"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vendor_boot.img",
+      "bytes": 100663296,
+      "sha256": "48186ef80805ad66bcc6e201b72eaa92fc3b03df13e344654ee493fa739272de"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/recovery.img",
+      "bytes": 104857600,
+      "sha256": "f2f79ff4ee08db5051525300e82254f865b65d63d72586882682dd2f3dae4b44"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vbmeta.img",
+      "bytes": 8192,
+      "sha256": "345f0537daf136da0d3a683cd2d3f3a876d36728f98bb360d29df2af34032448"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vbmeta_system.img",
+      "bytes": 4096,
+      "sha256": "e9a2add84027392bf1d67c12d2f7e592cd583fa315d7a8744567f318bd16da3e"
+    }
+  ],
+  "release_type": "testing; no stable/certification guarantee",
+  "source_url": "https://github.com/N1-k0-la1/diting-aviumui",
+  "packaged_at": "2026-10-08T19:47:54.853808+08:00",
+  "public_files_shared_by_user": false
+}

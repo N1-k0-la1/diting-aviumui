@@ -6,7 +6,17 @@
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
-  "batch14_gms_build_complete": false,
+  "batch14_gms_build_complete": true,
   "k50_ultra_phone_tested": false,
-  "via_binary_redistributed": false
+  "via_binary_redistributed": false,
+  "batch14_gms_host_release_complete": true,
+  "batch14_vanilla_host_release_complete": true,
+  "batch14_vanilla_build_complete": true,
+  "batch14_gms_phone_boot_verified": true,
+  "batch14_gms_login_store_download_verified": true,
+  "batch14_gms_classic_integrity_basic_only": true,
+  "batch14_phone_tested": true,
+  "batch14_phone_test_scope": "GMS on Xiaomi 12T Pro only; preliminary acceptance",
+  "batch14_vanilla_phone_tested": false,
+  "full_hardware_and_long_term_acceptance_complete": false
 }

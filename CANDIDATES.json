@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-10-08T08:11:43.405115+08:00",
+  "phone_test_update_date": "2026-10-08",
+  "phone_acceptance_complete": false,
+  "candidates": [
+    {
+      "flavour": "vanilla",
+      "file": "AviumUI-16.2.2-diting-vanilla-user-batch14.zip",
+      "bytes": 2238123471,
+      "sha256": "9853a48c17c2c1fa4bcd3620ef9fb61aa5c8a417ab9d31b165786146726f8c1c",
+      "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+      "build_type": "user",
+      "build_tags": "release-keys",
+      "bundled_root": false,
+      "gms_bundled": false,
+      "host_qualified": true,
+      "phone_tested": false,
+      "matching_image_folder": "release-vanilla-batch14-boot"
+    },
+    {
+      "flavour": "gms",
+      "file": "AviumUI-16.2.2-diting-gms-user-batch14.zip",
+      "bytes": 3069512451,
+      "sha256": "5cd3a7a955a04080da8d504cfa72ac96247a136f6ba432d4d5ff52b54d9d0789",
+      "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+      "build_type": "user",
+      "build_tags": "release-keys",
+      "bundled_root": false,
+      "gms_bundled": true,
+      "host_qualified": true,
+      "phone_tested": true,
+      "phone_acceptance_complete": false,
+      "tested_model": "Xiaomi 12T Pro / 22081212UG / GL",
+      "phone_test_scope": ["boot and expected kernel", "user/release-keys and SELinux Enforcing", "camera and eSIM user report", "Google login and Play Store download", "Classic Integrity BASIC; PLAY_RECOGNIZED and LICENSED"],
+      "full_hardware_and_standby_regression": "pending",
+      "matching_image_folder": "release-gms-batch14-boot"
+    }
+  ],
+  "same_kernel_and_all_727_module_bytes": true,
+  "same_21_oem_firmware": true,
+  "same_retained_private_keys": true,
+  "planned_models": [
+    "Xiaomi 12T Pro / 22081212UG / GL",
+    "Redmi K50 Ultra / 22081212C / CN"
+  ],
+  "batch14_phone_tested": true,
+  "k50_ultra_phone_tested": false,
+  "rom_download_published": false,
+  "gms_certification_or_play_integrity_guarantee": false
+}
