@@ -1,49 +1,150 @@
-# 测试版安装与恢复 / Installation
+# Windows 刷机教程：AviumUI 16.2.2 diting 测试版
 
-面向已解锁 Bootloader、具备备份和 Fastboot 恢复能力的 diting 测试用户。只连接要刷的一台设备。K50 至尊版尚未实测，愿意承担实验性测试的志愿者才使用。使用近期 Android platform-tools。
+本文讲完整 ROM 的首次安装／重装，会清空手机内部存储。**已装好 ROM、只想刷 root 的用户不要重走本流程，不要清数据；使用当前版本的原始 boot 在所用 root 管理器中修补即可。**
 
-1. 备份应用、文件和重要资料；干净安装将清空内部存储及 root 模块配置。不要删除 eSIM profile，不擦除 persist／modemst，不重新锁定 Bootloader。
-2. 下载本目录对应完整 OTA、同 flavour 的六个 `.img`、`MANIFEST.json`、`Install-Recovery.ps1`；保留目录结构。用 `SHA256SUMS` 核对下载，脚本也会检查选定 OTA 和镜像 SHA256。
-3. 手机手动进入 bootloader Fastboot。下方 Windows 命令中的序列号由你在本机查看并填写，不要把维护者的序列号或槽位当成自己的。
+当前 12T Pro GMS 已完成基础实测；Vanilla 第十四批与 K50 至尊版尚未实测。安装需要已解锁 Bootloader，只连接一台目标手机。不要重新锁定 Bootloader。
 
-```powershell
-fastboot devices
-# 只连接一台目标手机；记下它的序列号。工具不在 PATH 时，用实际 fastboot.exe 路径。
-# 从本发布目录运行，替换 YOUR_SERIAL。Flavour 选 gms 或 vanilla。
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-Recovery.ps1 -Serial YOUR_SERIAL -Flavour gms -FastbootPath 'C:\platform-tools\fastboot.exe'
+## 先弄清三个步骤
+
+1. 电脑通过 Fastboot 刷入六个启动／Recovery 镜像，手机进入 AviumUI Recovery。
+2. 在手机 Recovery 清数据，再选择接收 ADB 更新。
+3. 电脑把完整 ROM ZIP 传给 Recovery 安装，成功后手机启动系统。
+
+**第 1 步完成不代表 ROM 已装完。完整系统在第 3 步的 ZIP 里。**
+Fastboot 时用 fastboot 工具；Recovery 的 ADB 更新模式用 adb 工具；不要在 Fastboot 下用 adb 安装 APK。
+
+## 1. 下载两个文件
+
+先选一个版本，只下载同一版本的两份文件：
+
+| 版本 | 完整 ROM（保持 ZIP，不解压） | 配套工具包（需要解压） |
+| --- | --- | --- |
+| GMS | AviumUI-16.2.2-diting-gms-user-batch14.zip | AviumUI-16.2.2-diting-gms-install-kit.zip |
+| Vanilla | AviumUI-16.2.2-diting-vanilla-user-batch14.zip | AviumUI-16.2.2-diting-vanilla-install-kit.zip |
+
+GMS 带 Google 服务和商店；Vanilla 不带。六个镜像都在工具包里，不需要自己从 ROM 解压。工具包不含 adb／fastboot，请另外准备 Android platform-tools。
+
+## 2. 摆好电脑上的文件
+
+下面为方便复制，统一假设刷机文件在 **C:\ROM**，platform-tools 在 **C:\platform-tools**。没有这些目录就创建／放到这些位置；使用其他位置时改后面两项变量。
+
+解压工具包到 C:\ROM，再把完整 ROM ZIP 复制到同一目录。以 GMS 为例，正确结构是：
+
+```text
+C:\ROM\
+  AviumUI-16.2.2-diting-gms-user-batch14.zip
+  Install-Recovery.ps1
+  MANIFEST.json
+  SHA256SUMS
+  INSTALL.md
+  gms\
+    boot.img
+    dtbo.img
+    vendor_boot.img
+    recovery.img
+    vbmeta.img
+    vbmeta_system.img
+
+C:\platform-tools\
+  adb.exe
+  fastboot.exe
+  （以及 platform-tools 压缩包中的其他文件）
 ```
 
-默认只做文件／设备／当前槽位／容量检查。检查通过后，加 `-FlashRecovery` 才写入六个匹配镜像并请求进入 Recovery：
+若解压后多了一层文件夹，请打开到能看见 Install-Recovery.ps1 的那层，把后面的 `$RomDir` 指向它。
+Vanilla 的镜像文件夹应为 vanilla，不能混用 gms。
+
+## 3. 手机进入 Fastboot，电脑确认连接
+
+先备份手机文件、应用数据和重要资料。清数据会删除内部存储、账号和 root 模块配置；不要删除 eSIM profile。
+手机关机，按住 **音量下＋电源键**，看到 Fastboot 后用 USB 接电脑。
+
+在电脑打开 **Windows PowerShell**，复制：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-Recovery.ps1 -Serial YOUR_SERIAL -Flavour gms -FastbootPath 'C:\platform-tools\fastboot.exe' -FlashRecovery
+$RomDir = 'C:\ROM'
+$ToolsDir = 'C:\platform-tools'
+& "$ToolsDir\fastboot.exe" devices
 ```
 
-任何报错立即停，不继续后续步骤。不要在完整 OTA 安装前启动旧系统；新内核和模块不能只换其中一部分。
+正常会出现类似：
 
-4. 在配套 AviumUI Recovery 选择 **Factory reset → Format data/factory reset**，确认清数据。若出现删除 eSIM 的选项，不勾选。
-5. 返回，选择 **Apply update → Apply from ADB**。从发布目录传入同版本 OTA；根据所选 flavour 只运行对应一条：
+```text
+你的序列号    fastboot
+```
+
+记下第一列。没有输出就先处理 USB 线／接口／Fastboot 驱动，不继续。将下面文字改成你的实际序列号；不要把示例文字原样保留：
 
 ```powershell
-adb -s YOUR_SERIAL sideload .\AviumUI-16.2.2-diting-gms-user-batch14.zip
-# 或 Vanilla：
-# adb -s YOUR_SERIAL sideload .\AviumUI-16.2.2-diting-vanilla-user-batch14.zip
+$DeviceSerial = '这里填第一列序列号'
+$Flavour = 'gms'
 ```
 
-6. 以 Recovery 明确显示 **Install completed** 为成功依据；不要只看电脑传输百分比。失败停在 Recovery，保存错误信息。
-7. 成功后选 **Reboot system now**。A/B OTA 会自行选择安装槽位，**不要强制切回原槽**。首次启动可能较慢。
-8. 清数据可能重置网络开关；如有流量费用限制，提前处理运营商数据限制，或在首次启动后及时检查移动数据／漫游。使用 Wi-Fi 完成设置。GMS 版需在系统中开启“启用GMS服务”。
+装 Vanilla 时只把 `$Flavour` 改为 `'vanilla'`。
 
-当前不承诺脏刷、保数据切换两种 flavour、外部 root 模块兼容或无风险降级。首次验收先保持纯 ROM，之后再单独测试 root／模块。
+## 4. 电脑检查文件，然后刷入 Recovery 配套镜像
 
-## 出错与恢复
+先运行检查，不刷写、不清数据、不重启：
 
-不盲目重复刷写，不修改 eSIM／persist／modemst，不重新锁定 BL。当前槽位或设备检查报错时，保留现状并提供非私密错误文本。能进入 Fastboot 时，可重新核对后刷入匹配的整套启动镜像，进入配套 Recovery 再安装匹配完整包。`gms/boot.img` 和 `vanilla/boot.img` 都是对应原始 boot，可用于回退同版本 root 修改；若 root 方法同时改了其他镜像，应按其实际改动恢复。
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$RomDir\Install-Recovery.ps1" -Serial $DeviceSerial -Flavour $Flavour -FastbootPath "$ToolsDir\fastboot.exe"
+```
 
-不提供抹除全部分区或未经验证的厂商固件降级命令。完整包签名由维护者私钥生成，Recovery 使用匹配信任锚；签名失败不应直接选择绕过验证。
+脚本会核对完整 ZIP 和六镜像的哈希，确认目标是解锁的 diting、处于 bootloader Fastboot，并读取实际槽位和分区容量。
+成功会显示 `Verified ... No flash, erase or reboot performed.`。如有报错，停下并保存完整错误文本。
+
+检查通过后，运行真正刷写的命令：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$RomDir\Install-Recovery.ps1" -Serial $DeviceSerial -Flavour $Flavour -FastbootPath "$ToolsDir\fastboot.exe" -FlashRecovery
+```
+
+`-ExecutionPolicy Bypass` 只放行这次脚本进程，不永久关闭系统策略；`-FlashRecovery` 才允许写入。
+脚本会逐一刷六个镜像，并进入 AviumUI Recovery。你不需要手动选择 A／B 槽，也不用另找 Recovery。
+到此**尚未安装完整系统**。不要点 Reboot system now 去启动旧系统。
+
+## 5. 在手机 Recovery 清数据
+
+在手机屏幕上选择：
+
+**Factory reset → Format data/factory reset → 确认清除**
+
+这是会删除手机资料的步骤，请先完成备份。若出现删除 eSIM 的选项，不勾选；不要擦除 persist／modemst 等分区。
+完成后返回 Recovery 主菜单。
+
+## 6. 手机打开接收模式，电脑发送 ROM
+
+在手机选择：
+
+**Apply update → Apply from ADB**
+
+手机进入等待电脑发送更新的画面，再在刚才的 PowerShell 中运行：
+
+```powershell
+$RomZip = Join-Path $RomDir "AviumUI-16.2.2-diting-$Flavour-user-batch14.zip"
+& "$ToolsDir\adb.exe" -s $DeviceSerial sideload $RomZip
+```
+
+这一条才会安装完整 ROM。不要拔线，也不要解压 ZIP 或改选另一版本的 ZIP。
+判断成功以**手机 Recovery 显示 Install completed** 为准，不只看电脑传输百分比。报错就停在 Recovery，记录手机和电脑的提示；不要绕过签名验证。
+
+## 7. 手机开机与首次设置
+
+安装成功后在手机返回主页，选择 **Reboot system now**。首次启动可能比平时慢。
+OTA 会自行处理 A／B 安装槽位，不要手动切回原槽。不要重新锁 BL。
+
+进入桌面后先检查相机、SIM／eSIM 信号、Wi-Fi、音频和指纹等。清数据可能重置移动数据／漫游开关，有费用限制时及时检查，或事先在运营商侧限制数据。用 Wi-Fi 完成联网设置。
+GMS 版在系统自带功能设置中打开 **启用GMS服务**，再自行登录 Google 账号。先验收纯 ROM，之后再装 root／模块。
+
+## 失败时怎么处理
+
+- 任何脚本／安装报错都先停，不把后续步骤硬做完。
+- 能进 Fastboot 时，用同版本工具包重新核对设备和文件，可重新刷匹配六镜像进入 Recovery，再安装匹配完整包。
+- 只回退同版本 root 修改时，可使用对应原始 boot；若 root 方法改了其他镜像，也要按实际改动恢复。不要为此直接清数据或刷另一版 boot。
+- 本测试版不承诺脏刷、保数据切换 Vanilla／GMS 或无风险降级。不提供擦除全部分区、persist／modemst 或未经核对的旧固件命令。
 
 ## English
 
-Back up before a clean install: formatting erases internal storage and root-module data. Use one unlocked diting in bootloader Fastboot, its own serial, current platform-tools and exactly one flavour's full OTA plus six images. The supplied PowerShell script defaults to verification only; add `-FlashRecovery` to flash the current slot and enter the matching Recovery. It never formats data, sideloads an OTA, changes the slot or relocks the bootloader.
+This is a Windows clean-install guide, not a rooting guide. Download one flavour's full ROM ZIP and matching install-kit ZIP. Extract only the kit, then put the unchanged ROM ZIP beside Install-Recovery.ps1 and MANIFEST.json. Set the ROM/platform-tools paths and your own Fastboot serial in PowerShell. Run the installer without -FlashRecovery for verification first; add that switch to flash the six matching images and enter Recovery.
 
-In Recovery, format data without deleting eSIM profiles, select Apply update → Apply from ADB, sideload the matching OTA, require the Recovery success message, then reboot system without forcing a slot. Check mobile-data/roaming costs after a reset. Enable the GMS preference for that flavour. Stop on errors; never erase persist/modemst or relock the bootloader. Full-GMS/Vanilla switching and third-party root compatibility are not guaranteed.
+Back up before Factory reset → Format data/factory reset. Do not delete eSIM profiles or erase persist/modemst. Select Apply update → Apply from ADB, sideload the matching full ZIP, require the Recovery Install completed message, then reboot system without forcing a slot. Do not relock the bootloader. Check mobile-data/roaming costs after reset, enable the GMS preference for that flavour, and test the plain ROM before root/modules. Batch14 Vanilla and K50 Ultra remain untested; full hardware acceptance is incomplete.
