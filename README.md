@@ -1,13 +1,15 @@
-# 当前版本：20261010 GMS 媒体测试版
+# 当前版本：media20261010 GMS / Vanilla 媒体测试版
 
 本批整合相机视频切换修复、LHDC V3/V4/V5 软件编码和杜比视界视频组件。
-12T Pro 已刷入开机，维护者反馈手动验收除 LHDC 外正常；尚无 LHDC 耳机实测，
+GMS 已在 12T Pro 刷入开机，维护者反馈手动验收除 LHDC 外正常；尚无 LHDC 耳机实测，
 本批 K50 至尊版和长期稳定性仍待反馈。杜比视频样本/profile/播放器范围未记录。
-仅构建了新 **GMS** 包，旧 Vanilla 不是同批媒体版。
+已补编译同批 **Vanilla**，通过主机签名/OTA/镜像检查，尚未刷机实测；GMS 已实测。旧 batch14 Vanilla 仍不是同批媒体版。
+
+- [两版本成品与实测范围 / Flavour artifacts](MEDIA-VARIANTS.json)
 
 - [版本与验收范围 / Current release](MEDIA-RELEASE.md)
 - [本批安装说明 / Installation](INSTALL-MEDIA.md)
-- [精确成品校验 / Artifact metadata](MEDIA-RELEASE.json)
+- [两版本成品校验 / Artifact metadata](MEDIA-VARIANTS.json)
 - [构建 / Build](BUILD.md) · [鸣谢 / Credits](CREDITS.md)
 - [修正版 OrangeFox / Tested Recovery](OFRP-INSTALL.md)：12T Pro 在本 ROM 上完成启动、触摸/唤醒、完整 ZIP 安装、系统开机及快照合并；K50 至尊版与从 HyperOS 3.0.6 直接启动尚未验证。
 - [对应 Recovery 源码 / Corresponding source](recovery/orangefox-diting-20261010-bootctrl/README.md)。首版失败候选作为历史记录保留。
@@ -16,8 +18,8 @@
 Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。
 本仓库未托管 ROM 二进制；网盘发布由维护者提供。
 
-English: The latest artifact is the GMS-only **media20261010 testing release**.
-The maintainer booted it on 12T Pro and reported the checklist passed except LHDC.
+English: The current **media20261010 testing release** now has matching GMS and Vanilla artifacts. Vanilla passed host qualification but has not been installed on a phone.
+The maintainer booted the GMS build on 12T Pro and reported the checklist passed except LHDC.
 Actual LHDC headset playback, K50 Ultra and long-term testing remain pending;
 specific Dolby profile coverage was not recorded. See the current release and installation links above.
 Older release notes follow as historical records.

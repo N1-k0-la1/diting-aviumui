@@ -1,6 +1,8 @@
 # 2026-10-10 媒体测试版 / Media testing release
 
-本批只有 **GMS** 完整 ROM：`AviumUI-16.2.2-diting-gms-user-media20261010.zip`。
+本批已补齐新的 Vanilla，成品见 [MEDIA-VARIANTS.json](MEDIA-VARIANTS.json)，主机验收通过、实机待测。下文保留 GMS 的具体实测范围。
+
+GMS 完整 ROM：`AviumUI-16.2.2-diting-gms-user-media20261010.zip`。
 旧 batch14 Vanilla 仍是旧版本，不包含本批媒体整合；不要将两者标为同一批更新。
 
 本批整合相机视频切换热修复、LHDC V3/V4/V5 软件编码和杜比视界视频组件。
@@ -25,7 +27,7 @@ ROM 字节数、SHA256 与同版六镜像见 [MEDIA-RELEASE.json](MEDIA-RELEASE.
 
 ## English
 
-This is a **GMS-only testing release**, including the Aperture video-switch fix,
+A matching new Vanilla is now host-qualified, with phone testing pending; see MEDIA-VARIANTS.json. The following describes the tested GMS artifact, including the Aperture video-switch fix,
 LHDC V3/V4/V5 software encoders and opt-in Dolby Vision video components.
 The older batch14 Vanilla artifact does not contain this media update.
 There is no bundled root or Dolby DAP audio app; unsupported LHDC RAW is disabled.

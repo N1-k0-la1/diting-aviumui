@@ -32,4 +32,6 @@ User-installed root and hiding modules are separate from the ROM.
 - [AviderMin](https://github.com/AviderMin/ofrp_device_xiaomi_diting)：本次 diting 设备树的直接基础；保留上游版权与许可声明。
 - AOSP、Xiaomi / Qualcomm，以及 Recovery 上游贡献者。
 
+- [microG](https://microg.org/) 与 [spacealtctrl / MIRA](https://github.com/spacealtctrl/microg_installer_revived_again)：Vanilla 可选 microG 安装/系统权限模块及兼容测试基础；可选模块与 ROM 分开。
+
 - **@anatdx：我的精神支柱。**

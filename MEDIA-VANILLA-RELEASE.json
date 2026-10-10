@@ -1,0 +1,73 @@
+{
+  "id": "vanilla-media20261010",
+  "flavour": "vanilla",
+  "date": "2026-10-10",
+  "release_type": "testing; host-qualified; phone acceptance pending",
+  "file": "AviumUI-16.2.2-diting-vanilla-user-media20261010.zip",
+  "bytes": 2245061547,
+  "sha256": "ec0e0f7eabaaf2c4c668c2012f8dbd9a32c99b1261ac49022452d175c43bca16",
+  "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+  "build_type": "user",
+  "build_tags": "release-keys",
+  "bundled_root": false,
+  "gms_bundled": false,
+  "host_qualified": true,
+  "phone_tested": false,
+  "lhdc_headset_playback_verified": false,
+  "k50_ultra_phone_tested": false,
+  "dolby_profile_player_sample_not_recorded": true,
+  "clean_or_dirty_install_not_confirmed": true,
+  "root_state_during_tests_not_confirmed": true,
+  "full_hardware_and_long_term_acceptance_complete": false,
+  "new_vanilla_media_candidate_built": true,
+  "gms_certification_or_play_integrity_guarantee": false,
+  "download_links_pending": true,
+  "hyperos_3_0_6_direct_migration_verified": false,
+  "hyperos_3_0_6_recovery_failure_reported": true,
+  "source_manifest_sha256": "b1df6289fe4c3e8f76bb0931be5a1834842f6a7fc9139a3ea3d63e03f00e3066",
+  "actual_fingerprint": "Xiaomi/diting/diting:16/BP4A.251205.006/1791646357:user/release-keys",
+  "assets": [
+    {
+      "flavour": "vanilla",
+      "path": "AviumUI-16.2.2-diting-vanilla-user-media20261010.zip",
+      "bytes": 2245061547,
+      "sha256": "ec0e0f7eabaaf2c4c668c2012f8dbd9a32c99b1261ac49022452d175c43bca16"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/boot.img",
+      "bytes": 201326592,
+      "sha256": "fd6a4f15827dc5ab9a4e2c338cc548f2380bd3f85eb8729324af42442f0ed7c6"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/dtbo.img",
+      "bytes": 25165824,
+      "sha256": "8d7361f28feaa0f51e91f76ffe3c119ae78fc1fed624742755d592a25ff0b89f"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vendor_boot.img",
+      "bytes": 100663296,
+      "sha256": "a411d5be35c5d74af99068d281a873e12b3a71cff40bf12c963d77f08846f45c"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/recovery.img",
+      "bytes": 104857600,
+      "sha256": "d4c95c0efb96b02db780bcba16d595939c4490a84149e1f3034afcab62293907"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vbmeta.img",
+      "bytes": 8192,
+      "sha256": "92b1a13c82c8a8370dc6ab3705dbd92160debd7903971126ecdb449e0b88483c"
+    },
+    {
+      "flavour": "vanilla",
+      "path": "vanilla/vbmeta_system.img",
+      "bytes": 4096,
+      "sha256": "720dea4ae240a1e427d67f676b346d1908473ec2d06b0bdbb91b1bb3ee3d6011"
+    }
+  ]
+}

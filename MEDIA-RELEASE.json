@@ -21,7 +21,7 @@
   "clean_or_dirty_install_not_confirmed": true,
   "root_state_during_tests_not_confirmed": true,
   "full_hardware_and_long_term_acceptance_complete": false,
-  "new_vanilla_media_candidate_built": false,
+  "new_vanilla_media_candidate_built": true,
   "gms_certification_or_play_integrity_guarantee": false,
   "download_links_pending": true,
   "assets": [

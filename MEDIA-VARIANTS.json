@@ -157,6 +157,5 @@
   "gms_phone_tested": true,
   "shared_ofrp_image_sha256": "6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61",
   "shared_ofrp_phone_test_scope": "Project GMS ROM / 12T Pro only",
-  "hyperos_3_0_6_direct_migration_verified": false,
-  "historical_batch14": "CANDIDATES-BATCH14.json"
+  "hyperos_3_0_6_direct_migration_verified": false
 }

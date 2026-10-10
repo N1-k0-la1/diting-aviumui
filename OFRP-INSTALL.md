@@ -55,14 +55,14 @@ ROM 可能覆盖 Recovery。先进入新系统、解锁并完成快照合并，�
 
 ## 启动失败与备用 Recovery
 
-如果当前项目 ROM 上仍狐狸循环或无法触摸，用音量下 + 电源回到 Fastboot。使用**同批**安装工具包的 Avium Recovery：
+如果当前项目 ROM 上仍狐狸循环或无法触摸，用音量下 + 电源回到 Fastboot。使用**与当前所装版本相同**的安装工具包 Avium Recovery。下方以 GMS 的 `gms/recovery.img` 举例，Vanilla 必须改为 `vanilla/recovery.img`：
 
 ```bat
 "C:\platform-tools\fastboot.exe" -s YOUR_SERIAL flash recovery "C:\ROM\gms\recovery.img"
 "C:\platform-tools\fastboot.exe" -s YOUR_SERIAL reboot recovery
 ```
 
-上述备用镜像用于当前 media20261010 ROM。原厂 HyperOS 的恢复需要匹配其原系统的材料，不能把这条当成通用 HyperOS 修复。不清数据来试探触摸/启动问题；保存日志后反馈。
+上述备用镜像用于当前相同版本的 media20261010 ROM。新 Vanilla 的实机及本 OFRP 与 Vanilla 组合仍待补测，不能继承 GMS 的实测结论。原厂 HyperOS 的恢复需要匹配其原系统的材料，不能把这条当成通用 HyperOS 修复。不清数据来试探触摸/启动问题；保存日志后反馈。
 
 ## 源码与鸣谢
 
