@@ -36,5 +36,7 @@
       "full_fresh_repo_sync_and_build_performed": false,
       "all_passed": true
     }
-  }
+  },
+  "independently_fetched_upstream_patches_validated": 50,
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 60 additionally reconstructed from local pinned Git objects"
 }
