@@ -9,7 +9,8 @@
 - [本批安装说明 / Installation](INSTALL-MEDIA.md)
 - [精确成品校验 / Artifact metadata](MEDIA-RELEASE.json)
 - [构建 / Build](BUILD.md) · [鸣谢 / Credits](CREDITS.md)
-- [自编译 OrangeFox 源码 / Recovery candidate source](recovery/orangefox-diting-20261010/README.md)：同时接受 diting / ditingp；首版 12T Pro 测试循环狐狸标志，正在定位，暂不用于刷机。
+- [修正版 OrangeFox / Tested Recovery](OFRP-INSTALL.md)：12T Pro 在本 ROM 上完成启动、触摸/唤醒、完整 ZIP 安装、系统开机及快照合并；K50 至尊版与从 HyperOS 3.0.6 直接启动尚未验证。
+- [对应 Recovery 源码 / Corresponding source](recovery/orangefox-diting-20261010-bootctrl/README.md)。首版失败候选作为历史记录保留。
 
 源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 60 份有序补丁。
 Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。

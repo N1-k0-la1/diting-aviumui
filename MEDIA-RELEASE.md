@@ -21,7 +21,7 @@ LHDC RAW 未启用；不含 Dolby DAP 音效或 Dolby 音效应用。
 
 ROM 字节数、SHA256 与同版六镜像见 [MEDIA-RELEASE.json](MEDIA-RELEASE.json)。
 本仓库发布源码和校验信息；ROM 网盘链接由维护者另行提供。
-使用配套 AviumUI Recovery 的说明见 [INSTALL-MEDIA.md](INSTALL-MEDIA.md)。
+安装说明见 [INSTALL.md](INSTALL.md)，修正版 OrangeFox 见 [OFRP-INSTALL.md](OFRP-INSTALL.md)。12T Pro 已通过本修正版的完整 ZIP 安装、系统开机和快照合并；HyperOS 3.0.6 直接迁入仍未验证。
 
 ## English
 

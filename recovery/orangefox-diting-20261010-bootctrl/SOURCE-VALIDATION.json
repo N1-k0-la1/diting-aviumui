@@ -1,0 +1,17 @@
+{
+  "all_passed": true,
+  "projects": [
+    {
+      "project": "device/xiaomi/diting",
+      "tree_sha1": "3df5b143aa19e473293052713b5704dcd7ba28af",
+      "exact_git_tree_match": true
+    },
+    {
+      "project": "bootable/recovery",
+      "tree_sha1": "1e8d8fb3c65278b924cc08cd1a722cb8ecdf1934",
+      "exact_git_tree_match": true
+    }
+  ],
+  "host_test": "12 device alias acceptance/rejection cases passed",
+  "validation_scope": "Exact project Git trees reconstructed from isolated local pinned Git objects; no second full build or independent remote fetch"
+}

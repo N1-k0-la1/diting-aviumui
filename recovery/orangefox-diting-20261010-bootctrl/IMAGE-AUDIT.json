@@ -1,0 +1,238 @@
+{
+  "image_sha256": "6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61",
+  "image_bytes": 104857600,
+  "header_version": 4,
+  "avb_embedded_signature_and_hash_verified": true,
+  "avb_footer_partition": "recovery",
+  "avb_flags": 0,
+  "standalone_kernel_size": 0,
+  "ramdisk_entries": 4278,
+  "postinstall_fstab_lf_verified": true,
+  "critical_elf_direct_dependencies_present": [
+    {
+      "file": "system/bin/android.hardware.boot@1.2-service",
+      "needed": [
+        "liblog.so",
+        "libhardware.so",
+        "libhidlbase.so",
+        "libutils.so",
+        "android.hardware.boot@1.0.so",
+        "android.hardware.boot@1.1.so",
+        "android.hardware.boot@1.2.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    },
+    {
+      "file": "system/lib64/libditing_bootctrl_slots.so",
+      "needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    },
+    {
+      "file": "vendor/lib64/hw/android.hardware.boot@1.0-impl-1.2-qti.so",
+      "needed": [
+        "liblog.so",
+        "libhidlbase.so",
+        "libhardware.so",
+        "libutils.so",
+        "android.hardware.boot@1.0.so",
+        "android.hardware.boot@1.1.so",
+        "android.hardware.boot@1.2.so",
+        "libboot_control_qti.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    },
+    {
+      "file": "system/bin/recovery",
+      "needed": [
+        "android.hardware.boot@1.0.so",
+        "android.hardware.boot@1.1.so",
+        "android.hardware.boot@1.2.so",
+        "android.hardware.health@2.0.so",
+        "android.hardware.health@2.1.so",
+        "android.hardware.health-V3-ndk.so",
+        "android.hardware.health-translate-ndk.so",
+        "libbinder.so",
+        "libbinder_ndk.so",
+        "libboot_control_client.so",
+        "libfs_mgr.so",
+        "libhardware.so",
+        "libhidlbase.so",
+        "liblog.so",
+        "liblp.so",
+        "liblz4.so",
+        "libprotobuf-cpp-lite.so",
+        "libutils.so",
+        "libz.so",
+        "libcutils.so",
+        "libstdc++.so",
+        "libtar.so",
+        "libblkid.so",
+        "libminuitwrp.so",
+        "libmtdutils.so",
+        "libtwadbbu.so",
+        "libbootloader_message.so",
+        "libcrecovery.so",
+        "libtwrpdigest.so",
+        "libc++.so",
+        "libaosprecovery.so",
+        "libcrypto.so",
+        "libbase.so",
+        "libziparchive.so",
+        "libselinux.so",
+        "libdl_android.so",
+        "libtwrpmtp-ffs.so",
+        "libgpt_twrp.so",
+        "android.frameworks.stats@1.0.so",
+        "android.hardware.authsecret@1.0.so",
+        "android.security.authorization-ndk.so",
+        "android.hardware.oemlock@1.0.so",
+        "libf2fs_sparseblock.so",
+        "libandroidicu.so",
+        "lib_android_keymaster_keymint_utils.so",
+        "android.hardware.gatekeeper-V1-ndk.so",
+        "android.hardware.gatekeeper@1.0.so",
+        "android.hardware.weaver@1.0.so",
+        "android.hardware.weaver-V2-ndk.so",
+        "android.security.maintenance-ndk.so",
+        "android.system.keystore2-V4-ndk.so",
+        "libkeyutils.so",
+        "libsqlite.so",
+        "libsysutils.so",
+        "libkeystoreinfo.so",
+        "libgatekeeper_aidl.so",
+        "libresetprop.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    },
+    {
+      "file": "system/bin/debuggerd",
+      "needed": [
+        "libbase.so",
+        "libdebuggerd_client.so",
+        "liblog.so",
+        "libprocessgroup.so",
+        "libprocinfo.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    },
+    {
+      "file": "system/bin/android.hardware.security.keymint-service-qti",
+      "needed": [
+        "liblog.so",
+        "libcutils.so",
+        "libbase.so",
+        "libutils.so",
+        "libhardware.so",
+        "libbinder_ndk.so",
+        "libhidlbase.so",
+        "android.hardware.keymaster@4.0.so",
+        "libqtikeymint.so",
+        "libcrypto.so",
+        "android.hardware.security.keymint-V1-ndk_platform.so",
+        "android.hardware.security.secureclock-V1-ndk_platform.so",
+        "android.hardware.security.sharedsecret-V1-ndk_platform.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "missing_by_resolvable_basename": []
+    }
+  ],
+  "device_alias_code_present": true,
+  "kernel_vendor_boot_not_replaced": true,
+  "runtime_bootloop_fix_unverified": true,
+  "phone_tested": false,
+  "matching_project_ota_public_certificate_present": true,
+  "ota_certificate_members": [
+    "avium-release.x509.pem"
+  ],
+  "critical_recursive_dependency_elfs_checked": 128,
+  "critical_strong_dynamic_symbol_names": [
+    {
+      "executable": "system/bin/android.hardware.boot@1.2-service",
+      "dependency_objects": 17,
+      "missing_strong_symbol_names": {}
+    },
+    {
+      "executable": "system/lib64/libditing_bootctrl_slots.so",
+      "dependency_objects": 5,
+      "missing_strong_symbol_names": {}
+    },
+    {
+      "executable": "vendor/lib64/hw/android.hardware.boot@1.0-impl-1.2-qti.so",
+      "dependency_objects": 21,
+      "missing_strong_symbol_names": {}
+    },
+    {
+      "executable": "system/bin/recovery",
+      "dependency_objects": 106,
+      "missing_strong_symbol_names": {}
+    },
+    {
+      "executable": "system/bin/debuggerd",
+      "dependency_objects": 12,
+      "missing_strong_symbol_names": {}
+    },
+    {
+      "executable": "system/bin/android.hardware.security.keymint-service-qti",
+      "dependency_objects": 36,
+      "missing_strong_symbol_names": {}
+    }
+  ],
+  "encrypted_backup_helper_present": false,
+  "encrypted_backups_compiled_out": true,
+  "note": "Static dependency and unversioned strong-symbol-name checks do not prove linker namespace/versioning or runtime decryption compatibility",
+  "wake_hook_sha256": "c8cd05b8a86b40431d4003f5356b8b01c77bd004245c9ad23e22dddd7831c68e",
+  "ram_eight_screen_cycles_verified": true,
+  "user_confirmed_touch_after_cycles": true,
+  "chinese_font_checks": [
+    {
+      "file": "twres/languages/zh_CN.xml",
+      "font_references_verified": true,
+      "sha256": "1d06137dee87852f138c95381a50d6ca0a8e671cdd945bef6c0536ee642c1f92"
+    },
+    {
+      "file": "twres/languages/zn_TW.xml",
+      "font_references_verified": true,
+      "sha256": "4d95b25dc04979238f53184cb658ffee9d5795b63cbdcecef9264e65cc1ae587"
+    }
+  ],
+  "guarded_goodix_startup_script_sha256": "860df911f103b15847cd563dec43348d14a3fa568bae3387789ca2edc39a34b6",
+  "previous_fox_loop_missing_font_confirmed_by_ram_comparison": true,
+  "ram_touch_fix_confirmed_by_user": true,
+  "new_image_phone_tested": false,
+  "remaining_tests": [
+    "fresh recovery boot",
+    "touch after screen off/on",
+    "MTP",
+    "OTA installation"
+  ],
+  "diagnostic_crash_dump64_present": false,
+  "boot_control_manifest_verified": true,
+  "boot_control_service_preload_verified": true,
+  "boot_control_slot_shim_sha256": "21a69d0385e91366cdf026e4ed8602cf27a54a595a1bc433092b0cb31851a8de",
+  "boot_control_alias_count_fix_ram_test_pending": false,
+  "boot_control_alias_count_fix_ram_test_passed": true,
+  "current_slot_and_suffixes_readonly_tests_passed": true,
+  "snapshot_merge_status_readonly_query_passed": true
+}

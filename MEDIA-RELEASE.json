@@ -67,5 +67,10 @@
       "bytes": 4096,
       "sha256": "2575860d9a2fc82f1c5b29edf81b18d10a81d01e2b822b0aa68f83d3e126d21f"
     }
-  ]
+  ],
+  "project_orangefox_full_ota_verified": true,
+  "system_boot_and_snapshot_merge_verified": true,
+  "tested_recovery_sha256": "6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61",
+  "hyperos_3_0_6_direct_migration_verified": false,
+  "hyperos_3_0_6_recovery_failure_reported": true
 }

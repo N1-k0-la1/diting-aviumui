@@ -1,3 +1,7 @@
+# Historical failed first candidate
+
+The corrected tested build is in [../orangefox-diting-20261010-bootctrl/README.md](../orangefox-diting-20261010-bootctrl/README.md). Do not use this first image. The following statements describe the earlier test and investigation state.
+
 # Unofficial OrangeFox for diting / ditingp
 
 **First phone test failed:** the maintainer reports a repeating Fox logo on 12T Pro.

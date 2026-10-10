@@ -1,0 +1,612 @@
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..1181e78
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,2 @@
++* text=auto eol=lf
++*.so -text
+diff --git a/Android.bp b/Android.bp
+new file mode 100644
+index 0000000..b079a17
+--- /dev/null
++++ b/Android.bp
+@@ -0,0 +1,13 @@
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++cc_library_shared {
++    name: "libditing_bootctrl_slots",
++    recovery: true,
++    compile_multilib: "64",
++    srcs: ["bootctrl/slots.cpp"],
++    shared_libs: ["libdl"],
++    stl: "none",
++    cflags: ["-Wall", "-Wextra", "-Werror"],
++}
+diff --git a/AndroidProducts.mk b/AndroidProducts.mk
+index b7bb5c0..f825843 100644
+--- a/AndroidProducts.mk
++++ b/AndroidProducts.mk
+@@ -18,4 +18,4 @@ PRODUCT_MAKEFILES := \
+     $(LOCAL_DIR)/twrp_diting.mk
+ 
+ COMMON_LUNCH_CHOICES := \
+-    twrp_diting-eng
++    twrp_diting-bp2a-eng
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index c4a0e1c..d2f37b6 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -69,15 +69,15 @@ BOARD_USERDATAIMAGE_PARTITION_SIZE := 48318382080
+ BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
+ BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
+ BOARD_METADATAIMAGE_PARTITION_SIZE := 16777216
+-BOARD_DTBOIMG_PARTITION_SIZE := 0x1700000
++BOARD_DTBOIMG_PARTITION_SIZE := 0x1800000
+ BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+ BOARD_FLASH_BLOCK_SIZE := 262144 # (BOARD_KERNEL_PAGESIZE * 64)
+ 
+ # Dynamic/Logical Partitions
+-BOARD_SUPER_PARTITION_SIZE := 6442450944
++BOARD_SUPER_PARTITION_SIZE := 9126805504
+ BOARD_SUPER_PARTITION_GROUPS := qti_dynamic_partitions
+-BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 6438256640 # BOARD_SUPER_PARTITION_SIZE - 4MB
+-BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := vendor vendor_dlkm odm
++BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 9122611200 # BOARD_SUPER_PARTITION_SIZE - 4MB
++BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := system system_ext product vendor vendor_dlkm odm
+ BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x06400000
+ 
+ # Workaround for error copying vendor files to recovery ramdisk
+@@ -108,6 +108,8 @@ TARGET_RECOVERY_DEVICE_MODULES += \
+     vendor.display.config@1.0 \
+     vendor.display.config@2.0
+ TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
++TARGET_OTA_ASSERT_DEVICE := diting,ditingp
++FOX_TARGET_DEVICES := diting,ditingp
+ 
+ # Use mke2fs to create ext4 images
+ TARGET_USES_MKE2FS := true
+@@ -148,11 +150,12 @@ TW_INCLUDE_CRYPTO := true
+ TW_NO_EXFAT_FUSE := true
+ TW_NO_HAPTICS := true
+ #TW_NO_SCREEN_BLANK := true
+-TW_SCREEN_BLANK_ON_BOOT := true
++TW_SCREEN_BLANK_ON_BOOT := false
++TW_USE_LEGACY_BATTERY_SERVICES := true
+ TW_INCLUDE_RESETPROP := true
+ TW_USE_SERIALNO_PROPERTY_FOR_DEVICE_ID := true
+ TW_OVERRIDE_SYSTEM_PROPS := \
+-    "ro.build.product;ro.build.fingerprint=ro.system.build.fingerprint;ro.build.version.incremental;ro.product.device=ro.product.system.device;ro.product.model=ro.product.system.model;ro.product.name=ro.product.system.name"
++    "ro.build.fingerprint=ro.system.build.fingerprint;ro.build.version.incremental"
+ RECOVERY_LIBRARY_SOURCE_FILES += \
+     $(TARGET_OUT_SHARED_LIBRARIES)/android.hidl.allocator@1.0.so \
+     $(TARGET_OUT_SHARED_LIBRARIES)/android.hidl.memory@1.0.so \
+@@ -163,14 +166,16 @@ RECOVERY_LIBRARY_SOURCE_FILES += \
+     $(TARGET_OUT_SHARED_LIBRARIES)/libnetutils.so \
+     $(TARGET_OUT_SYSTEM_EXT_SHARED_LIBRARIES)/vendor.display.config@1.0.so \
+     $(TARGET_OUT_SYSTEM_EXT_SHARED_LIBRARIES)/vendor.display.config@2.0.so
+-TW_LOAD_VENDOR_MODULES := "adsp_loader_dlkm.ko fts_touch_spi.ko atmel_mxt_ts.ko focaltech_fts.ko goodix_core.ko goodix_fod.ko goodix_health.ko nt36xxx-i2c.ko nt36xxx-spi.ko synaptics_dsx.ko panel_event_notifier.ko i2c-msm-geni.ko spi-msm-geni.ko"
+-TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
++TW_LOAD_VENDOR_MODULES := "rproc_qcom_common.ko q6_dlkm.ko qcom_q6v5.ko qcom_q6v5_pas.ko qcom_esoc.ko qcom_sysmon.ko qti_battery_charger.ko xiaomi_touch.ko adsp_loader_dlkm.ko fts_touch_spi.ko atmel_mxt_ts.ko focaltech_fts.ko goodix_core.ko goodix_fod.ko goodix_health.ko nt36xxx-i2c.ko nt36xxx-spi.ko synaptics_dsx.ko panel_event_notifier.ko i2c-msm-geni.ko spi-msm-geni.ko"
++TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := false
++TW_LOAD_VENDOR_BOOT_MODULES := true
+ 
+ # TWRP Debug Flags
+ #TWRP_EVENT_LOGGING := true
+ TARGET_USES_LOGD := true
+ TWRP_INCLUDE_LOGCAT := true
+-TARGET_RECOVERY_DEVICE_MODULES += debuggerd
++TARGET_RECOVERY_DEVICE_MODULES += debuggerd libdebuggerd_client libprocinfo
++RECOVERY_LIBRARY_SOURCE_FILES += $(TARGET_OUT_SHARED_LIBRARIES)/libdebuggerd_client.so $(TARGET_OUT_SHARED_LIBRARIES)/libprocinfo.so
+ RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/debuggerd
+ TARGET_RECOVERY_DEVICE_MODULES += strace
+ RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/strace
+@@ -204,3 +209,11 @@ endif
+ #
+ # end local build flags
+ #
++
++# Android 16 recovery dependencies for the original diting KeyMint prebuilt.
++TARGET_RECOVERY_DEVICE_MODULES += android.hardware.security.rkp-V3-ndk
++RECOVERY_LIBRARY_SOURCE_FILES += $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.security.rkp-V3-ndk.so
++TARGET_RECOVERY_DEVICE_MODULES += android.hardware.security.keymint-V1-ndk android.hardware.security.secureclock-V1-ndk android.hardware.security.sharedsecret-V1-ndk libexpat
++RECOVERY_LIBRARY_SOURCE_FILES += $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.security.keymint-V1-ndk.so $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.security.secureclock-V1-ndk.so $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.security.sharedsecret-V1-ndk.so $(TARGET_OUT_SHARED_LIBRARIES)/libexpat.so
++# Android 12 diting prebuilt names retain the old ndk_platform suffix.
++BOARD_RECOVERY_IMAGE_PREPARE += mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/lib64; ln -sf android.hardware.security.keymint-V1-ndk.so $(TARGET_RECOVERY_ROOT_OUT)/system/lib64/android.hardware.security.keymint-V1-ndk_platform.so; ln -sf android.hardware.security.secureclock-V1-ndk.so $(TARGET_RECOVERY_ROOT_OUT)/system/lib64/android.hardware.security.secureclock-V1-ndk_platform.so; ln -sf android.hardware.security.sharedsecret-V1-ndk.so $(TARGET_RECOVERY_ROOT_OUT)/system/lib64/android.hardware.security.sharedsecret-V1-ndk_platform.so;
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..1a3c861
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,17 @@
++# Unofficial OrangeFox Android 16 device tree for diting / ditingp
++
++Base: AviderMin/ofrp_device_xiaomi_diting, commit 1a1b5d3f6c908145e360da990a70b41042929615.
++Ported for the official OrangeFox fox_16.0 source manifest.
++Maintainer: N1-k0-la1. Preserve all upstream file copyright and license notices.
++OrangeFox components are GPL-3.0-or-later; other files retain their original licenses.
++
++Device family: Redmi K50 Ultra (diting) and Xiaomi 12T Pro (ditingp hardware SKU).
++The canonical recovery build target is diting; both OTA aliases are explicitly listed.
++Boot SKU/region are not changed. Unrelated device packages must still be rejected.
++This recovery image excludes a standalone kernel and depends on compatible boot/vendor_boot.
++The first candidate targets the project's Android 16 AviumUI build, not universal MIUI compatibility.
++
++Corrected super/dtbo dimensions; LF-only postinstall fstab; packaged debuggerd dependencies;
++include GKI module search; legacy battery reads; Android 16 KeyMint dependency adaptation.
++The prior fox-logo loop has no captured runtime root cause. Building does not prove it fixed.
++Initial boot, touch, storage decryption, ADB, fastbootd and full OTA installation must be tested.
+diff --git a/bootctrl/slots.cpp b/bootctrl/slots.cpp
+new file mode 100644
+index 0000000..de14632
+--- /dev/null
++++ b/bootctrl/slots.cpp
+@@ -0,0 +1,21 @@
++// Copyright (C) 2026 N1-k0-la1
++// SPDX-License-Identifier: Apache-2.0
++#include <dlfcn.h>
++#include <sys/stat.h>
++
++// The legacy QTI HAL counts every name beginning with "boot", including the
++// unsuffixed alias generated by Recovery. Only boot_a and boot_b are slots on
++// diting. Keep all slot mutation and snapshot operations in the original HAL.
++extern "C" unsigned diting_get_number_slots() asm("_Z16get_number_slotsv");
++extern "C" unsigned diting_get_number_slots() {
++    struct stat slot_a {}, slot_b {};
++    if (stat("/dev/block/bootdevice/by-name/boot_a", &slot_a) == 0 &&
++        stat("/dev/block/bootdevice/by-name/boot_b", &slot_b) == 0 &&
++        S_ISBLK(slot_a.st_mode) && S_ISBLK(slot_b.st_mode) &&
++        slot_a.st_rdev != slot_b.st_rdev) {
++        return 2;
++    }
++    using Original = unsigned (*)();
++    auto original = reinterpret_cast<Original>(dlsym(RTLD_NEXT, "_Z16get_number_slotsv"));
++    return original ? original() : 0;
++}
+diff --git a/device.mk b/device.mk
+index cc2573f..e040255 100644
+--- a/device.mk
++++ b/device.mk
+@@ -27,8 +27,6 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
+ # Enable project quotas and casefolding for emulated storage without sdcardfs
+ $(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
+ 
+-# Installs gsi keys into ramdisk, to boot a GSI with verified boot.
+-$(call inherit-product, $(SRC_TARGET_DIR)/product/gsi_keys.mk)
+ 
+ # Platform
+ QCOM_BOARD_PLATFORMS += $(PRODUCT_PLATFORM)
+@@ -48,6 +46,9 @@ PRODUCT_TARGET_VNDK_VERSION := 31
+ # Virtual A/B
+ $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
+ 
++# Recovery has no standalone kernel; do not require kernel metadata for recovery-only packaging.
++PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
++
+ # A/B updater updatable partitions list. Keep in sync with the partition list
+ # with "_a" and "_b" variants in the device. Note that the vendor can add more
+ # more partitions to this list for the bootloader and radio.
+@@ -64,6 +65,9 @@ PRODUCT_PACKAGES += update_engine \
+ PRODUCT_PACKAGES += \
+   update_engine_sideload
+ 
++# Correct legacy QTI slot enumeration without counting Recovery's boot alias.
++PRODUCT_PACKAGES += libditing_bootctrl_slots
++
+ # f2fs utilities
+ PRODUCT_PACKAGES += \
+     sg_write_buffer \
+@@ -82,7 +86,6 @@ AB_OTA_POSTINSTALL_CONFIG += \
+ 
+ # Set GRF/Vendor freeze properties
+ BOARD_SHIPPING_API_LEVEL := 31
+-BOARD_API_LEVEL := 31
+ SHIPPING_API_LEVEL := 31
+ PRODUCT_SHIPPING_API_LEVEL := 31
+ 
+@@ -129,3 +132,6 @@ BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 2
+ # Enable Fuse Passthrough
+ PRODUCT_PROPERTY_OVERRIDES += persist.sys.fuse.passthrough.enable=true
+ 
++
++# Public certificate from the signed project OTA; no signing private key is included.
++PRODUCT_EXTRA_RECOVERY_KEYS += $(DEVICE_PATH)/security/avium-release
+diff --git a/fox_diting.mk b/fox_diting.mk
+index 98fc622..4d46f4d 100644
+--- a/fox_diting.mk
++++ b/fox_diting.mk
+@@ -23,7 +23,7 @@ OF_HIDE_NOTCH := 1
+ OF_USE_GREEN_LED := 0
+ OF_FLASHLIGHT_ENABLE := 1
+ OF_ALLOW_DISABLE_NAVBAR := 0
+-OF_QUICK_BACKUP_LIST := /data;/boot;
++OF_QUICK_BACKUP_LIST := /data;/boot;/recovery;
+ OF_SKIP_MULTIUSER_FOLDERS_BACKUP := 1
+ OF_ENABLE_USB_STORAGE := 1
+ OF_IGNORE_LOGICAL_MOUNT_ERRORS := 1
+@@ -52,10 +52,10 @@ OF_UNBIND_SDCARD_F2FS := 1
+ 
+ 
+ # OTA
+-OF_NO_TREBLE_COMPATIBILITY_CHECK := 1
++OF_NO_TREBLE_COMPATIBILITY_CHECK := 0
+ 
+ # OrangeFox Localization Settings
+-OF_MAINTAINER=AviderMin
++OF_MAINTAINER := N1-k0-la1
+ OF_DEFAULT_TIMEZONE := CST-8
+ 
+ # Dynamic Partition Assist Options
+diff --git a/recovery/root/system/bin/postrecoveryboot.sh b/recovery/root/system/bin/postrecoveryboot.sh
+new file mode 100755
+index 0000000..3a60770
+--- /dev/null
++++ b/recovery/root/system/bin/postrecoveryboot.sh
+@@ -0,0 +1,17 @@
++#!/system/bin/sh
++# Copyright (C) 2026 N1-k0-la1
++# SPDX-License-Identifier: GPL-3.0-or-later
++# Recover a Goodix controller left asleep during recovery startup. This only
++# resets the live controller; it does not update firmware or write partitions.
++for node in /sys/bus/platform/devices/goodix_ts.*; do
++    [ -r "$node/chip_info" ] && [ -w "$node/reset" ] && [ -w "$node/irq_info" ] || continue
++    info=$(cat "$node/chip_info") || continue
++    # Leave a working controller and other touchscreen variants alone.
++    printf '%s\n' "$info" | grep -q '^rom_pid:[[:space:]]*$' || continue
++    echo 'diting: resetting unresponsive Goodix controller at recovery startup'
++    printf '1\n' > "$node/reset" || continue
++    info=$(cat "$node/chip_info") || continue
++    printf '%s\n' "$info" | grep -q '^rom_pid:BERLIN' || continue
++    printf '1\n' > "$node/irq_info"
++done
++exit 0
+diff --git a/recovery/root/system/bin/postscreenunblank.sh b/recovery/root/system/bin/postscreenunblank.sh
+new file mode 100755
+index 0000000..076fbc3
+--- /dev/null
++++ b/recovery/root/system/bin/postscreenunblank.sh
+@@ -0,0 +1,8 @@
++#!/system/bin/sh
++# Copyright (C) 2026 N1-k0-la1
++# SPDX-License-Identifier: GPL-3.0-or-later
++# Let the display resume notification settle before checking the controller.
++# Reuse the identity-guarded startup repair after every actual screen unblank.
++sleep 0.2
++/system/bin/postrecoveryboot.sh
++exit 0
+diff --git a/recovery/root/system/etc/init/android.hardware.boot@1.2-service.rc b/recovery/root/system/etc/init/android.hardware.boot@1.2-service.rc
+new file mode 100644
+index 0000000..c9895d2
+--- /dev/null
++++ b/recovery/root/system/etc/init/android.hardware.boot@1.2-service.rc
+@@ -0,0 +1,10 @@
++service boot-hal-1-2 /system/bin/android.hardware.boot@1.2-service
++    interface android.hardware.boot@1.0::IBootControl default
++    interface android.hardware.boot@1.1::IBootControl default
++    interface android.hardware.boot@1.2::IBootControl default
++    user root
++    group root
++    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/system/lib64:/system/lib:/sbin
++    setenv LD_PRELOAD /system/lib64/libditing_bootctrl_slots.so
++    disabled
++    seclabel u:r:recovery:s0
+diff --git a/recovery/root/twres/languages/zh_CN.xml b/recovery/root/twres/languages/zh_CN.xml
+index 11bceb4..e390208 100644
+--- a/recovery/root/twres/languages/zh_CN.xml
++++ b/recovery/root/twres/languages/zh_CN.xml
+@@ -4,38 +4,38 @@
+ 
+ 	<resources>
+ 		<!-- Font overrides - only change these if your language requires special characters -->
+-		<resource name="status" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="bigfont" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="body1" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="body2" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="subhead" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="title" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="mainbutton" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="button" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="menu" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="input_fail" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="splash" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-
+-		<resource name="font_l" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_m" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_s" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_b" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-
+-		<resource name="keylabel" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-bold" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-num" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-small" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-longpress" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="status" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="bigfont" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="body1" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="body2" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="subhead" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="title" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="mainbutton" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="button" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="menu" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="input_fail" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="splash" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++
++		<resource name="font_l" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_m" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_s" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_b" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++
++		<resource name="keylabel" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-bold" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-num" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-small" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-longpress" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 		
+-		<resource name="Secondary" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="Secondary-title" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="caption" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="Secondary" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="Secondary-title" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="caption" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 		
+-		<resource name="clock" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="info" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="clock" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="info" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 
+-		<resource name="fixed" type="fontoverride" filename="DroidSansFallback.ttf" scale="100" />
+-		<resource name="orangefont" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="fixed" type="fontoverride" filename="wqy-microhei.ttf" scale="100" />
++		<resource name="orangefont" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 
+ 		<!-- Partition display names -->
+ 		<string name="system">System</string>
+diff --git a/recovery/root/twres/languages/zn_TW.xml b/recovery/root/twres/languages/zn_TW.xml
+index b436068..0632d3f 100644
+--- a/recovery/root/twres/languages/zn_TW.xml
++++ b/recovery/root/twres/languages/zn_TW.xml
+@@ -4,38 +4,38 @@
+ 
+ 	<resources>
+ 		<!-- Font overrides - only change these if your language requires special characters -->
+-		<resource name="status" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="bigfont" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="body1" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="body2" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="subhead" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="title" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="mainbutton" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="button" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="menu" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="input_fail" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="splash" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-
+-		<resource name="font_l" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_m" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_s" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="font_b" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-
+-		<resource name="keylabel" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-bold" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-num" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-small" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="keylabel-longpress" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="status" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="bigfont" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="body1" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="body2" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="subhead" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="title" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="mainbutton" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="button" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="menu" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="input_fail" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="splash" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++
++		<resource name="font_l" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_m" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_s" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="font_b" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++
++		<resource name="keylabel" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-bold" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-num" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-small" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="keylabel-longpress" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 		
+-		<resource name="Secondary" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="Secondary-title" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="caption" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="Secondary" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="Secondary-title" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="caption" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 		
+-		<resource name="clock" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
+-		<resource name="info" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="clock" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
++		<resource name="info" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 
+-		<resource name="fixed" type="fontoverride" filename="DroidSansFallback.ttf" scale="100" />
+-		<resource name="orangefont" type="fontoverride" filename="DroidSansFallback.ttf" scale="100"/>
++		<resource name="fixed" type="fontoverride" filename="wqy-microhei.ttf" scale="100" />
++		<resource name="orangefont" type="fontoverride" filename="wqy-microhei.ttf" scale="100"/>
+ 
+ 		<!-- Partition display names -->
+ 		<string name="system">System</string>
+diff --git a/recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc b/recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc
+index 8d5706f..9bb313d 100644
+--- a/recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc
++++ b/recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc
+@@ -9,5 +9,6 @@ service keymint-qti /system/bin/android.hardware.security.keymint-service-qti
+     user root
+     group root
+     setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/system/lib64:/system/lib:/sbin
++    setenv LD_PRELOAD /system/lib64/android.hardware.security.rkp-V3-ndk.so
+     disabled
+     seclabel u:r:recovery:s0
+diff --git a/recovery/root/vendor/etc/vintf/manifest/android.hardware.boot@1.2.xml b/recovery/root/vendor/etc/vintf/manifest/android.hardware.boot@1.2.xml
+new file mode 100644
+index 0000000..988b3d3
+--- /dev/null
++++ b/recovery/root/vendor/etc/vintf/manifest/android.hardware.boot@1.2.xml
+@@ -0,0 +1,11 @@
++<manifest version="1.0" type="device">
++    <hal format="hidl">
++        <name>android.hardware.boot</name>
++        <transport>hwbinder</transport>
++        <version>1.2</version>
++        <interface>
++            <name>IBootControl</name>
++            <instance>default</instance>
++        </interface>
++    </hal>
++</manifest>
+diff --git a/security/avium-release.x509.pem b/security/avium-release.x509.pem
+new file mode 100644
+index 0000000..4d60364
+--- /dev/null
++++ b/security/avium-release.x509.pem
+@@ -0,0 +1,22 @@
++-----BEGIN CERTIFICATE-----
++MIIDmTCCAoGgAwIBAgIUfczELtLwmOnXJ/spv8hOI/mrM+4wDQYJKoZIhvcNAQEL
++BQAwWzEfMB0GA1UECgwWUGVyc29uYWwgQW5kcm9pZCBCdWlsZDEPMA0GA1UECwwG
++ZGl0aW5nMScwJQYDVQQDDB5kaXRpbmcgZmFtaWx5LWE0MGRhODBhNTlkMTcwY2Ew
++IBcNMjYxMDA3MDIwNTU0WhgPMjA1NDAyMjIwMjA1NTRaMFsxHzAdBgNVBAoMFlBl
++cnNvbmFsIEFuZHJvaWQgQnVpbGQxDzANBgNVBAsMBmRpdGluZzEnMCUGA1UEAwwe
++ZGl0aW5nIGZhbWlseS1hNDBkYTgwYTU5ZDE3MGNhMIIBIjANBgkqhkiG9w0BAQEF
++AAOCAQ8AMIIBCgKCAQEAuvY7Girk3VTxDVHn+6tImy2/U3BOIp4uy5HIh9q6Sznb
++OoAOH8NRdbcCfnMtkQc9WugMZpsB3ppfYShDKRPWw85HNQIQISgARzRo4c1mwZuZ
++ogtmZVtgIDd0PcjjApHIJFYP0q8CuFv89f/AN4IR+TJm7TjNerg+oQVuMQ+xiQep
++kqHEOJDX1KkLQPUC1T0pGlAdNk93z+g2M2Sag6mVhKF52Wnyy5PcQPS1A/N93mAi
++ZuQ/nIF9QUgrIH+Eadqm1XQvgXOj3oe1hlEgnRpz9FOupzPK41Q3Ie/JIhsQwwfb
++pBfJK5BWAnoVgc8/q4xNCmXoHSQvE1SRe6/xiWotJwIDAQABo1MwUTAdBgNVHQ4E
++FgQU9k/DtFY1uy7cEkCyd8I8xCO+520wHwYDVR0jBBgwFoAU9k/DtFY1uy7cEkCy
++d8I8xCO+520wDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAYgGV
++YcEOaNP58T8UBkitXv/NJxxoyrZc053WImWqVPwSVKUSXlf7vDnGX7hozREc9iKs
++NWq+f+8gvqH8RMYY8SYZWYUNu4zrhYmRbOY2A+lh1hcHQOFlYbV6FO8A2vZYmAt9
++EB3TacSbMFfAqnuw0AUyMFcD+6KvGBaYTcReDB8GUs1jv2pSuJMC9QWXN6OD9c3S
++XGJ9J3FvlF903CjUYwKtPONI9b20tdyzxMVh4bS4Bb4Gll5IwU1hWjrAx9JrCtHF
++sW/cKI5w20fl496f69KipGS7QnCDoUHpdzo3IkwtL/blrO2W0knJGwYejGeRcnmG
++6mjJU6jEcQ4kSzop3Q==
++-----END CERTIFICATE-----
+diff --git a/twrp_diting.mk b/twrp_diting.mk
+index c3ce933..214612c 100644
+--- a/twrp_diting.mk
++++ b/twrp_diting.mk
+@@ -18,7 +18,7 @@
+ #
+ 
+ # Define hardware platform
+-PRODUCT_PLATFORM := ukee
++PRODUCT_PLATFORM := taro
+ 
+ #
+ #
+@@ -52,4 +52,4 @@ DEVICE_PATH := device/$(PRODUCT_BRAND)/$(PRODUCT_DEVICE)
+ $(call inherit-product, $(DEVICE_PATH)/device.mk)
+ 
+ # Inherit any OrangeFox-specific settings
+-$(call inherit-product-if-exists, $(DEVICE_PATH)/fox_$(PRODUCT_RELEASE_NAME).mk)
+\ No newline at end of file
++$(call inherit-product-if-exists, $(DEVICE_PATH)/fox_$(PRODUCT_RELEASE_NAME).mk)
+diff --git a/vendorsetup.sh b/vendorsetup.sh
+index bc8e671..2d1cd17 100644
+--- a/vendorsetup.sh
++++ b/vendorsetup.sh
+@@ -1,83 +1,11 @@
+-#
+-#	This file is part of the OrangeFox Recovery Project
+-# 	Copyright (C) 2020-2021 The OrangeFox Recovery Project
+-#
+-#	OrangeFox is free software: you can redistribute it and/or modify
+-#	it under the terms of the GNU General Public License as published by
+-#	the Free Software Foundation, either version 3 of the License, or
+-#	any later version.
+-#
+-#	OrangeFox is distributed in the hope that it will be useful,
+-#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+-#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-#	GNU General Public License for more details.
+-#
+-# 	This software is released under GPL version 3 or any later version.
+-#	See <http://www.gnu.org/licenses/>.
+-#
+-# 	Please maintain this if you use this script or any part of it
+-#
+-FDEVICE="diting"
+-#set -o xtrace
+-
+-fox_get_target_device() {
+-local chkdev=$(echo "$BASH_SOURCE" | grep -w $FDEVICE)
+-   if [ -n "$chkdev" ]; then 
+-      FOX_BUILD_DEVICE="$FDEVICE"
+-   else
+-      chkdev=$(set | grep BASH_ARGV | grep -w $FDEVICE)
+-      [ -n "$chkdev" ] && FOX_BUILD_DEVICE="$FDEVICE"
+-   fi
+-}
+-
+-if [ -z "$1" -a -z "$FOX_BUILD_DEVICE" ]; then
+-   fox_get_target_device
++#!/bin/bash
++# Copyright (C) 2026 N1-k0-la1
++# GPL-3.0-or-later; upstream device tree attribution is retained in README.md.
++if [ "${FOX_BUILD_DEVICE:-}" = diting ]; then
++    export FOX_AB_DEVICE=1 FOX_VIRTUAL_AB_DEVICE=1
++    export FOX_VANILLA_BUILD=1 FOX_BUILD_TYPE=Unofficial
++    export FOX_TARGET_DEVICES=diting,ditingp
++    export FOX_USE_BASH_SHELL=1 FOX_USE_SED_BINARY=1 FOX_USE_TAR_BINARY=1
++    export FOX_SETTINGS_ROOT_DIRECTORY=/metadata/OFRP
++    export FOX_ALLOW_EARLY_SETTINGS_LOAD=1
+ fi
+-
+-if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
+-	export LC_ALL="C.UTF-8"
+- 	export ALLOW_MISSING_DEPENDENCIES=true
+- 	
+- 	#OFR build settings & info
+- 	export FOX_VANILLA_BUILD=1
+-	export FOX_USE_TWRP_RECOVERY_IMAGE_BUILDER=1
+-	export TARGET_DEVICE_ALT="diting"
+-	export FOX_RECOVERY_SYSTEM_PARTITION="/dev/block/mapper/system"
+-	export FOX_RECOVERY_VENDOR_PARTITION="/dev/block/mapper/vendor"
+-	export FOX_DELETE_INITD_ADDON=1
+-	export FOX_MOVE_MAGISK_INSTALLER_TO_RAMDISK=1
+-	export FOX_SETTINGS_ROOT_DIRECTORY="/metadata/OFRP"
+-	export FOX_ALLOW_EARLY_SETTINGS_LOAD=1
+-	export FOX_MISCELLANEOUS_ROOT_DIRECTORY="/sdcard"
+-
+-	# Move the Magisk installer/uninstaller ZIP to the ramdisk
+-	export FOX_MOVE_MAGISK_INSTALLER_TO_RAMDISK=1
+-	
+-    #KernelSU
+-	export FOX_ENABLE_KERNELSU_SUPPORT=1
+-
+-	#OFR binary files
+-	export FOX_REPLACE_BUSYBOX_PS=1
+-	export FOX_USE_BASH_SHELL=1
+-	export FOX_ASH_IS_BASH=1
+-	export FOX_REPLACE_TOOLBOX_GETPROP=1
+-	export FOX_USE_TAR_BINARY=1
+-	export FOX_USE_XZ_UTILS=1
+-	export FOX_USE_SED_BINARY=1
+-	export FOX_USE_NANO_EDITOR=1
+-
+-	#OTA
+-	export FOX_VIRTUAL_AB_DEVICE=1
+-	export FOX_DELETE_AROMAFM=1
+-	export FOX_ENABLE_APP_MANAGER=1
+-
+-	lunch twrp_$FDEVICE-eng
+-	# let's see what are our build VARs
+-	if [ -n "$FOX_BUILD_LOG_FILE" -a -f "$FOX_BUILD_LOG_FILE" ]; then
+-  	   export | grep "FOX" >> $FOX_BUILD_LOG_FILE
+-  	   export | grep "OF_" >> $FOX_BUILD_LOG_FILE
+-   	   export | grep "TARGET_" >> $FOX_BUILD_LOG_FILE
+-  	   export | grep "TW_" >> $FOX_BUILD_LOG_FILE
+- 	fi
+-fi
+-#

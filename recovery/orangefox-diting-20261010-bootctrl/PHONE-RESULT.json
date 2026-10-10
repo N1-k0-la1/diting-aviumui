@@ -1,0 +1,17 @@
+{
+  "state": "12t-pro-full-ota-system-boot-snapshot-merge-passed",
+  "image_sha256": "6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61",
+  "tested_device": "Xiaomi 12T Pro",
+  "tested_rom": "AviumUI-16.2.2-diting-gms-user-media20261010.zip",
+  "full_ota_install_verified": true,
+  "first_system_boot_verified": true,
+  "snapshot_merge_complete_verified": true,
+  "menu_touch_screen_wake_verified": true,
+  "fbe_decryption_verified": true,
+  "k50_ultra_phone_verified": false,
+  "fastbootd_verified": false,
+  "final_image_mtp_display_verified": false,
+  "hyperos_3_0_6_direct_boot_verified": false,
+  "known_limit": "Do not retry another OTA before first system boot and snapshot merge.",
+  "raw_device_logs_published": false
+}

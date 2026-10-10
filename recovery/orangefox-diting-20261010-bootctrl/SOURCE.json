@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "source_manifest_url": "https://gitlab.com/OrangeFox/Manifest",
+  "source_manifest_commit": "4c65ca28fa67580172ee6bf99892a054c19dcebe",
+  "branch": "fox_16.0",
+  "canonical_device": "diting",
+  "accepted_aliases": [
+    "diting",
+    "ditingp"
+  ],
+  "upstream_projects": 405,
+  "manifest_sha256": "e8b3bc68db26d2ef70052d315d939bc69ec1e3a118c3a8ebfb3d1ca055156023",
+  "projects": [
+    {
+      "path": "device/xiaomi/diting",
+      "upstream_commit": "1a1b5d3f6c908145e360da990a70b41042929615",
+      "url": "https://github.com/AviderMin/ofrp_device_xiaomi_diting",
+      "patch": "device.patch",
+      "patch_sha256": "70ee94831efd16fb9cb26ee2a6be13564b8dfca37884a3b2aefd806f142abef8",
+      "local_build_commit": "fa3c23dc30c7c6903843ecc71844cabdc78ba8fc",
+      "changed_files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "d3f1da84ac1089f4d13d1d880b0c488fb57c56f1dcaff586435256b3edacac6d",
+          "git_mode": "100644"
+        },
+        {
+          "path": "Android.bp",
+          "sha256": "24c849416a4296d9e593704a55ad625bf74c141df4f91dda1a6056220f642583",
+          "git_mode": "100644"
+        },
+        {
+          "path": "AndroidProducts.mk",
+          "sha256": "5aeb7fa9d890c2758609217a935d375e21de8ac86dab2eefe40c9b3c48ca0b5c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "BoardConfig.mk",
+          "sha256": "deb7b65082709f20cf4af5f000491315722dafbfafc2833b395d5b8c725f4930",
+          "git_mode": "100644"
+        },
+        {
+          "path": "README.md",
+          "sha256": "7d4b8427267ed53892c28d55eb0b7db33bbf6f5dc4d9357511a8a87242260b39",
+          "git_mode": "100644"
+        },
+        {
+          "path": "bootctrl/slots.cpp",
+          "sha256": "878b921058c1052ba1a6c02d0b915ea44c59615e426bb33ef9779eafbaf4eac9",
+          "git_mode": "100644"
+        },
+        {
+          "path": "device.mk",
+          "sha256": "045f9ba251338844a103c15e3e0db85b0a9334396455caff87d549802e5ef557",
+          "git_mode": "100644"
+        },
+        {
+          "path": "fox_diting.mk",
+          "sha256": "6cddcd1ad6f0716afaa9c7c52886dafd6d1323a6af6bfa811258fe9bdb4934a8",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/system/bin/postrecoveryboot.sh",
+          "sha256": "860df911f103b15847cd563dec43348d14a3fa568bae3387789ca2edc39a34b6",
+          "git_mode": "100755"
+        },
+        {
+          "path": "recovery/root/system/bin/postscreenunblank.sh",
+          "sha256": "c8cd05b8a86b40431d4003f5356b8b01c77bd004245c9ad23e22dddd7831c68e",
+          "git_mode": "100755"
+        },
+        {
+          "path": "recovery/root/system/etc/init/android.hardware.boot@1.2-service.rc",
+          "sha256": "88405ae621569d3d244e17d4b00d3049f2a210b7adb46e21c471ea927fb9f293",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/twres/languages/zh_CN.xml",
+          "sha256": "1d06137dee87852f138c95381a50d6ca0a8e671cdd945bef6c0536ee642c1f92",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/twres/languages/zn_TW.xml",
+          "sha256": "4d95b25dc04979238f53184cb658ffee9d5795b63cbdcecef9264e65cc1ae587",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc",
+          "sha256": "82f0d524e402ff8aaff66e7adf1b1005ceb7e34941301d6425c6d3bfd2153af6",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/vendor/etc/vintf/manifest/android.hardware.boot@1.2.xml",
+          "sha256": "20d480b72adf8f2633a086347edec58e9eb562bb1fa889035c96df946d5a0b0d",
+          "git_mode": "100644"
+        },
+        {
+          "path": "security/avium-release.x509.pem",
+          "sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+          "git_mode": "100644"
+        },
+        {
+          "path": "twrp_diting.mk",
+          "sha256": "9db4fd37ac5c5b0be3ca5af9844fcc03dcea413c082ed83a7feb0d6aef31511c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "vendorsetup.sh",
+          "sha256": "60e639c1f248154e752155b6e252ec7488e38956f15f6bb64ccb703ad3d36884",
+          "git_mode": "100644"
+        }
+      ]
+    },
+    {
+      "path": "bootable/recovery",
+      "upstream_commit": "0f7831d3240f4c3925a0b5fd7d2c907ddf8704c2",
+      "url": "https://gitlab.com/OrangeFox/bootable/Recovery",
+      "patch": "recovery.patch",
+      "patch_sha256": "10ce496e50f8aec49496e588f25a85f00a44162858d5eba0b7acc8819db54b1a",
+      "local_build_commit": "3b5f4c1a0f71e3112bae451a6308f43a222709b6",
+      "changed_files": [
+        {
+          "path": "diting_ota_aliases.h",
+          "sha256": "7cfe8ca00ee1f0acb9d7fb27259d4aa76dae6ec21b497299ce57fbd290c99b32",
+          "git_mode": "100644"
+        },
+        {
+          "path": "install/install.cpp",
+          "sha256": "0b6696b784a8d2dc0d8991054ee6fda6b57a72fd86ae5a921f4cca5f60adaa7b",
+          "git_mode": "100755"
+        },
+        {
+          "path": "twrpinstall/install.cpp",
+          "sha256": "676e3aa10829a18b9852993aec396f3728715adcee0a1d8864cb2b43f326247d",
+          "git_mode": "100755"
+        }
+      ]
+    }
+  ],
+  "target": "twrp_diting-bp2a-eng",
+  "build_target": "recoveryimage",
+  "build_jobs": 4,
+  "excludes_standalone_kernel": true,
+  "recovery_partition_bytes": 104857600,
+  "public_ota_certificate_sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+  "runtime_boot_verified": true,
+  "scope": "Tested on project media20261010 GMS / 12T Pro; no universal firmware compatibility claim",
+  "build_completed": true,
+  "image_sha256": "5272bd2d47882d168c88b71a27e38ddc1ffafa5a74b7755ccb8efe24592ab8bf",
+  "image_bytes": 104857600,
+  "image_audit": "IMAGE-AUDIT.json",
+  "encrypted_backups_compiled_out": true,
+  "phone_boot_test_reported_failed": true,
+  "reported_boot_symptom": "Repeating OrangeFox logo on 12T Pro",
+  "runtime_root_cause_confirmed": false,
+  "candidate_not_recommended_for_rom_installation": true,
+  "built_manifest_sha256": "cb8ace6eb06d977b5084b34023dfdc9fdfe67a913a9ef27651feffdbb6bdab6a",
+  "state": "12t-pro-full-ota-boot-and-snapshot-merge-passed",
+  "recovery_image_sha256": "6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61",
+  "k50_ultra_phone_tested": false
+}

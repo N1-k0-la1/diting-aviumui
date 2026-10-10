@@ -1,0 +1,75 @@
+diff --git a/diting_ota_aliases.h b/diting_ota_aliases.h
+new file mode 100644
+index 0000000..2faf481
+--- /dev/null
++++ b/diting_ota_aliases.h
+@@ -0,0 +1,29 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Copyright (C) 2026 N1-k0-la1
++#pragma once
++#include <string>
++
++namespace diting_recovery {
++inline bool HasToken(const std::string& list, char separator, const std::string& value) {
++    size_t start = 0;
++    while (start <= list.size()) {
++        size_t end = list.find(separator, start);
++        if (end == std::string::npos) end = list.size();
++        const auto token = list.substr(start, end - start);
++        if (token == value) return true;
++        if (end == list.size()) break;
++        start = end + 1;
++    }
++    return false;
++}
++
++// Only this explicitly configured hardware family may use its alternate OTA name.
++// Serial, downgrade, signature and payload checks remain at their original call sites.
++inline bool PackageUsesDitingAlias(const std::string& device, const std::string& package,
++                                  const std::string& configured_devices) {
++    if (device != "diting" && device != "ditingp") return false;
++    if (!HasToken(configured_devices, ',', "diting") ||
++        !HasToken(configured_devices, ',', "ditingp")) return false;
++    return HasToken(package, '|', "diting") || HasToken(package, '|', "ditingp");
++}
++}  // namespace diting_recovery
+diff --git a/install/install.cpp b/install/install.cpp
+index 9afb68e..21f440f 100755
+--- a/install/install.cpp
++++ b/install/install.cpp
+@@ -1,3 +1,4 @@
++#include "../diting_ota_aliases.h"
+ /*
+  * Copyright (C) 2007 The Android Open Source Project
+  *
+@@ -221,7 +222,9 @@ bool CheckPackageMetadata(const std::map<std::string, std::string>& metadata, Ot
+   auto device = android::base::GetProperty("ro.product.device", "");
+   auto pkg_device = get_value(metadata, "pre-device");
+   // device name can be a | separated list, so need to check
+-  if (pkg_device.empty() || !isInStringList(device, pkg_device, FINGERPRING_SEPARATOR)) {
++  if ((pkg_device.empty() || !isInStringList(device, pkg_device, FINGERPRING_SEPARATOR)) &&
++      !diting_recovery::PackageUsesDitingAlias(device, pkg_device,
++          android::base::GetProperty("ro.twrp.target.devices", ""))) {
+     LOG(ERROR) << "Package is for product " << pkg_device << " but expected " << device;
+     return false;
+   }
+diff --git a/twrpinstall/install.cpp b/twrpinstall/install.cpp
+index d270d26..a041c12 100755
+--- a/twrpinstall/install.cpp
++++ b/twrpinstall/install.cpp
+@@ -1,3 +1,4 @@
++#include "../diting_ota_aliases.h"
+ /*
+  * Copyright (C) 2007 The Android Open Source Project
+  *
+@@ -197,7 +198,9 @@ int CheckPackageMetadata(const std::map<std::string, std::string>& metadata, Ota
+ 
+   auto device = android::base::GetProperty("ro.product.device", "");
+   auto pkg_device = get_value(metadata, "pre-device");
+-  if (pkg_device != device || pkg_device.empty()) {
++  if ((pkg_device != device || pkg_device.empty()) &&
++      !diting_recovery::PackageUsesDitingAlias(device, pkg_device,
++          android::base::GetProperty("ro.twrp.target.devices", ""))) {
+     LOG(ERROR) << "Package is for product " << pkg_device << " but expected " << device;
+     return INSTALL_ERROR;
+   }

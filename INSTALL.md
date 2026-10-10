@@ -1,157 +1,111 @@
-# 当前 20261010 GMS 媒体版
+# AviumUI 16.2.2 diting：20261010 GMS 安装说明
 
-本批请先读 [INSTALL-MEDIA.md](INSTALL-MEDIA.md)，下载 media20261010 的完整 ZIP 与同批六镜像。
-下方列出的 batch14 文件和工具包仅用于旧版。不要混用新旧 boot / vendor_boot / recovery。
-For media20261010, follow INSTALL-MEDIA.md. The batch14 filenames below are historical.
----
+本页对应 `AviumUI-16.2.2-diting-gms-user-media20261010.zip`，含相机视频切换修复、LHDC 和杜比视界视频组件。旧 batch14 Vanilla 不含本批更新。手机须已解锁 Bootloader，安装后不要重新锁定。
 
-# Windows 刷机教程：AviumUI 16.2.2 diting 测试版
+**已验证组合：Xiaomi 12T Pro + 本项目 ROM + 修正版 OrangeFox。** 完整 ZIP 安装、系统开机和虚拟 A/B 快照合并通过；K50 至尊版、本版直接从 HyperOS 3.0.6 迁入尚未实测。已有 HyperOS 3.0.6 用户报告配套 Recovery 无法操作、黑屏重启，但是否刷全六镜像未知，原因未确认。遇到这种情况不要清数据或继续安装，先保存报错、使用原系统的匹配恢复材料恢复，不要认为更换 OFRP 就一定能解决。
 
-本文讲完整 ROM 的首次安装／重装，会清空手机内部存储。**已装好 ROM、只想刷 root 的用户不要重走本流程，不要清数据；使用当前版本的原始 boot 在所用 root 管理器中修补即可。**
+## 准备文件和电脑
 
-当前 12T Pro GMS 已完成基础实测；Vanilla 第十四批与 K50 至尊版尚未实测。安装需要已解锁 Bootloader，只连接一台目标手机。不要重新锁定 Bootloader。
+下载完整 ROM ZIP（不解压）及同批 `AviumUI-16.2.2-diting-gms-install-kit-media20261010.zip`（解压）。使用 Android platform-tools 中的全部文件。核对随附 SHA256SUMS；只连接目标手机，备份重要资料。
 
-## 先弄清三个步骤
-
-1. 电脑通过 Fastboot 刷入六个启动／Recovery 镜像，手机进入 AviumUI Recovery。
-2. 在手机 Recovery 清数据，再选择接收 ADB 更新。
-3. 电脑把完整 ROM ZIP 传给 Recovery 安装，成功后手机启动系统。
-
-**第 1 步完成不代表 ROM 已装完。完整系统在第 3 步的 ZIP 里。**
-Fastboot 时用 fastboot 工具；Recovery 的 ADB 更新模式用 adb 工具；不要在 Fastboot 下用 adb 安装 APK。
-
-## 1. 下载两个文件
-
-先选一个版本，只下载同一版本的两份文件：
-
-| 版本 | 完整 ROM（保持 ZIP，不解压） | 配套工具包（需要解压） |
-| --- | --- | --- |
-| GMS | AviumUI-16.2.2-diting-gms-user-batch14.zip | AviumUI-16.2.2-diting-gms-install-kit.zip |
-| Vanilla | AviumUI-16.2.2-diting-vanilla-user-batch14.zip | AviumUI-16.2.2-diting-vanilla-install-kit.zip |
-
-GMS 带 Google 服务和商店；Vanilla 不带。六个镜像都在工具包里，不需要自己从 ROM 解压。工具包不含 adb／fastboot，请另外准备 Android platform-tools。
-
-## 2. 摆好电脑上的文件
-
-下面为方便复制，统一假设刷机文件在 **C:\ROM**，platform-tools 在 **C:\platform-tools**。没有这些目录就创建／放到这些位置；使用其他位置时改后面两项变量。
-
-解压工具包到 C:\ROM，再把完整 ROM ZIP 复制到同一目录。以 GMS 为例，正确结构是：
+示例文件位置如下；若使用其他目录，请修改命令中的路径：
 
 ```text
-C:\ROM\
-  AviumUI-16.2.2-diting-gms-user-batch14.zip
-  Install-Recovery.ps1
-  MANIFEST.json
-  SHA256SUMS
-  INSTALL.md
-  gms\
-    boot.img
-    dtbo.img
-    vendor_boot.img
-    recovery.img
-    vbmeta.img
-    vbmeta_system.img
-
-C:\platform-tools\
-  adb.exe
-  fastboot.exe
-  （以及 platform-tools 压缩包中的其他文件）
+C:\platform-tools\adb.exe
+C:\platform-tools\fastboot.exe
+C:\ROM\AviumUI-16.2.2-diting-gms-user-media20261010.zip
+C:\ROM\Install-Recovery.ps1
+C:\ROM\MANIFEST.json
+C:\ROM\gms\boot.img
+C:\ROM\gms\dtbo.img
+C:\ROM\gms\vendor_boot.img
+C:\ROM\gms\recovery.img
+C:\ROM\gms\vbmeta.img
+C:\ROM\gms\vbmeta_system.img
 ```
 
-若解压后多了一层文件夹，请打开到能看见 Install-Recovery.ps1 的那层，把后面的 `$RomDir` 指向它。
-Vanilla 的镜像文件夹应为 vanilla，不能混用 gms。
+**下面的电脑命令全部在 CMD（命令提示符）运行。** 不要添加 PowerShell 的 `&`。`powershell.exe ...` 这两条也直接从 CMD 执行；它们会自行启动 PowerShell，不需要更改系统执行策略。
 
-## 3. 手机进入 Fastboot，电脑确认连接
+## A. 已在本项目 ROM 中：用修正版 OFRP 安装更新
 
-先备份手机文件、应用数据和重要资料。清数据会删除内部存储、账号和 root 模块配置；不要删除 eSIM profile。
-手机关机，按住 **音量下＋电源键**，看到 Fastboot 后用 USB 接电脑。
+1. 确认上一轮更新已完成首次系统启动；不要在待合并的更新上连续重装 ZIP。备份数据，先处理与更新不兼容的 root 模块。保数据兼容性与长期稳定性没有全面保证。
+2. 使用本次提供的 `OrangeFox-diting-ditingp-20261010-bootctrl.img`，安装方式见 [OFRP-INSTALL.md](OFRP-INSTALL.md)。只更新 Recovery 不需要格式化数据。
+3. 进入 OFRP，确认界面、触摸正常，内部存储可见。将完整 ROM ZIP 放到手机存储或 OTG；如果需要，电脑可用 MTP 复制。点击“文件”，选完整 ROM ZIP，滑动安装。**解压后的文件、源码 ZIP 和工具包 ZIP 都不能作为 ROM 刷入。**
+4. ZIP 签名校验可开启：本 OFRP 包含本项目公开 OTA 证书。不要启用“禁用加密/DM-Verity”等附加修改；自动重装 OFRP 未列入验收，本流程不依赖它。
+5. 必须看 Recovery 是否明确安装成功，不能只看百分比。成功后先“重启 → 系统”，解锁并让后台完成快照合并，再考虑 root 或另一轮安装。**不要手动切换 A/B 槽位，不要在首次系统启动前反复安装同一 ZIP。**
+6. ROM 安装可能替换 OFRP；系统启动、合并完成后，可按 OFRP-INSTALL.md 再刷回修正版 Recovery。root 请使用本批 `gms/boot.img` 在管理器中修补，再刷到 Boot；不要用旧批次 boot。
 
-在电脑打开 **Windows PowerShell**，复制：
+本次实机日志明确 `Merge finished with state MergeCompleted.` 和 `CleanupPreviousUpdateAction ... kSuccess`。如需检查，可在系统已开启 USB 调试后，使用你自己的序列号运行：
 
-```powershell
-$RomDir = 'C:\ROM'
-$ToolsDir = 'C:\platform-tools'
-& "$ToolsDir\fastboot.exe" devices
+```bat
+"C:\platform-tools\adb.exe" -s YOUR_SERIAL logcat -b all -d -s update_engine > "C:\ROM\update-merge.txt"
+findstr /C:"Merge finished with state MergeCompleted" /C:"CleanupPreviousUpdateAction with code ErrorCode::kSuccess" "C:\ROM\update-merge.txt"
 ```
 
-正常会出现类似：
+`YOUR_SERIAL` 必须替换成你的目标序列号。日志没有这些行时不能仅凭等待时间认定合并完成；保存日志询问维护者，不要删除 `/metadata/ota` 或 COW 快照文件。
 
-```text
-你的序列号    fastboot
+## B. 其他系统首次迁入：使用同批 Avium Recovery 配套镜像
+
+该流程会清除用户资料。HyperOS 3.0.6 的 Recovery 启动报告尚未复核；此来源暂不算已验证路径。**不能在未知兼容性的原厂 boot/vendor_boot 上只替换 OFRP 就保证可用**：本 OFRP 不带独立内核，依赖兼容的启动镜像。
+
+### 1. Fastboot 中确认手机
+
+备份完成后，关机，按音量下 + 电源进入 Bootloader Fastboot。
+
+```bat
+"C:\platform-tools\fastboot.exe" devices
 ```
 
-记下第一列。没有输出就先处理 USB 线／接口／Fastboot 驱动，不继续。将下面文字改成你的实际序列号；不要把示例文字原样保留：
+记下目标手机序列号，将下面全部 `YOUR_SERIAL` 替换为它。没有设备输出时先处理驱动、线材和接口。Recovery 中出现 `ditingp` 是本项目的产品别名，并不等于刷错设备；Bootloader 的产品检查沿用硬件名称 `diting`。
 
-```powershell
-$DeviceSerial = '这里填第一列序列号'
-$Flavour = 'gms'
+### 2. 核对文件，再刷六个配套镜像
+
+先只读检查文件哈希、解锁状态、Bootloader 模式和槽位分区：
+
+```bat
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\ROM\Install-Recovery.ps1" -Serial YOUR_SERIAL -Flavour gms -FastbootPath "C:\platform-tools\fastboot.exe"
 ```
 
-装 Vanilla 时只把 `$Flavour` 改为 `'vanilla'`。
+看到 `Verified ... No flash, erase or reboot performed.` 后，执行写入：
 
-## 4. 电脑检查文件，然后刷入 Recovery 配套镜像
-
-先运行检查，不刷写、不清数据、不重启：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$RomDir\Install-Recovery.ps1" -Serial $DeviceSerial -Flavour $Flavour -FastbootPath "$ToolsDir\fastboot.exe"
+```bat
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\ROM\Install-Recovery.ps1" -Serial YOUR_SERIAL -Flavour gms -FastbootPath "C:\platform-tools\fastboot.exe" -FlashRecovery
 ```
 
-脚本会核对完整 ZIP 和六镜像的哈希，确认目标是解锁的 diting、处于 bootloader Fastboot，并读取实际槽位和分区容量。
-成功会显示 `Verified ... No flash, erase or reboot performed.`。如有报错，停下并保存完整错误文本。
+脚本刷入同批 boot、dtbo、vendor_boot、recovery、vbmeta、vbmeta_system，然后进入 Avium Recovery；此时完整 ROM 还没安装。不要启动旧系统，也不要混用旧批镜像。若 Recovery 黑屏、重启或触摸不能操作，停止并保存故障信息，不要继续清数据。
 
-检查通过后，运行真正刷写的命令：
+### 3. 清数据并安装完整 ROM
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$RomDir\Install-Recovery.ps1" -Serial $DeviceSerial -Flavour $Flavour -FastbootPath "$ToolsDir\fastboot.exe" -FlashRecovery
+确认 Avium Recovery 可正常操作后，在手机选 **Factory reset → Format data/factory reset**。这一步删除用户资料和内部存储；先完成备份。若有删除 eSIM profile 的选项，不选；不要擦除 persist、modemst 或手动擦除 system/vendor。
+
+返回主菜单，选 **Apply update → Apply from ADB**，等待接收，再从 CMD 运行：
+
+```bat
+"C:\platform-tools\adb.exe" -s YOUR_SERIAL sideload "C:\ROM\AviumUI-16.2.2-diting-gms-user-media20261010.zip"
 ```
 
-`-ExecutionPolicy Bypass` 只放行这次脚本进程，不永久关闭系统策略；`-FlashRecovery` 才允许写入。
-脚本会逐一刷六个镜像，并进入 AviumUI Recovery。你不需要手动选择 A／B 槽，也不用另找 Recovery。
-到此**尚未安装完整系统**。不要点 Reboot system now 去启动旧系统。
+以手机显示安装完成为准。电脑约 47% 结束本身不能判断成败；安装失败时保存手机提示和电脑输出，停在 Recovery，不绕过校验。
 
-## 5. 在手机 Recovery 清数据
+### 4. 正常启动后再装 OFRP / root
 
-在手机屏幕上选择：
+安装成功后在手机选 **Reboot system now**。首次启动较慢；不手动切换槽位。进入系统，检查相机、SIM/eSIM、Wi-Fi、音频和指纹，并核对移动数据/漫游费用设置。GMS 在系统自带设置里开启。等待本轮快照合并完成后再安装 OFRP 或匹配的 patched boot，具体见 A 节。
 
-**Factory reset → Format data/factory reset → 确认清除**
+## 错误反馈
 
-这是会删除手机资料的步骤，请先完成备份。若出现删除 eSIM 的选项，不勾选；不要擦除 persist／modemst 等分区。
-完成后返回 Recovery 主菜单。
+提供手机型号、原系统及版本、ROM 文件名、Recovery 名称/版本、是否刷全六镜像，以及错误之前和之后的完整文字。能进 Recovery 且 ADB 可用时，在**重启之前**保存安装日志：
 
-## 6. 手机打开接收模式，电脑发送 ROM
-
-在手机选择：
-
-**Apply update → Apply from ADB**
-
-手机进入等待电脑发送更新的画面，再在刚才的 PowerShell 中运行：
-
-```powershell
-$RomZip = Join-Path $RomDir "AviumUI-16.2.2-diting-$Flavour-user-batch14.zip"
-& "$ToolsDir\adb.exe" -s $DeviceSerial sideload $RomZip
+```bat
+"C:\platform-tools\adb.exe" -s YOUR_SERIAL pull /tmp/recovery.log "C:\ROM\recovery.log"
 ```
 
-这一条才会安装完整 ROM。不要拔线，也不要解压 ZIP 或改选另一版本的 ZIP。
-判断成功以**手机 Recovery 显示 Install completed** 为准，不只看电脑传输百分比。报错就停在 Recovery，记录手机和电脑的提示；不要绕过签名验证。
-
-## 7. 手机开机与首次设置
-
-安装成功后在手机返回主页，选择 **Reboot system now**。首次启动可能比平时慢。
-OTA 会自行处理 A／B 安装槽位，不要手动切回原槽。不要重新锁 BL。
-
-进入桌面后先检查相机、SIM／eSIM 信号、Wi-Fi、音频和指纹等。清数据可能重置移动数据／漫游开关，有费用限制时及时检查，或事先在运营商侧限制数据。用 Wi-Fi 完成联网设置。
-GMS 版在系统自带功能设置中打开 **启用GMS服务**，再自行登录 Google 账号。先验收纯 ROM，之后再装 root／模块。
-
-## 失败时怎么处理
-
-- 任何脚本／安装报错都先停，不把后续步骤硬做完。
-- 能进 Fastboot 时，用同版本工具包重新核对设备和文件，可重新刷匹配六镜像进入 Recovery，再安装匹配完整包。
-- 只回退同版本 root 修改时，可使用对应原始 boot；若 root 方法改了其他镜像，也要按实际改动恢复。不要为此直接清数据或刷另一版 boot。
-- 本测试版不承诺脏刷、保数据切换 Vanilla／GMS 或无风险降级。不提供擦除全部分区、persist／modemst 或未经核对的旧固件命令。
+日志可能含个人信息，请私下提供，公开前删去标识。`Error 7`、黑屏、狐狸循环有多种原因，不能仅凭一句“安装失败”认定 ROM 有问题；本次重复安装的快照冲突也不等同于首次安装失败。
 
 ## English
 
-This is a Windows clean-install guide, not a rooting guide. Download one flavour's full ROM ZIP and matching install-kit ZIP. Extract only the kit, then put the unchanged ROM ZIP beside Install-Recovery.ps1 and MANIFEST.json. Set the ROM/platform-tools paths and your own Fastboot serial in PowerShell. Run the installer without -FlashRecovery for verification first; add that switch to flash the six matching images and enter Recovery.
+This guide applies to the full **media20261010 GMS** OTA and matching six-image install kit. The old batch14 Vanilla release does not include these media changes. The tested combination is a 12T Pro running the project ROM with the corrected project OrangeFox. Full OTA installation, Android boot and snapshot merge passed. K50 Ultra and direct migration from HyperOS 3.0.6 remain unqualified; one HyperOS 3.0.6 user reported an unusable recovery, black screen and reboot, with the exact six-image flashing steps unknown.
 
-Back up before Factory reset → Format data/factory reset. Do not delete eSIM profiles or erase persist/modemst. Select Apply update → Apply from ADB, sideload the matching full ZIP, require the Recovery Install completed message, then reboot system without forcing a slot. Do not relock the bootloader. Check mobile-data/roaming costs after reset, enable the GMS preference for that flavour, and test the plain ROM before root/modules. Batch14 Vanilla and K50 Ultra remain untested; full hardware acceptance is incomplete.
+All Windows commands above are **CMD** commands. Replace YOUR_SERIAL and paths with your own. Keep the bootloader unlocked. Check hashes and back up first. On the existing project ROM, use the separately supplied tested OrangeFox image, select the unchanged full OTA ZIP and require an explicit successful result. Boot Android and complete snapshot merging before another install or root. Do not force a slot or delete OTA metadata/COW files.
+
+For migration from another OS, use the matching Avium Recovery kit: run the installer without -FlashRecovery to verify, then with that switch to flash all six images. If recovery is unusable, stop before formatting. Once usable and backed up, select Factory reset → Format data/factory reset, then Apply update → Apply from ADB, and sideload the full OTA. This deletes user data; retain eSIM profiles and do not erase persist/modemst. Require the phone's success message, boot Android, then complete snapshot merging. Restore OrangeFox separately afterwards if desired. Root must use this ROM's matching boot image. Long-term and retained-data compatibility are not guaranteed.
+
+For recovery errors, include the original OS, exact package/recovery versions, all six-image flashing steps and the complete error. Save /tmp/recovery.log before rebooting when ADB is available. The project's image has no standalone kernel and is not claimed compatible with arbitrary stock boot/vendor_boot firmware.
