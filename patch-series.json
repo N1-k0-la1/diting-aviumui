@@ -358,6 +358,71 @@
       "original_commit": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
       "patch": "patches/diting-camera-hotfix/01_aperture_video_capabilities.patch",
       "sha256": "4f3a0d6351ca6f55c58706cbdbed5752cdc307ea668b636bde98db492ff5f321"
+    },
+    {
+      "project": "packages/modules/Bluetooth",
+      "base": "03cb8e33c1613feb45d13dd1af1940e1c0149446",
+      "original_commit": "2a2f1c44e791266a4eabea28176ae99b7c5d64e8",
+      "patch": "patches/diting-media-features-20261010/01_packages_modules_Bluetooth.patch",
+      "sha256": "11943acefbc4d3a8ea16b2918f32299deb923fa3740b49143d565595679f9547"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "0244287aae2fff2f77cfe4e352bb1e4cd2a0b8ba",
+      "original_commit": "ca922f7355df9a29df96cc62452a64a77b8c4729",
+      "patch": "patches/diting-media-features-20261010/02_frameworks_base.patch",
+      "sha256": "e7efe9a9c36e4cb4eeaa09aa55a9dd2bac5c178b84a6a58f529dd010547ee96a"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "84507f50870679def59bd9cd590a342e40faf768",
+      "original_commit": "1f2cf94b1bf5115f61276b96a4b7eb4470c5ccef",
+      "patch": "patches/diting-media-features-20261010/03_packages_apps_Settings.patch",
+      "sha256": "bd2363e55ce1e5aeecb9740a53d20c605d1be6d2eca4c9677582115c44a8ae0b"
+    },
+    {
+      "project": "hardware/interfaces",
+      "base": "13d687a84c834af855bfb314b853b8372a7aa6d9",
+      "original_commit": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
+      "patch": "patches/diting-media-features-20261010/04_hardware_interfaces.patch",
+      "sha256": "a71ceb7e05b4b4665929404c04975a669e5984f4baf76f1522261d843b7d4082"
+    },
+    {
+      "project": "bionic",
+      "base": "ff9fe01e7e1e81febaf32b15fa561aec480a112c",
+      "original_commit": "407839baae0c3f009a8c611ddc69d987b34e3016",
+      "patch": "patches/diting-media-features-20261010/05_bionic.patch",
+      "sha256": "7f4ab5fc2653248a0ca4b747329be9a557ff8d48f5a2a8de274549c0494785b6"
+    },
+    {
+      "project": "vendor/xiaomi/sm8450-common",
+      "base": "9f5f2f5b631508e5120f1925afc766ca645fedaf",
+      "original_commit": "5cb79cca5980aaace751f3f91712fe331080c77b",
+      "patch": "patches/diting-media-features-20261010/06_vendor_xiaomi_sm8450-common.patch",
+      "sha256": "e5d8cad165e069cab3285042241f76caa0f6580ac30ff7aaf1e6dea17f624fdd",
+      "external_binary_inputs_required": true,
+      "original_patch_sha256_with_binary_inputs": "7f55b620ef2775997303b53ad429ebeb18096f13a218b7b812c85134bc29eefa"
+    },
+    {
+      "project": "device/xiaomi/sm8450-common",
+      "base": "b95a4b4cb7a517326ae7d08ab80b58de757b43e3",
+      "original_commit": "2b40903013b066bcd29b97203e7815fee5245c78",
+      "patch": "patches/diting-media-features-20261010/07_device_xiaomi_sm8450-common.patch",
+      "sha256": "19605ee795a4a8a7dfd1b1f5a2cd8d689fa9a241118feb2f64bf3bae8fa49d7b"
+    },
+    {
+      "project": "hardware/qcom-caf/sm8450/display",
+      "base": "aea8d60119598d755f29e2e15312b4ff491d1808",
+      "original_commit": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
+      "patch": "patches/diting-media-features-20261010/08_hardware_qcom-caf_sm8450_display.patch",
+      "sha256": "2e202c84a5afc49d713bacf611a718dc5617646dfc295b09c355f6d2e37a925c"
+    },
+    {
+      "project": "packages/modules/common",
+      "base": "320d46bda2edb31f4378948a91169df8aad86b18",
+      "original_commit": "a0e375760e6c455f359c1c582ce3df90e923873a",
+      "patch": "patches/diting-media-features-20261010/09_packages_modules_common.patch",
+      "sha256": "f752795a1fab1f05e5449298a00a01f67de82d86005d2caff46d7e7cd486ff0f"
     }
   ],
   "upstream_bases": {
@@ -384,24 +449,29 @@
     "packages/modules/adb": "e7ed41a85f5a0a8c9db0ed7ba21c6ebd277b5db6",
     "build/make": "b404a57290647f7970db489301efd4f241ce4691",
     "kernel/xiaomi/sm8450": "eff4b40407a1b6f1b1ab84554cbb540bcb495175",
-    "packages/apps/Aperture": "f7c0a93f787cc9e0db4193b6094bd51575567898"
+    "packages/apps/Aperture": "f7c0a93f787cc9e0db4193b6094bd51575567898",
+    "packages/modules/Bluetooth": "03cb8e33c1613feb45d13dd1af1940e1c0149446",
+    "hardware/interfaces": "13d687a84c834af855bfb314b853b8372a7aa6d9",
+    "bionic": "ff9fe01e7e1e81febaf32b15fa561aec480a112c",
+    "vendor/xiaomi/sm8450-common": "9f5f2f5b631508e5120f1925afc766ca645fedaf",
+    "hardware/qcom-caf/sm8450/display": "aea8d60119598d755f29e2e15312b4ff491d1808"
   },
   "original_final_revisions": {
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
-    "packages/modules/common": "320d46bda2edb31f4378948a91169df8aad86b18",
+    "packages/modules/common": "a0e375760e6c455f359c1c582ce3df90e923873a",
     "prebuilts/openeuicc-deps": "5624506682f476fafab2e2a68ab00f4166609b41",
     "device/xiaomi/diting": "611eb5a10c819307f6e54746442c1edc64ec1ad8",
     "frameworks/native": "f81d10c6065f44dad5e9b18fc332d510177769a5",
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "32241e027f1aab238b18e1f004767abe0854fd5e",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "0244287aae2fff2f77cfe4e352bb1e4cd2a0b8ba",
+    "frameworks/base": "ca922f7355df9a29df96cc62452a64a77b8c4729",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
-    "device/xiaomi/sm8450-common": "b95a4b4cb7a517326ae7d08ab80b58de757b43e3",
+    "device/xiaomi/sm8450-common": "2b40903013b066bcd29b97203e7815fee5245c78",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
     "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
     "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
-    "packages/apps/Settings": "84507f50870679def59bd9cd590a342e40faf768",
+    "packages/apps/Settings": "1f2cf94b1bf5115f61276b96a4b7eb4470c5ccef",
     "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
     "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
     "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
@@ -410,9 +480,14 @@
     "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
     "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
     "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
-    "packages/apps/Aperture": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8"
+    "packages/apps/Aperture": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
+    "packages/modules/Bluetooth": "2a2f1c44e791266a4eabea28176ae99b7c5d64e8",
+    "hardware/interfaces": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
+    "bionic": "407839baae0c3f009a8c611ddc69d987b34e3016",
+    "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
+    "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d"
   },
   "optional_gms_projects": 3,
-  "candidate": "batch14-full-ROM-plus-20261010-camera-component-hotfix",
+  "candidate": "gms-media20261010",
   "source_projects_with_gms": 1190
 }

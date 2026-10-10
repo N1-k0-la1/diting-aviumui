@@ -1,0 +1,71 @@
+{
+  "id": "gms-media20261010",
+  "flavour": "gms",
+  "date": "2026-10-10",
+  "release_type": "testing",
+  "file": "AviumUI-16.2.2-diting-gms-user-media20261010.zip",
+  "bytes": 3076472343,
+  "sha256": "7c73d79205710fc0677c2535a532ba2b0a1b838239e3e6bc907188e012088f04",
+  "kernel_release": "5.10.269-android12-9-g930e6f73f237",
+  "build_type": "user",
+  "build_tags": "release-keys",
+  "bundled_root": false,
+  "gms_bundled": true,
+  "host_qualified": true,
+  "phone_tested": true,
+  "tested_model": "Xiaomi 12T Pro / 22081212UG / GL",
+  "phone_evidence": "Maintainer manual report: installed, booted, checklist passed except LHDC",
+  "lhdc_headset_playback_verified": false,
+  "k50_ultra_phone_tested": false,
+  "dolby_profile_player_sample_not_recorded": true,
+  "clean_or_dirty_install_not_confirmed": true,
+  "root_state_during_tests_not_confirmed": true,
+  "full_hardware_and_long_term_acceptance_complete": false,
+  "new_vanilla_media_candidate_built": false,
+  "gms_certification_or_play_integrity_guarantee": false,
+  "download_links_pending": true,
+  "assets": [
+    {
+      "flavour": "gms",
+      "path": "AviumUI-16.2.2-diting-gms-user-media20261010.zip",
+      "bytes": 3076472343,
+      "sha256": "7c73d79205710fc0677c2535a532ba2b0a1b838239e3e6bc907188e012088f04"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/boot.img",
+      "bytes": 201326592,
+      "sha256": "b078c66bf5c85091a679a01e598cf5b4bc178952b13ca46336a80ef206c4fc37"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/dtbo.img",
+      "bytes": 25165824,
+      "sha256": "d728cfc844781d4b65c78c9ccf38845a0f9226b0a8e989b7a278f91d53452159"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vendor_boot.img",
+      "bytes": 100663296,
+      "sha256": "c8572e885bf9a3ebd31d2b79f4e9fe1c03c7530813067afd9a1147cffda7cf46"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/recovery.img",
+      "bytes": 104857600,
+      "sha256": "91a6fdd869984277239e6a8559fc4a379d307e559eaeadc5388e5792ff37e883"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vbmeta.img",
+      "bytes": 8192,
+      "sha256": "e428ad9decbbedc02092b2f0af84d5084cd399c1bdaa1f5538834b31a9c0d784"
+    },
+    {
+      "flavour": "gms",
+      "path": "gms/vbmeta_system.img",
+      "bytes": 4096,
+      "sha256": "2575860d9a2fc82f1c5b29edf81b18d10a81d01e2b822b0aa68f83d3e126d21f"
+    }
+  ]
+}

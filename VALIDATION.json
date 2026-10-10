@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 50,
+  "ordered_patches": 60,
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
@@ -18,5 +18,23 @@
   "batch14_phone_tested": true,
   "batch14_phone_test_scope": "GMS on Xiaomi 12T Pro only; preliminary acceptance",
   "batch14_vanilla_phone_tested": false,
-  "full_hardware_and_long_term_acceptance_complete": false
+  "full_hardware_and_long_term_acceptance_complete": false,
+  "media_20261010": {
+    "host_build_signing_ota_actual_image_checks_passed": true,
+    "source_projects_clean_pinned": 1190,
+    "encoder_test_cases_passed": 11,
+    "apex_dependency_allowlist_check_passed": true,
+    "phone_user_reported_boot_and_checklist_passed": true,
+    "lhdc_headset_playback_verified": false,
+    "dolby_test_sample_profile_not_recorded": true,
+    "k50_ultra_tested": false,
+    "fresh_independent_full_build_performed": false,
+    "new_public_patch_reconstruction": {
+      "ordered_patches": 60,
+      "reconstructed_files_equal_to_frozen_source": 217,
+      "check": "Isolated reconstruction from local pinned base Git objects, not a fresh remote build",
+      "full_fresh_repo_sync_and_build_performed": false,
+      "all_passed": true
+    }
+  }
 }

@@ -17,3 +17,13 @@ the marble device tree and unrelated patch sets were not imported wholesale.
 The earlier unofficial AviumUI 16.2.1 image was a reference and recovery source,
 not the direct source checkout or kernel binary used for this build.
 User-installed root and hiding modules are separate from the ROM.
+
+## 20261010 媒体整合 / Media integration
+
+- [EvoX-LHDC](https://github.com/EvoX-LHDC)：Android 16 LHDC 集成和头文件的参考来源，保留导入源码版权声明。
+- [Savitech / TheXPerienceProject](https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc)：本次匹配的 LHDC 编码库来源；库的许可归各权利人所有。
+- [Avicii-Labs](https://github.com/Avicii-Labs/android_hardware_dolby)：杜比视频组件与集成参考；本项目按 diting 做视频子集、ABI 桥接和策略适配。
+- Xiaomi 与 Qualcomm、[diting 固件归档](https://dumps.tadiphone.dev/dumps/xiaomi/diting)：硬件基础与 diting 屏幕的杜比配置。
+- 感谢实际测试和反馈的用户。新增媒体组件不构成相关商标、格式或流媒体认证。
+
+- **@anatdx：我的精神支柱。**

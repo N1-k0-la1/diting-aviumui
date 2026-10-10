@@ -1,0 +1,14 @@
+diff --git a/libc/Android.bp b/libc/Android.bp
+index efba83b..d2cb202 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -1778,7 +1778,9 @@ cc_defaults {
+     static_libs: ["libasync_safe"],
+     apex_available: [
+         "//apex_available:platform",
++        "com.android.bt",
+     ],
++    min_sdk_version: "33",
+ 
+     static: {
+         system_shared_libs: [],

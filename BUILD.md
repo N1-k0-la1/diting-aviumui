@@ -1,3 +1,31 @@
+# 20261010 媒体源码输入
+
+当前是 60 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合。
+新 GMS 包启用 `TARGET_DITING_DOLBY_VISION=true`；杜比源码默认关闭，Vanilla 媒体包尚未编译验收。
+软件 LHDC 已整合，不启用 RAW 或未经验证的 Qualcomm DSP offload。
+
+在应用补丁之前，另行取得精确 Via APK，以及两个固定版本的媒体 donor checkout。
+SHA256、来源及文件清单见 external-artifacts.json；本仓库不包含这些二进制。
+
+```sh
+git clone https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc.git lhdc-donor
+git -C lhdc-donor checkout 63fa4e2f923721ef7e1d25c90a5268afd196df8d
+git clone https://github.com/Avicii-Labs/android_hardware_dolby.git dolby-donor
+git -C dolby-donor checkout 30250166e08e6b4bc795aa361446851a0b2970be
+git -C dolby-donor lfs pull
+python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor --dolby-checkout dolby-donor --output media-inputs
+```
+
+把新建 media-inputs 的绝对路径传给下方 `--media-input-dir`。工具在写入源码前核对全部 23 个媒体输入。
+额外 XML、init、策略、ABI 桥接源码、LHDC 头文件和 diting 原厂屏幕配置在有序文本补丁中。
+构建者需按自己的使用/分发范围确认外部专有组件许可；提供来源不代表转授其许可。
+
+English: The series now has 60 ordered patches. Supply exact donor ELF inputs separately;
+the preparation tool verifies pinned commits and SHA256 before creating a new input directory.
+The GMS media candidate enables `TARGET_DITING_DOLBY_VISION=true`; the feature defaults off.
+No new Vanilla media artifact has been built or qualified. Historical validation details follow.
+---
+
 # Build / 构建
 
 使用 Linux 文件系统中的源码目录（WSL2 请使用 ext4 虚拟磁盘内目录），安装 AOSP / LineageOS Android 16 所需的主机工具、Git LFS 和 repo。
@@ -17,9 +45,9 @@ repo forall -c 'git lfs pull'
 本仓库不附带 APK，也不绕过文件校验。
 
 ```sh
-python3 "$PATCH_PROJECT/tools/apply-patches.py" "$PWD" --via-apk /absolute/path/to/Via-7.3.3.apk
+python3 "$PATCH_PROJECT/tools/apply-patches.py" "$PWD" --via-apk /absolute/path/to/Via-7.3.3.apk --media-input-dir /absolute/path/to/media-inputs
 export GOGC=50 GOMEMLIMIT=18GiB
-export WITH_GMS=false AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true
+export WITH_GMS=false AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true TARGET_DITING_DOLBY_VISION=false
 export AVIUM_VERSION_APPEND_TIME_OF_DAY=true
 source build/envsetup.sh
 lunch lineage_diting-bp4a-user
@@ -38,7 +66,7 @@ m target-files-package otatools -j4
 `META/apkcerts.txt`、`META/apexkeys.txt`、`META/misc_info.txt`，并使用其 otatools 完成重签名和 OTA 生成。
 不要只执行默认 APK `-d` 映射就声称整个系统已经私有签名；嵌套 APK、共享 UID、APEX、payload 和 AVB 链还需独立核对。
 遵循 [AOSP release signing](https://source.android.com/docs/core/ota/sign_builds) 并以实际工具的帮助和元数据为准。
-维护者私钥不公开，因此自己的签名、日期和构建环境不同，输出字节和哈希不会与 batch13 相同。
+维护者私钥不公开，因此自己的签名、日期和构建环境不同，输出字节和哈希不会与 发布包相同。
 
 ## Validation scope / 验证范围
 
@@ -51,7 +79,7 @@ m target-files-package otatools -j4
 Use a Linux filesystem, repo, Git LFS and Android 16 host dependencies.
 Initialize this manifest, sync pinned sources, provide the exact official Via APK, and apply the series once to a fresh checkout.
 The commands above build real user target-files. Generate and audit your own complete signing material before producing an OTA.
-Private maintainer keys are not distributed; your build is not byte-for-byte reproducible as the signed batch13 ZIP.
+Private maintainer keys are not distributed; your build is not byte-for-byte reproducible as the signed release ZIP.
 Do not substitute a newer Via binary without an explicit source/version change and validation.
 
 ## GMS / 可选 Google 组件
@@ -62,7 +90,7 @@ Vanilla 使用上面的 `WITH_GMS=false`。GMS 在应用补丁之前加入三个
 mkdir -p .repo/local_manifests
 cp "$PATCH_PROJECT/manifests/gms.xml" .repo/local_manifests/gms.xml
 REPO_SKIP_SELF_UPDATE=1 repo sync vendor/pixel/gms vendor/pixel/clocks vendor/pixel/sounds --no-manifest-update -c -j3 --no-tags --no-clone-bundle
-export WITH_GMS=true AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true
+export WITH_GMS=true AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true TARGET_DITING_DOLBY_VISION=true
 source build/envsetup.sh
 lunch lineage_diting-bp4a-user
 m installclean

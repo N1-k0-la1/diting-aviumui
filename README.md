@@ -1,3 +1,26 @@
+# 当前版本：20261010 GMS 媒体测试版
+
+本批整合相机视频切换修复、LHDC V3/V4/V5 软件编码和杜比视界视频组件。
+12T Pro 已刷入开机，维护者反馈手动验收除 LHDC 外正常；尚无 LHDC 耳机实测，
+本批 K50 至尊版和长期稳定性仍待反馈。杜比视频样本/profile/播放器范围未记录。
+仅构建了新 **GMS** 包，旧 Vanilla 不是同批媒体版。
+
+- [版本与验收范围 / Current release](MEDIA-RELEASE.md)
+- [本批安装说明 / Installation](INSTALL-MEDIA.md)
+- [精确成品校验 / Artifact metadata](MEDIA-RELEASE.json)
+- [构建 / Build](BUILD.md) · [鸣谢 / Credits](CREDITS.md)
+
+源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 60 份有序补丁。
+Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。
+本仓库未托管 ROM 二进制；网盘发布由维护者提供。
+
+English: The latest artifact is the GMS-only **media20261010 testing release**.
+The maintainer booted it on 12T Pro and reported the checklist passed except LHDC.
+Actual LHDC headset playback, K50 Ultra and long-term testing remain pending;
+specific Dolby profile coverage was not recorded. See the current release and installation links above.
+Older release notes follow as historical records.
+---
+
 # diting-aviumui
 
 AviumUI 16.2.2 / Android 16 的 diting 非官方定制项目，面向 Xiaomi 12T Pro 和 Redmi K50 至尊版。

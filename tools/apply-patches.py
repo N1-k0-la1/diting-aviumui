@@ -26,15 +26,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('source', type=pathlib.Path)
     parser.add_argument('--via-apk', required=True, type=pathlib.Path)
+    parser.add_argument('--media-input-dir', required=True, type=pathlib.Path,
+                        help='Prepared exact media ELF inputs; see prepare-media-inputs.py')
     args = parser.parse_args()
     source = args.source.resolve(strict=True)
     series = json.loads((PACKAGE / 'patch-series.json').read_text())
-    via = json.loads((PACKAGE / 'external-artifacts.json').read_text())['via']
+    artifacts = json.loads((PACKAGE / 'external-artifacts.json').read_text())
+    via = artifacts['via']
+    media = artifacts['media']['files']
+    inputs = args.media_input_dir.resolve(strict=True)
     marker = source / '.patch-application-in-progress'
     if marker.exists():
         raise RuntimeError('Previous application exists; inspect manually or use a fresh checkout.')
     if digest(args.via_apk) != via['sha256']:
         raise RuntimeError('Via APK SHA256 differs from the verified official 7.3.3 artifact.')
+    for item in media:
+        supplied = contained(inputs, item['project']+'/'+item['path'])
+        if digest(supplied) != item['sha256']:
+            raise RuntimeError(f'Media input SHA256 mismatch: {item["path"]}')
     for item in series['patches']:
         patch = contained(PACKAGE, item['patch'])
         if digest(patch) != item['sha256']:
@@ -57,8 +66,20 @@ def main():
     if digest(destination) != via['sha256']:
         raise RuntimeError('Via copied artifact checksum mismatch.')
     subprocess.run(['git', '-C', str(destination.parent), 'add', '--', destination.name], check=True)
+    for item in media:
+        supplied = contained(inputs, item['project']+'/'+item['path'])
+        project = contained(source, item['project'])
+        destination = contained(project, item['path'])
+        if destination.exists():
+            raise RuntimeError(f'Unexpected existing media input: {item["path"]}')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(supplied, destination)
+        destination.chmod(0o755 if item['mode'] == '100755' else 0o644)
+        if digest(destination) != item['sha256']:
+            raise RuntimeError(f'Copied media input mismatch: {item["path"]}')
+        subprocess.run(['git', '-C', str(project), 'add', '--', item['path']], check=True)
     marker.write_text('Patch application complete. Changes are staged, not committed.\n')
-    print('All source patches and the exact Via APK applied. Build/sign/phone validation remain.')
+    print('All source patches, exact media inputs and Via APK applied. Build/sign/phone validation remain.')
 
 if __name__ == '__main__':
     main()

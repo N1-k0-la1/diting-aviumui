@@ -1,3 +1,10 @@
+# 当前 20261010 GMS 媒体版
+
+本批请先读 [INSTALL-MEDIA.md](INSTALL-MEDIA.md)，下载 media20261010 的完整 ZIP 与同批六镜像。
+下方列出的 batch14 文件和工具包仅用于旧版。不要混用新旧 boot / vendor_boot / recovery。
+For media20261010, follow INSTALL-MEDIA.md. The batch14 filenames below are historical.
+---
+
 # Windows 刷机教程：AviumUI 16.2.2 diting 测试版
 
 本文讲完整 ROM 的首次安装／重装，会清空手机内部存储。**已装好 ROM、只想刷 root 的用户不要重走本流程，不要清数据；使用当前版本的原始 boot 在所用 root 管理器中修补即可。**

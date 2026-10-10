@@ -1,3 +1,10 @@
+# 当前媒体测试版
+
+最新 GMS 完整包及实测限制见 [MEDIA-RELEASE.md](MEDIA-RELEASE.md)，安装见
+[INSTALL-MEDIA.md](INSTALL-MEDIA.md)。下方 batch14 / batch13 是历史记录，不能用来替代本批元数据。
+The latest GMS media release is described in MEDIA-RELEASE.md. Notes below are historical.
+---
+
 # 第十四批 Vanilla / GMS 候选
 
 两个私有签名 `user/release-keys` 候选均已完成编译、签名、OTA/payload、实际镜像、模块和 Windows 独立回读检查。

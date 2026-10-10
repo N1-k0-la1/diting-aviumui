@@ -1,0 +1,27 @@
+diff --git a/composer/hwc_display.cpp b/composer/hwc_display.cpp
+index 48138c6..5424be1 100644
+--- a/composer/hwc_display.cpp
++++ b/composer/hwc_display.cpp
+@@ -1746,14 +1746,20 @@ HWC2::Error HWCDisplay::GetHdrCapabilities(uint32_t *out_num_types, int32_t *out
+     num_types = UINT32(Hdr::HLG) - 1;
+   }
+ 
+-  // We support HDR10, HLG and HDR10_PLUS.
++  // Dolby Vision decoder/display components are installed only by the opt-in product.
++  // Keep the default build and existing HDR10/HLG/HDR10+ capabilities unchanged.
++  const bool dolby_vision_enabled = property_get_bool("ro.vendor.dolbyvision.enabled", false);
++  if (dolby_vision_enabled) {
++    num_types++;
++  }
++
+   if (out_types == nullptr) {
+     *out_num_types = num_types;
+   } else {
+     uint32_t max_out_types = std::min(*out_num_types, num_types);
+     int32_t type = static_cast<int32_t>(Hdr::DOLBY_VISION);
+     for (int32_t i = 0; i < max_out_types; i++) {
+-      while (type == static_cast<int32_t>(Hdr::DOLBY_VISION) /* Skip list */) {
++      while (!dolby_vision_enabled && type == static_cast<int32_t>(Hdr::DOLBY_VISION)) {
+         // Skip the type
+         type++;
+       }

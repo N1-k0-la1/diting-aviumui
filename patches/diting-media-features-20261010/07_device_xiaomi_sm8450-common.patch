@@ -1,0 +1,25 @@
+diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
+index d821ec3..bf12a4a 100644
+--- a/BoardConfigCommon.mk
++++ b/BoardConfigCommon.mk
+@@ -248,3 +248,7 @@ WIFI_DRIVER_STATE_ON := "ON"
+ WIFI_FEATURE_HOSTAPD_11AX := true
+ WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
+ WPA_SUPPLICANT_VERSION := VER_0_8_X
++
++ifeq ($(TARGET_DITING_DOLBY_VISION),true)
++include vendor/xiaomi/sm8450-common/dolby-vision/BoardConfigVision.mk
++endif
+diff --git a/common.mk b/common.mk
+index 3736d10..7b54dea 100644
+--- a/common.mk
++++ b/common.mk
+@@ -497,3 +497,8 @@ PRODUCT_PACKAGES += \
+     firmware_qca6490_wlan_mac.bin_symlink \
+     firmware_qca6750_WCNSS_qcom_cfg.ini_symlink \
+     firmware_qca6750_wlan_mac.bin_symlink
++
++# Dolby Vision is opt-in until real decoder and HDR playback validation completes.
++ifeq ($(TARGET_DITING_DOLBY_VISION),true)
++$(call inherit-product, vendor/xiaomi/sm8450-common/dolby-vision/vision.mk)
++endif

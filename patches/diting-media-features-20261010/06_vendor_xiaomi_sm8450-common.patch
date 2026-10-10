@@ -1,0 +1,4502 @@
+diff --git a/dolby-vision/Android.bp b/dolby-vision/Android.bp
+new file mode 100644
+index 0000000..14433a1
+--- /dev/null
++++ b/dolby-vision/Android.bp
+@@ -0,0 +1,534 @@
++// SPDX-License-Identifier: Apache-2.0
++// Vision-only selection from Avicii-Labs/android_hardware_dolby, commit 30250166e08e6b4bc795aa361446851a0b2970be.
++cc_prebuilt_library_shared {
++    name: "c2.dolby.avc.dec",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.avc.dec.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "libcodec2_soft_common",
++                "libcutils",
++                "liblog",
++                "libsfplugin_ccodec_utils",
++                "libstagefright_foundation-swiitchoff",
++                "c2.dolby.store",
++                "c2.dolby.client",
++                "libstagefright_bufferpool@2.0.1",
++                "libdolbyvision",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.avc.sec.dec",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.avc.sec.dec.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "libcodec2_soft_common",
++                "libcutils",
++                "liblog",
++                "libsfplugin_ccodec_utils",
++                "libstagefright_foundation-swiitchoff",
++                "c2.dolby.store",
++                "c2.dolby.client",
++                "libstagefright_bufferpool@2.0.1",
++                "libdolbyvision",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.client",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.client.so",
++            ],
++            shared_libs: [
++                "libcodec2_hidl_shim",
++                "libcodec2_shim",
++                "libbase",
++                "liblog",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libhidlbase",
++                "libcutils",
++                "libstagefright_bufferpool@2.0.1",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.egl",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.egl.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "libui",
++                "libGLESv3",
++                "libEGL",
++                "liblog",
++                "libcutils",
++                "libstagefright_foundation-swiitchoff",
++                "libnativewindow",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.hevc.dec",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.hevc.dec.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "libcodec2_soft_common",
++                "libcutils",
++                "liblog",
++                "libsfplugin_ccodec_utils",
++                "libstagefright_foundation-swiitchoff",
++                "c2.dolby.store",
++                "c2.dolby.client",
++                "libstagefright_bufferpool@2.0.1",
++                "libdolbyvision",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.hevc.enc",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.hevc.enc.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "libcodec2_soft_common",
++                "libcutils",
++                "liblog",
++                "libsfplugin_ccodec_utils",
++                "libstagefright_foundation-swiitchoff",
++                "c2.dolby.store",
++                "c2.dolby.client",
++                "libstagefright_bufferpool@2.0.1",
++                "libdolbyvision",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.hevc.sec.dec",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.hevc.sec.dec.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "libcodec2_soft_common",
++                "libcutils",
++                "liblog",
++                "libsfplugin_ccodec_utils",
++                "libstagefright_foundation-swiitchoff",
++                "c2.dolby.store",
++                "c2.dolby.client",
++                "libstagefright_bufferpool@2.0.1",
++                "libdolbyvision",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "c2.dolby.store",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/c2.dolby.store.so",
++            ],
++            shared_libs: [
++                "libcodec2_shim",
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "liblog",
++                "libcutils",
++                "libdmabufheap",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "libdolbyottcameracontrol",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/libdolbyottcameracontrol.so",
++            ],
++            shared_libs: [
++                "liblog",
++                "libGLESv3",
++                "libEGL",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "libdolbyvision",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/libdolbyvision.so",
++            ],
++            shared_libs: [
++                "libbase",
++                "libcodec2",
++                "libcodec2_vndk",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "liblog",
++                "libEGL",
++                "libGLESv2",
++                "libui",
++                "libutils",
++                "libstagefright_foundation-swiitchoff",
++                "libcutils",
++                "libdolbyottcameracontrol",
++                "libhidlbase",
++                "c2.dolby.egl",
++                "c2.dolby.client",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_binary {
++    name: "dolbycodec2",
++    owner: "xiaomi",
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/bin/hw/dolbycodec2",
++            ],
++            shared_libs: [
++                "libbase",
++                "liblog",
++                "libcodec2",
++                "libcodec2_vndk",
++                "libutils",
++                "android.hardware.media.c2@1.0",
++                "libcodec2_hidl@1.0",
++                "libavservices_minijail_vendor",
++                "libbinder",
++                "libhidlbase",
++                "c2.dolby.store",
++                "libcutils",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    strip: {
++        none: true,
++    },
++    prefer: true,
++    relative_install_path: "hw",
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "libstagefright_foundation-swiitchoff",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm: {
++            srcs: [
++                "proprietary/vendor/lib/libstagefright_foundation-swiitchoff.so",
++            ],
++            shared_libs: [
++                "libbinder",
++                "libutils",
++                "libcutils",
++                "liblog",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/libstagefright_foundation-swiitchoff.so",
++            ],
++            shared_libs: [
++                "libbinder",
++                "libutils",
++                "libcutils",
++                "liblog",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "both",
++    prefer: true,
++    soc_specific: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "vendor.dolby.dvs@1.0",
++    owner: "xiaomi",
++    strip: {
++        none: true,
++    },
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/lib64/vendor.dolby.dvs@1.0.so",
++            ],
++            shared_libs: [
++                "libhidlbase",
++                "liblog",
++                "libutils",
++                "libcutils",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    prefer: true,
++    soc_specific: true,
++}
++
++prebuilt_etc_xml {
++    name: "vendor.dolby.media.dvs-service.xml",
++    owner: "xiaomi",
++    src: "proprietary/vendor/etc/vintf/manifest/vendor.dolby.media.dvs-service.xml",
++    filename_from_src: true,
++    sub_dir: "vintf/manifest",
++    soc_specific: true,
++}
++
++cc_prebuilt_binary {
++    name: "dvs-hal-service",
++    owner: "xiaomi",
++    target: {
++        android_arm64: {
++            srcs: [
++                "proprietary/vendor/bin/hw/dvs-hal-service",
++            ],
++            shared_libs: [
++                "vendor.dolby.dvs@1.0",
++                "libhidlbase",
++                "liblog",
++                "libutils",
++                "libcutils",
++                "libbinder",
++                "libc++",
++                "libc",
++                "libm",
++                "libdl",
++            ],
++        },
++    },
++    compile_multilib: "64",
++    strip: {
++        none: true,
++    },
++    prefer: true,
++    relative_install_path: "hw",
++    soc_specific: true,
++}
++
++
++cc_library_shared {
++    name: "libcodec2_hidl_shim",
++    srcs: ["libcodec2_hidl_shim.cpp"],
++    shared_libs: ["libcodec2_hidl@1.0"],
++    vendor_available: true,
++    compile_multilib: "64",
++}
++
++prebuilt_etc_xml {
++    name: "diting.dolby.vision.c2.xml",
++    src: "proprietary/vendor/etc/vintf/manifest/diting.dolby.vision.c2.xml",
++    filename_from_src: true,
++    sub_dir: "vintf/manifest",
++    soc_specific: true,
++}
+diff --git a/dolby-vision/BoardConfigVision.mk b/dolby-vision/BoardConfigVision.mk
+new file mode 100644
+index 0000000..7c293e3
+--- /dev/null
++++ b/dolby-vision/BoardConfigVision.mk
+@@ -0,0 +1,2 @@
++BOARD_VENDOR_SEPOLICY_DIRS += vendor/xiaomi/sm8450-common/dolby-vision/sepolicy
++DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += vendor/xiaomi/sm8450-common/dolby-vision/framework_matrix.xml
+diff --git a/dolby-vision/PROVENANCE.json b/dolby-vision/PROVENANCE.json
+new file mode 100644
+index 0000000..814943e
+--- /dev/null
++++ b/dolby-vision/PROVENANCE.json
+@@ -0,0 +1,37 @@
++{
++  "video_component_repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
++  "video_component_commit": "30250166e08e6b4bc795aa361446851a0b2970be",
++  "stock_display_config": {
++    "repository": "https://dumps.tadiphone.dev/dumps/xiaomi/diting",
++    "branch": "missi_phone_global-user-14-UKQ1.230917.001-V816.0.12.0.ULFMIXM-release-keys",
++    "commit": "89ba0372274372ab75bc2510010f6eb15fe93741",
++    "file": "vendor/etc/dolby_vision.cfg",
++    "raw_url": "https://dumps.tadiphone.dev/api/v4/projects/4760/repository/files/vendor%2Fetc%2Fdolby_vision.cfg/raw?ref=89ba0372274372ab75bc2510010f6eb15fe93741",
++    "sha256": "d3151382a59cf56f23bb1e7bc8f52f9635b735343ca98b4e32e0349447705594"
++  },
++  "audio_dap_or_dolby_app_included": false,
++  "runtime_verified": false,
++  "sha256": {
++    "proprietary/vendor/bin/hw/dolbycodec2": "9c25d004895d9ed041f73df572ae6795b6a39b00bdff65f36bb5ed08548f779a",
++    "proprietary/vendor/bin/hw/dvs-hal-service": "470f75f7ce51bd629fd127278d5ed92f96f72ef36648f472abee820e782e87c1",
++    "proprietary/vendor/etc/dolby_vision.cfg": "d3151382a59cf56f23bb1e7bc8f52f9635b735343ca98b4e32e0349447705594",
++    "proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc": "c9d0ed250dcd175ab1d7f53075a9dfc63855d27683119272a7f2fa7175e95bff",
++    "proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc": "f4cda4566f11da563d712aacccbe91a97d8af7c72da87150886ecda21b395bf3",
++    "proprietary/vendor/etc/media_codecs_dolby_vision.xml": "a3fa53185800e467c9b803843c55d5abe54243badaa6697b75bebe620fbb0756",
++    "proprietary/vendor/etc/vintf/manifest/diting.dolby.vision.c2.xml": "84934891737f3a7b0c96234f6fc69606f02cecb435bd29c7f18719952c6d0933",
++    "proprietary/vendor/etc/vintf/manifest/vendor.dolby.media.dvs-service.xml": "52dadfd7f4e1b4f62995eb53bb314404ea6a74b16cded00e04bc07da567a1101",
++    "proprietary/vendor/lib/libstagefright_foundation-swiitchoff.so": "f9be6f76ca4d3f54ec747bfb0c0866556e5dd0f59adafcdf614f8df8eb3223d2",
++    "proprietary/vendor/lib64/c2.dolby.avc.dec.so": "e130252b08519cfd7d89ec0c140f48e6ac2ab7305b43869f57b7402afcbc46cd",
++    "proprietary/vendor/lib64/c2.dolby.avc.sec.dec.so": "edb44ba0b8d45aed7b51e896f9d8e5a131dd6b45b036500e263dba29de06c6ff",
++    "proprietary/vendor/lib64/c2.dolby.client.so": "7227583b6a737b49cce7d0a57ce8dd88f575bfc4d0e70763f8e3d689848aadc9",
++    "proprietary/vendor/lib64/c2.dolby.egl.so": "768fb7f54d0547e506e0e020c8ea80510efcbeb4b8065f040e449343d700e210",
++    "proprietary/vendor/lib64/c2.dolby.hevc.dec.so": "9922529250e7a804649005a3bf04389038b966114f65b67bad33f20c62566631",
++    "proprietary/vendor/lib64/c2.dolby.hevc.enc.so": "ffbcdeaa20c4b852f1e57503dffb279691fb3c6c8b58be6a1f01a6446ac775fd",
++    "proprietary/vendor/lib64/c2.dolby.hevc.sec.dec.so": "aa1db30e6e1c93dbb4324fed255e8cb723d7d524c902475c3ad1261a30376eea",
++    "proprietary/vendor/lib64/c2.dolby.store.so": "f6bb028a29ac38ebb89362ddee4bdf023a65f3f28047de58c763a8951a311692",
++    "proprietary/vendor/lib64/libdolbyottcameracontrol.so": "289fb04c62fef63d2c4e6786f618f96c375fe44fbc565ad4dacc38cbca861e01",
++    "proprietary/vendor/lib64/libdolbyvision.so": "ad1f3b9a7e88ca128853742ed5228e852f865f94639de4b854a7af3efead1ed7",
++    "proprietary/vendor/lib64/libstagefright_foundation-swiitchoff.so": "2f0cc2f878a14fe20d0f6efc26a3a3131a6f6b0c09a20d29db828545cd5879c7",
++    "proprietary/vendor/lib64/vendor.dolby.dvs@1.0.so": "2c5d4eece7d807d79cf2551e3da1a6f0fbeb7a4bbc1ae4353ff3243ecffdedeb"
++  }
++}
+diff --git a/dolby-vision/framework_matrix.xml b/dolby-vision/framework_matrix.xml
+new file mode 100644
+index 0000000..6fe07b6
+--- /dev/null
++++ b/dolby-vision/framework_matrix.xml
+@@ -0,0 +1,12 @@
++<compatibility-matrix version="1.0" type="framework">
++    <hal format="hidl" optional="true">
++        <name>android.hardware.media.c2</name>
++        <version>1.0</version>
++        <interface><name>IComponentStore</name><instance>dolby</instance></interface>
++    </hal>
++    <hal format="hidl" optional="true">
++        <name>vendor.dolby.dvs</name>
++        <version>1.0</version>
++        <interface><name>IDvs</name><instance>dvs-hal-service</instance></interface>
++    </hal>
++</compatibility-matrix>
+diff --git a/dolby-vision/libcodec2_hidl_shim.cpp b/dolby-vision/libcodec2_hidl_shim.cpp
+new file mode 100644
+index 0000000..69acd41
+--- /dev/null
++++ b/dolby-vision/libcodec2_hidl_shim.cpp
+@@ -0,0 +1,9 @@
++// SPDX-License-Identifier: Apache-2.0
++// The old and templated objcpy take three pointer/reference arguments and return bool.
++// Keep the third argument intact; the donor's bool/bool prototype truncates it.
++extern "C" bool _ZN7android8hardware5media2c24V1_05utils6objcpyEPNS3_10WorkBundleERKNSt3__14listINS7_10unique_ptrI6C2WorkNS7_14default_deleteISA_EEEENS7_9allocatorISD_EEEEPNS_16BufferPoolSenderINS4_15BufferPoolTypesEEE(
++    void* bundle, const void* works, void* sender);
++extern "C" bool _ZN7android8hardware5media2c24V1_05utils6objcpyEPNS3_10WorkBundleERKNSt3__14listINS7_10unique_ptrI6C2WorkNS7_14default_deleteISA_EEEENS7_9allocatorISD_EEEEPNS4_16BufferPoolSenderE(
++    void* bundle, const void* works, void* sender) {
++    return _ZN7android8hardware5media2c24V1_05utils6objcpyEPNS3_10WorkBundleERKNSt3__14listINS7_10unique_ptrI6C2WorkNS7_14default_deleteISA_EEEENS7_9allocatorISD_EEEEPNS_16BufferPoolSenderINS4_15BufferPoolTypesEEE(bundle,works,sender);
++}
+diff --git a/dolby-vision/media_codecs_cape.xml b/dolby-vision/media_codecs_cape.xml
+new file mode 100644
+index 0000000..068f1e1
+--- /dev/null
++++ b/dolby-vision/media_codecs_cape.xml
+@@ -0,0 +1,331 @@
++<?xml version="1.0" encoding="utf-8" ?>
++<!--
++    Copyright (c) 2018-2021 Qualcomm Technologies, Inc.
++    All Rights Reserved.
++    Confidential and Proprietary - Qualcomm Technologies, Inc.
++
++    Not a Contribution.
++
++    Copyright (C) 2012-2018 The Linux Foundation. All rights reserved.
++    Copyright (C) 2012-2013 The Android Open Source Project
++
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++
++<!--
++"performance-point"
++    Vendor-guaranteed performance advertised to the applications
++        <Limit name="performance-point-widthxheight" value="fps" />
++
++    -For each of the resolutions, the advertised fps is the max supported,
++    with HW-friendly color format and considering video-only.
++    -Performance for any intermediate resolution will be that of the
++    next-higher-advertised-resolution.
++
++    standard sizes: 480p/576p (SD), 720p (HD), 1080p (FHD), 2160p (UHD)
++    standard frame rates: 24, 25, 30, 48+, 50, 60, 100*, 120*, 200*, 240* fps
++        * HD+ only
++        + SD only
++    - All supported standard performance points are listed (unless they are
++    covered by another listed standard performance point)
++    - Non-standard performance points are listed along with all the standard
++    performance points covered by them.
++-->
++
++<!--
++ Lahaina Non-Secure decoder capabilities
++ (MB is defined as 16x16)
++ _____________________________________________________________________
++ | Codec       | W       H       fps     Mbps    MB/s        Max MB/s|
++ |_____________|_____________________________________________________|
++ | h264        | 1920    1088    480     220     3916800     7776000 |
++ |             | 3820    2160    240     220     7735500             |
++ |             | 4096    2160    120     220     4147200             |
++ |             | 7680    4320    60      220     7776000             |
++ | hevc        | 1920    1088    480     160     3916800     7776000 |
++ |             | 3820    2160    240     160     7735500             |
++ |             | 4096    2160    120     160     4147200             |
++ |             | 7680    4320    60      160     7776000             |
++ | vp9         | 1920    1088    480     100     3916800     7776000 |
++ |             | 3820    2160    240     100     7735500             |
++ |             | 4096    2160    120     100     4147200             |
++ |             | 7680    4320    60      100     7776000             |
++ |_____________|_____________________________________________________|
++
++ Lahaina Secure decoder capabilities
++ (MB is defined as 16x16)
++ __________________________________________________________________
++ | Codec    | W       H       fps     Mbps    MB/s        Max MB/s|
++ |__________|_____________________________________________________|
++ | h264     | 1280    720     60      40      216000      2073600 |
++ |          | 1920    1088    60      40      489600              |
++ |          | 3840    2160    60      40      1944000             |
++ |          | 4096    2160    60      40      2073600             |
++ |          | 4096    2304    30      40      1105920             |
++ | hevc     | 1280    720     60      40      216000      2073600 |
++ |          | 1920    1088    60      40      489600              |
++ |          | 3840    2160    60      40      1944000             |
++ |          | 4096    2160    60      40      2073600             |
++ |          | 4096    2304    30      40      1105920             |
++ | vp9      | 1280    720     60      40      216000      2073600 |
++ |          | 1920    1088    60      40      489600              |
++ |          | 3840    2160    60      40      1944000             |
++ |          | 4096    2160    60      40      2073600             |
++ |          | 4096    2304    30      40      1105920             |
++ |__________|_____________________________________________________|
++
++ Lahaina Non-Secure encoder capabilities (Secure not supported)
++ (MB is defined as 16x16)
++ __________________________________________________________________
++ | Codec    | W       H       fps     Mbps    MB/s        Max MB/s|
++ |__________|_____________________________________________________|
++ | h264     | 1280    720     960     220     3456000     3916800 |
++ |          | 1920    1088    480     220     3916800             |
++ |          | 3840    2160    120     220     3888000             |
++ |          | 4096    2160    60      220     2073600             |
++ |          | 8192    4320    24      220     3317760             |
++ | hevc     | 1280    720     960     160     3456000     3916800 |
++ |          | 1920    1088    480     160     3916800             |
++ |          | 3840    2160    120     160     3888000             |
++ |          | 4096    2160    60      160     2073600             |
++ |          | 8192    4320    24      160     3317760             |
++ |__________|_____________________________________________________|
++-->
++
++<MediaCodecs>
++    <Include href="media_codecs_dolby_vision.xml" />
++    <Include href="media_codecs_c2_audio.xml" />
++    <Settings>
++        <Setting name="max-video-encoder-input-buffers" value="11" />
++    </Settings>
++    <Decoders>
++        <!-- C2 decoders -->
++        <MediaCodec name="c2.qti.avc.decoder" type="video/avc">
++            <Alias name="OMX.qcom.video.decoder.avc"/>
++            <Limit name="size" min="96x96" max="8192x8192" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-138240" />
++            <Limit name="blocks-per-second" range="36-7776000" />
++            <Limit name="bitrate" range="1-220000000" />
++            <Limit name="frame-rate" range="1-960" />
++            <Limit name="concurrent-instances" max="16" />
++            <Feature name="adaptive-playback" />
++            <Limit name="performance-point-1280x720" value="960" />
++            <Limit name="performance-point-1920x1080" value="480" />
++            <Limit name="performance-point-3840x2160" value="240" />
++            <Limit name="performance-point-4096x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.avc.decoder.low_latency" type="video/avc">
++            <Alias name="OMX.qcom.video.decoder.avc.low_latency"/>
++            <Limit name="size" min="96x96" max="8192x8192" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-138240" />
++            <Limit name="blocks-per-second" range="36-3916800" />
++            <Limit name="bitrate" range="1-70000000" />
++            <Limit name="frame-rate" range="1-480" />
++            <Limit name="concurrent-instances" max="16" />
++            <Feature name="adaptive-playback" />
++            <Feature name="low-latency" />
++            <Limit name="performance-point-1280x720" value="480" />
++            <Limit name="performance-point-1920x1080" value="240" />
++            <Limit name="performance-point-3840x2160" value="120" />
++            <Limit name="performance-point-4096x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="30" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.avc.decoder.secure" type="video/avc" >
++            <Alias name="OMX.qcom.video.decoder.avc.secure"/>
++            <Limit name="size" min="96x96" max="4096x4096" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-34560" />
++            <Limit name="blocks-per-second" min="36" max="2073600" />
++            <Limit name="bitrate" range="1-40000000" />
++            <Limit name="frame-rate" range="1-60" />
++            <Feature name="adaptive-playback" />
++            <Feature name="secure-playback" required="true" />
++            <Feature name="low-latency" />
++            <Limit name="concurrent-instances" max="3" />
++            <Limit name="performance-point-3840x2160" value="60" />
++            <Limit name="performance-point-4096x2304" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.hevc.decoder" type="video/hevc" >
++            <Alias name="OMX.qcom.video.decoder.hevc"/>
++            <Limit name="size" min="128x128" max="7680x7680" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-138240" />
++            <Limit name="blocks-per-second" min="36" max="7776000" />
++            <Limit name="bitrate" range="1-160000000" />
++            <Limit name="frame-rate" range="1-960" />
++            <Feature name="adaptive-playback" />
++            <Limit name="concurrent-instances" max="16" />
++            <Limit name="performance-point-1280x720" value="960" />
++            <Limit name="performance-point-1920x1080" value="480" />
++            <Limit name="performance-point-3840x2160" value="240" />
++            <Limit name="performance-point-4096x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.hevc.decoder.low_latency" type="video/hevc" >
++            <Alias name="OMX.qcom.video.decoder.hevc.low_latency"/>
++            <Limit name="size" min="128x128" max="7680x7680" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-138240" />
++            <Limit name="blocks-per-second" min="36" max="3916800" />
++            <Limit name="bitrate" range="1-70000000" />
++            <Limit name="frame-rate" range="1-480" />
++            <Feature name="adaptive-playback" />
++            <Feature name="low-latency" />
++            <Limit name="concurrent-instances" max="16" />
++            <Limit name="performance-point-1280x720" value="480" />
++            <Limit name="performance-point-1920x1080" value="240" />
++            <Limit name="performance-point-3840x2160" value="120" />
++            <Limit name="performance-point-4096x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="30" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.hevc.decoder.secure" type="video/hevc" >
++            <Alias name="OMX.qcom.video.decoder.hevc.secure"/>
++            <Limit name="size" min="96x96" max="4096x4096" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-34560" />
++            <Limit name="blocks-per-second" min="36" max="2073600" />
++            <Limit name="bitrate" range="1-40000000" />
++            <Limit name="frame-rate" range="1-60" />
++            <Feature name="adaptive-playback" />
++            <Feature name="secure-playback" required="true" />
++            <Feature name="low-latency" />
++            <Limit name="concurrent-instances" max="3" />
++            <Limit name="performance-point-3840x2160" value="60" />
++            <Limit name="performance-point-4096x2304" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.vp9.decoder" type="video/x-vnd.on2.vp9" >
++            <Alias name="OMX.qcom.video.decoder.vp9"/>
++            <Limit name="size" min="96x96" max="4096x4096" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-36864" />
++            <Limit name="blocks-per-second" min="36" max="2211840" />
++            <Limit name="bitrate" range="1-100000000" />
++            <Limit name="frame-rate" range="1-60" />
++            <Feature name="adaptive-playback" />
++            <Limit name="concurrent-instances" max="6" />
++            <Limit name="performance-point-3840x2160" value="60" />
++            <Limit name="performance-point-4096x2304" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.vp9.decoder.low_latency" type="video/x-vnd.on2.vp9" >
++            <Alias name="OMX.qcom.video.decoder.vp9.low_latency"/>
++            <Limit name="size" min="96x96" max="4096x4096" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-36864" />
++            <Limit name="blocks-per-second" min="36" max="2211840" />
++            <Limit name="bitrate" range="1-30000000" />
++            <Limit name="frame-rate" range="1-60" />
++            <Feature name="adaptive-playback" />
++            <Feature name="low-latency" />
++            <Limit name="concurrent-instances" max="6" />
++            <Limit name="performance-point-3840x2160" value="60" />
++            <Limit name="performance-point-4096x2304" value="60" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.vp9.decoder.secure" type="video/x-vnd.on2.vp9" >
++            <Alias name="OMX.qcom.video.decoder.vp9.secure"/>
++            <Limit name="size" min="96x96" max="4096x4096" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="block-count" range="36-36864" />
++            <Limit name="blocks-per-second" min="36" max="2211840" />
++            <Limit name="bitrate" range="1-40000000" />
++            <Limit name="frame-rate" range="1-60" />
++            <Feature name="adaptive-playback" />
++            <Feature name="secure-playback" required="true" />
++            <Feature name="low-latency" />
++            <Limit name="concurrent-instances" max="3" />
++            <Limit name="performance-point-3840x2160" value="60" />
++            <Limit name="performance-point-4096x2304" value="60" />
++        </MediaCodec>
++    </Decoders>
++    <Encoders>
++        <!-- C2 encoders -->
++        <MediaCodec name="c2.qti.avc.encoder" type="video/avc">
++            <Alias name="OMX.qcom.video.encoder.avc"/>
++            <Limit name="size" min="128x128" max="8192x8192" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="blocks-per-second" min="64" max="3916800" />
++            <Limit name="block-count" range="64-138240" />
++            <Limit name="bitrate" range="1-220000000" />
++            <Limit name="frame-rate" range="1-960" />
++            <Limit name="complexity" range="0-100"  default="100" />
++            <Limit name="concurrent-instances" max="16" />
++            <Feature name="bitrate-modes" value="VBR,CBR" />
++            <Feature name="intra-refresh" />
++            <Feature name="video-minimum-quality" />
++            <Limit name="performance-point-1280x720" value="960" />
++            <Limit name="performance-point-1920x1080" value="480" />
++            <Limit name="performance-point-1920x1080" value="240" />
++            <Limit name="performance-point-3840x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="30" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.hevc.encoder" type="video/hevc">
++            <Alias name="OMX.qcom.video.encoder.hevc"/>
++            <Limit name="size" min="128x128" max="7680x7680" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="blocks-per-second" min="64" max="3916800" />
++            <Limit name="block-count" range="64-138240" />
++            <Limit name="bitrate" range="1-160000000" />
++            <Limit name="frame-rate" range="1-960" />
++            <Limit name="complexity" range="0-100"  default="100" />
++            <Limit name="concurrent-instances" max="16" />
++            <Feature name="bitrate-modes" value="VBR,CBR" />
++            <Feature name="intra-refresh" />
++            <Feature name="video-minimum-quality" />
++            <Limit name="performance-point-1280x720" value="245" />
++            <Limit name="performance-point-1920x1080" value="480" />
++            <Limit name="performance-point-1920x1080" value="240" />
++            <Limit name="performance-point-3840x2160" value="120" />
++            <Limit name="performance-point-7680x4320" value="30" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.hevc.encoder.cq" type="video/hevc">
++            <Alias name="OMX.qcom.video.encoder.hevc.cq"/>
++            <Limit name="size" min="128x128" max="512x512" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="blocks-per-second" min="64" max="3916800" />
++            <Limit name="bitrate" range="1-160000000" />
++            <Limit name="frame-rate" range="1-480" />
++            <Limit name="concurrent-instances" max="16" />
++            <Limit name="quality" range="0-100" default="80" />
++            <Feature name="bitrate-modes" value="CQ" />
++            <Limit name="performance-point-512x512" value="3825" />
++        </MediaCodec>
++        <MediaCodec name="c2.qti.heic.encoder" type="image/vnd.android.heic">
++            <Alias name="OMX.qcom.video.encoder.heic"/>
++            <Limit name="size" min="512x512" max="16384x16384" />
++            <Limit name="alignment" value="2x2" />
++            <Limit name="block-size" value="16x16" />
++            <Limit name="blocks-per-second" min="64" max="3916800" />
++            <Limit name="bitrate" range="1-160000000" />
++            <Limit name="frame-rate" range="1-20" />
++            <Limit name="concurrent-instances" max="16" />
++            <Limit name="quality" range="0-100" default="80" />
++            <Feature name="bitrate-modes" value="CQ" />
++            <Limit name="performance-point-16384x8192" value="3" />
++            <Limit name="performance-point-1920x1080" value="6" />
++        </MediaCodec>
++    </Encoders>
++</MediaCodecs>
+diff --git a/dolby-vision/proprietary/vendor/etc/dolby_vision.cfg b/dolby-vision/proprietary/vendor/etc/dolby_vision.cfg
+new file mode 100644
+index 0000000..0f93c2d
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/dolby_vision.cfg
+@@ -0,0 +1,45 @@
++# Dolby Vision Display Management Configuration File
++# Date : 12/13/2023
++# Brand Model Number: L12 22081212C
++
++[Global]
++DMSwVersion = 4.0
++Tmax = 900
++Tmin = 0.0001
++TPrimaries = 0.6860 0.3153 0.2489 0.7055 0.1466 0.0591 0.3127 0.3290
++
++TEOTF = POWER
++Tgamma = 2.3
++
++RGB2YCCmat=0.2249515012 0.5805731287 0.0507803555 -0.1222960562 -0.3156316076 0.4379276637 0.4379276637 -0.4027047292 -0.0352229345
++RGB2YCCOffsetNorm=0.0625 0.5 0.5
++
++BLUPwm = 10 64 128 192 255
++BLULight = 900 900 900 900 900
++BLULightMin = 0.0001 0.0001 0.0001 0.0001 0.0001
++
++
++DBrightness = 0.3
++Ambient = 10
++
++[PictureMode = 0]
++PictureModeName = Dolby Vision Bright
++
++DBrightness = 0.3
++Ambient = 10
++
++[PictureMode = 1]
++PictureModeName = Dolby Vision Standard
++Tmax = 450
++Ambient = 10
++
++[PictureMode = 2]
++PictureModeName = Dolby Vision Vivid
++DBrightness = 0.3
++Ambient = 10
++
++[PictureMode = 3]
++PictureModeName = Dolby Vision Cinema
++DBrightness = 0.3
++Ambient = 10
++
+diff --git a/dolby-vision/proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc b/dolby-vision/proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc
+new file mode 100644
+index 0000000..23478b4
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc
+@@ -0,0 +1,6 @@
++service dvs-hal-service /vendor/bin/hw/dvs-hal-service
++    class hal
++    user mediacodec
++    group camera mediadrm drmrpc
++    ioprio rt 4
++    task_profiles ProcessCapacityHigh HighPerformance
+diff --git a/dolby-vision/proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc b/dolby-vision/proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc
+new file mode 100644
+index 0000000..d4b6e36
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc
+@@ -0,0 +1,6 @@
++service dolbycodec2 /vendor/bin/hw/dolbycodec2
++    class hal
++    user mediacodec
++    group camera mediadrm drmrpc
++    ioprio rt 4
++    task_profiles ProcessCapacityHigh HighPerformance
+diff --git a/dolby-vision/proprietary/vendor/etc/media_codecs_dolby_vision.xml b/dolby-vision/proprietary/vendor/etc/media_codecs_dolby_vision.xml
+new file mode 100644
+index 0000000..d0684a7
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/media_codecs_dolby_vision.xml
+@@ -0,0 +1,63 @@
++<?xml version='1.0' encoding='utf-8'?>
++<Included>
++  <Decoders>
++    <MediaCodec name="c2.dolby.decoder.hevc" type="video/dolby-vision">
++      <Limit name="size" min="96x96" max="4096x4096" />
++      <Limit name="alignment" value="2x2" />
++      <Limit name="block-size" value="16x16" />
++      <Limit name="block-count" range="1-34560" />
++      <Limit name="blocks-per-second" min="1" max="1958400" />
++      <Limit name="bitrate" range="1-100000000" />
++      <Limit name="frame-rate" range="1-240" />
++      <Feature name="adaptive-playback" />
++      <Limit name="concurrent-instances" max="16" />
++      <Limit name="performance-point-4096x2160" value="56" />
++      <Limit name="performance-point-3840x2160" value="60" />
++      <Limit name="performance-point-1920x1080" value="240" />
++    </MediaCodec>
++    <MediaCodec name="c2.dolby.decoder.hevc.secure" type="video/dolby-vision">
++      <Limit name="size" min="96x96" max="4096x4096" />
++      <Limit name="block-count" range="36-36864" />
++      <Limit name="alignment" value="2x2" />
++      <Limit name="block-size" value="16x16" />
++      <Limit name="blocks-per-second" min="24" max="2073600" />
++      <Limit name="bitrate" range="1-40000000" />
++      <Limit name="frame-rate" range="1-60" />
++      <Limit name="concurrent-instances" max="1" />
++      <Limit name="performance-point-4096x2304" value="30" />
++      <Limit name="performance-point-4096x2160" value="60" />
++      <Limit name="performance-point-3840x2160" value="60" />
++      <Feature name="adaptive-playback" />
++      <Feature name="secure-playback" required="true" />
++    </MediaCodec>
++    <MediaCodec name="c2.dolby.decoder.avc" type="video/dolby-vision">
++      <Limit name="size" min="96x96" max="4096x4096" />
++      <Limit name="alignment" value="2x2" />
++      <Limit name="block-size" value="16x16" />
++      <Limit name="block-count" range="1-34560" />
++      <Limit name="blocks-per-second" min="1" max="1958400" />
++      <Limit name="bitrate" range="1-100000000" />
++      <Feature name="adaptive-playback" />
++      <Limit name="concurrent-instances" max="16" />
++      <Limit name="performance-point-4096x2160" value="56" />
++      <Limit name="performance-point-3840x2160" value="60" />
++      <Limit name="performance-point-1920x1080" value="240" />
++    </MediaCodec>
++    <MediaCodec name="c2.dolby.decoder.avc.secure" type="video/dolby-vision">
++      <Limit name="size" min="96x96" max="4096x4096" />
++      <Limit name="block-count" range="36-36864" />
++      <Limit name="alignment" value="2x2" />
++      <Limit name="block-size" value="16x16" />
++      <Limit name="blocks-per-second" min="1" max="1958400" />
++      <Limit name="bitrate" range="1-40000000" />
++      <Limit name="frame-rate" range="1-240" />
++      <Limit name="concurrent-instances" max="1" />
++      <Limit name="performance-point-4096x2304" value="30" />
++      <Limit name="performance-point-4096x2160" value="60" />
++      <Limit name="performance-point-3840x2160" value="60" />
++      <Feature name="adaptive-playback" />
++      <Feature name="secure-playback" required="true" />
++    </MediaCodec>
++  </Decoders>
++  <Encoders />
++</Included>
+\ No newline at end of file
+diff --git a/dolby-vision/proprietary/vendor/etc/vintf/manifest/diting.dolby.vision.c2.xml b/dolby-vision/proprietary/vendor/etc/vintf/manifest/diting.dolby.vision.c2.xml
+new file mode 100644
+index 0000000..379ba27
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/vintf/manifest/diting.dolby.vision.c2.xml
+@@ -0,0 +1,7 @@
++<manifest version="1.0" type="device">
++    <hal format="hidl">
++        <name>android.hardware.media.c2</name>
++        <transport>hwbinder</transport>
++        <fqname>@1.0::IComponentStore/dolby</fqname>
++    </hal>
++</manifest>
+diff --git a/dolby-vision/proprietary/vendor/etc/vintf/manifest/vendor.dolby.media.dvs-service.xml b/dolby-vision/proprietary/vendor/etc/vintf/manifest/vendor.dolby.media.dvs-service.xml
+new file mode 100644
+index 0000000..498d841
+--- /dev/null
++++ b/dolby-vision/proprietary/vendor/etc/vintf/manifest/vendor.dolby.media.dvs-service.xml
+@@ -0,0 +1,23 @@
++
++<!-- Copyright (C) 2020 Dolby Laboratories
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++          http://www.apache.org/licenses/LICENSE-2.0
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<manifest version="1.0" type="device">
++    <hal format="hidl" override="true">
++        <name>vendor.dolby.dvs</name>
++        <transport>hwbinder</transport>
++        <version>1.0</version>
++        <interface>
++            <name>IDvs</name>
++            <instance>dvs-hal-service</instance>
++        </interface>
++    </hal>
++</manifest>
+diff --git a/dolby-vision/sepolicy/attributes b/dolby-vision/sepolicy/attributes
+new file mode 100644
+index 0000000..fd4fdab
+--- /dev/null
++++ b/dolby-vision/sepolicy/attributes
+@@ -0,0 +1 @@
++hal_attribute(dvs)
+diff --git a/dolby-vision/sepolicy/file_contexts b/dolby-vision/sepolicy/file_contexts
+new file mode 100644
+index 0000000..6c22f63
+--- /dev/null
++++ b/dolby-vision/sepolicy/file_contexts
+@@ -0,0 +1,2 @@
++/vendor/bin/hw/dolbycodec2 u:object_r:mediacodec_exec:s0
++/vendor/bin/hw/dvs-hal-service u:object_r:hal_dvs_default_exec:s0
+diff --git a/dolby-vision/sepolicy/hal_dvs.te b/dolby-vision/sepolicy/hal_dvs.te
+new file mode 100644
+index 0000000..24907b8
+--- /dev/null
++++ b/dolby-vision/sepolicy/hal_dvs.te
+@@ -0,0 +1,22 @@
++type hal_dvs_default, domain;
++type hal_dvs_default_exec, exec_type, file_type, vendor_file_type;
++type hal_dvs_hwservice, hwservice_manager_type;
++init_daemon_domain(hal_dvs_default)
++hal_server_domain(hal_dvs_default, hal_dvs)
++hal_attribute_hwservice(hal_dvs, hal_dvs_hwservice)
++binder_call(hal_dvs_client, hal_dvs_server)
++binder_call(hal_dvs_server, hal_dvs_client)
++allow hal_dvs_client hal_dvs_server:fd use;
++allow hal_dvs_server hal_dvs_client:fd use;
++hwbinder_use(hal_dvs_default)
++allow hal_dvs_default fwk_sensor_hwservice:hwservice_manager find;
++allow hal_dvs_default fwk_sensor_service:service_manager find;
++allow hal_dvs_default vendor_sysfs_graphics:dir r_dir_perms;
++allow hal_dvs_default vendor_sysfs_graphics:file r_file_perms;
++vendor_internal_prop(vendor_dolbyv_prop)
++set_prop(hal_dvs_default, vendor_dolbyv_prop)
++get_prop(hal_graphics_composer_default, vendor_dolbyv_prop)
++get_prop(mediacodec, vendor_dolbyv_prop)
++hal_client_domain(hal_graphics_composer_default, hal_dvs)
++hal_client_domain(mediacodec, hal_dvs)
++hal_client_domain(surfaceflinger, hal_dvs)
+diff --git a/dolby-vision/sepolicy/hwservice_contexts b/dolby-vision/sepolicy/hwservice_contexts
+new file mode 100644
+index 0000000..cb4bc7f
+--- /dev/null
++++ b/dolby-vision/sepolicy/hwservice_contexts
+@@ -0,0 +1 @@
++vendor.dolby.dvs::IDvs u:object_r:hal_dvs_hwservice:s0
+diff --git a/dolby-vision/sepolicy/property_contexts b/dolby-vision/sepolicy/property_contexts
+new file mode 100644
+index 0000000..43e115e
+--- /dev/null
++++ b/dolby-vision/sepolicy/property_contexts
+@@ -0,0 +1,4 @@
++persist.vendor.dolbyv. u:object_r:vendor_dolbyv_prop:s0
++vendor.dolbyv. u:object_r:vendor_dolbyv_prop:s0
++ro.vendor.dolbyvision.enabled u:object_r:vendor_dolbyv_prop:s0 exact bool
++persist.vendor.dolby.loglevel u:object_r:vendor_dolbyv_prop:s0 exact int
+diff --git a/dolby-vision/vision.mk b/dolby-vision/vision.mk
+new file mode 100644
+index 0000000..3cdbe11
+--- /dev/null
++++ b/dolby-vision/vision.mk
+@@ -0,0 +1,29 @@
++# SPDX-License-Identifier: Apache-2.0
++# Experimental Dolby Vision candidate. Requires decoder/runtime and display acceptance.
++PRODUCT_PACKAGES += c2.dolby.avc.dec \
++    c2.dolby.avc.sec.dec \
++    c2.dolby.client \
++    c2.dolby.egl \
++    c2.dolby.hevc.dec \
++    c2.dolby.hevc.enc \
++    c2.dolby.hevc.sec.dec \
++    c2.dolby.store \
++    libdolbyottcameracontrol \
++    libdolbyvision \
++    dolbycodec2 \
++    libstagefright_foundation-swiitchoff \
++    vendor.dolby.dvs@1.0 \
++    vendor.dolby.media.dvs-service.xml \
++    dvs-hal-service \
++    libcodec2_hidl_shim.vendor \
++    diting.dolby.vision.c2.xml \
++    libcodec2_shim \
++    libavservices_minijail_vendor \
++    libcodec2_soft_common.vendor
++PRODUCT_COPY_FILES += \
++    vendor/xiaomi/sm8450-common/dolby-vision/proprietary/vendor/etc/dolby_vision.cfg:$(TARGET_COPY_OUT_VENDOR)/etc/dolby_vision.cfg \
++    vendor/xiaomi/sm8450-common/dolby-vision/proprietary/vendor/etc/media_codecs_dolby_vision.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_dolby_vision.xml \
++    vendor/xiaomi/sm8450-common/dolby-vision/proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc \
++    vendor/xiaomi/sm8450-common/dolby-vision/proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/vendor.dolby.media.dvs-service-vision.rc
++
++PRODUCT_VENDOR_PROPERTIES += ro.vendor.dolbyvision.enabled=true
+diff --git a/lhdc/Android.bp b/lhdc/Android.bp
+new file mode 100644
+index 0000000..75e91e0
+--- /dev/null
++++ b/lhdc/Android.bp
+@@ -0,0 +1,79 @@
++// SPDX-License-Identifier: Apache-2.0
++// Integration of Savitech headers and Xiaomi mondrian prebuilts from The XPerience Project.
++cc_library_headers {
++    name: "diting-lhdc-headers",
++    host_supported: true,
++    export_include_dirs: ["inc", "include"],
++    apex_available: ["//apex_available:platform", "com.android.bt"],
++    min_sdk_version: "33",
++}
++
++cc_prebuilt_library_shared {
++    name: "liblhdc",
++    owner: "savitech",
++    arch: {
++        arm: { srcs: ["libs/armeabi-v7a/liblhdc.so"] },
++        arm64: { srcs: ["libs/arm64-v8a/liblhdc.so"] },
++    },
++    shared_libs: ["liblog", "libstdc++"],
++    apex_available: ["//apex_available:platform", "com.android.bt"],
++    min_sdk_version: "33",
++    stl: "none",
++    strip: { none: true },
++    prefer: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "liblhdcv5",
++    owner: "savitech",
++    arch: {
++        arm: { srcs: ["libs/armeabi-v7a/liblhdcv5.so"] },
++        arm64: { srcs: ["libs/arm64-v8a/liblhdcv5.so"] },
++    },
++    shared_libs: ["liblog", "libstdc++"],
++    apex_available: ["//apex_available:platform", "com.android.bt"],
++    min_sdk_version: "33",
++    stl: "none",
++    strip: { none: true },
++    prefer: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "liblhdcBT_enc",
++    owner: "savitech",
++    arch: {
++        arm: { srcs: ["libs/armeabi-v7a/liblhdcBT_enc.so"] },
++        arm64: { srcs: ["libs/arm64-v8a/liblhdcBT_enc.so"] },
++    },
++    shared_libs: ["libcutils", "liblog", "liblhdc", "libc++"],
++    apex_available: ["//apex_available:platform", "com.android.bt"],
++    min_sdk_version: "33",
++    stl: "none",
++    strip: { none: true },
++    prefer: true,
++}
++
++cc_prebuilt_library_shared {
++    name: "liblhdcv5BT_enc",
++    owner: "savitech",
++    arch: {
++        arm: { srcs: ["libs/armeabi-v7a/liblhdcv5BT_enc.so"] },
++        arm64: { srcs: ["libs/arm64-v8a/liblhdcv5BT_enc.so"] },
++    },
++    shared_libs: ["libcutils", "liblog", "liblhdcv5", "libc++"],
++    apex_available: ["//apex_available:platform", "com.android.bt"],
++    min_sdk_version: "33",
++    stl: "none",
++    strip: { none: true },
++    prefer: true,
++}
++
++// Explicitly built test tool; not included in PRODUCT_PACKAGES or shipped in ROM.
++cc_binary {
++    name: "diting_lhdc_encoder_probe",
++    srcs: ["lhdc_encoder_probe.cc"],
++    shared_libs: ["libdl"],
++    stl: "none",
++    compile_multilib: "64",
++    cflags: ["-Wall", "-Werror"],
++}
+diff --git a/lhdc/PROVENANCE.json b/lhdc/PROVENANCE.json
+new file mode 100644
+index 0000000..6ea2bde
+--- /dev/null
++++ b/lhdc/PROVENANCE.json
+@@ -0,0 +1,19 @@
++{
++  "headers_repository": "https://github.com/EvoX-LHDC/external_liblhdc",
++  "headers_commit": "7add548047836e7ee711babb8cd138751ac69654",
++  "binary_repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
++  "binary_commit": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
++  "binary_directory": "5.10",
++  "donor_device": "mondrian",
++  "raw_lossless_supported": false,
++  "sha256": {
++    "libs/arm64-v8a/liblhdc.so": "3cdc73f296a56864e245dfca8385d2d4f9a21793d05336c754779802b984573a",
++    "libs/arm64-v8a/liblhdcBT_enc.so": "ef1fe85ca5980a121f12c5710cd32a3ed4a4551f9096952b5fcbdf46cf1246ea",
++    "libs/arm64-v8a/liblhdcv5.so": "0fd2f572cc730c3e5d14ad2c73b9c0883dff4ca155c3dda1da386f7efc9e8856",
++    "libs/arm64-v8a/liblhdcv5BT_enc.so": "7fd7d59c0342b57cd5fdf9345035a8603e63a16ce7236246c8e861f3cd0574f1",
++    "libs/armeabi-v7a/liblhdc.so": "3bf01e30737314e86c6df5c667031cbd8463ded9017db83c88e641568a5af7c7",
++    "libs/armeabi-v7a/liblhdcBT_enc.so": "29999fbd2613200a68f1d20059350e66c54665fdb6b5bafbf792c148c06e666e",
++    "libs/armeabi-v7a/liblhdcv5.so": "384f7ff522db09f3e863248ae5d68014872e0654ce058cad688457e8ad60507d",
++    "libs/armeabi-v7a/liblhdcv5BT_enc.so": "a75ddd669abaa6b99c34259545b09ce621a1ad360f9be66308809414d6701780"
++  }
++}
+diff --git a/lhdc/inc/lhdcBT.h b/lhdc/inc/lhdcBT.h
+new file mode 100755
+index 0000000..70096b8
+--- /dev/null
++++ b/lhdc/inc/lhdcBT.h
+@@ -0,0 +1,392 @@
++
++
++#ifndef _LHDCBT_H_
++#define _LHDCBT_H_
++#ifdef __cplusplus
++extern "C" {
++#endif
++#ifndef LHDCBT_API
++#define LHDCBT_API
++#endif /* LHDCBT_API  */
++#include "lhdc_api.h"
++
++typedef enum _lhdcBT_ext_func_field_t{
++  LHDCBT_EXT_FUNC_AR = 0,
++  LHDCBT_EXT_FUNC_LARC,
++  LHDCBT_EXT_FUNC_EXTR,
++  LHDCBT_EXT_FUNC_JAS,
++  //LHDCBT_EXT_FUNC_META,
++  LHDCBT_EXT_FUNC_MAX,
++} lhdcBT_ext_func_field_t;
++
++//
++// Extend API Basic Settings Definition
++//
++#define LHDC_EXTEND_FUNC_CODE_A2DP_TYPE_MASK            (0x0A)
++#define LHDC_EXTEND_FUNC_CODE_LIB_TYPE_MASK             (0x0C)
++#define EXTEND_FUNC_CODE_MIN_BUFFER_LEN                 8
++
++/* **********************************************
++ *  API: Version Control
++ * ***********************************************/
++#define EXTEND_FUNC_GENERIC_VERSION_NUMBER_V1               ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_GENERIC_VERSION_NUMBER_V2               ((unsigned int) 0x02000000)
++
++#define EXTEND_FUNC_MIN_BUFFER_LEN_GET_API_VERSION_V1       8
++#define EXTEND_FUNC_MIN_BUFFER_LEN_GET_API_VERSION_V2       16
++
++/* **********************************************
++ *  LIB API: Config Type
++ * ***********************************************/
++/* * * * * * * * * * * * * * * *
++ *   META                      *
++ * * * * * * * * * * * * * * * */
++//   META :: API Code
++#define EXTEND_FUNC_CODE_SET_CONFIG_META        ((unsigned int) 0x0C000001)
++#define EXTEND_FUNC_CODE_GET_CONFIG_META        ((unsigned int) 0x0C010001)
++//   META :: API Version
++#define EXTEND_FUNC_VER_SET_CONFIG_META_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_META_V2      ((unsigned int) 0x02000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_META_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_META_V2      ((unsigned int) 0x02000000)
++//   META :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_CONFIG_META_REQ_BUFSIZE_V2      16  //TBD
++#define EXTEND_FUNC_VER_GET_CONFIG_META_REQ_BUFSIZE_V2      16  //TBD
++
++/* * * * * * * * * * * * * * * *
++ *   AR                        *
++ * * * * * * * * * * * * * * * */
++//   AR :: API Code
++#define EXTEND_FUNC_CODE_SET_CONFIG_AR          ((unsigned int) 0x0C000002)
++#define EXTEND_FUNC_CODE_GET_CONFIG_AR          ((unsigned int) 0x0C010002)
++//   AR :: API Version
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V1        ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V2        ((unsigned int) 0x02000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V3        ((unsigned int) 0x03000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_V1        ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_V2        ((unsigned int) 0x02000000)
++//   AR :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_REQ_BUFSIZE_V2      16    //TBD
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_REQ_BUFSIZE_V2      16    //TBD
++
++
++/* **********************************************
++ *  LIB API: Data Type
++ * ***********************************************/
++/* * * * * * * * * * * * * * * *
++ *   GYRO2D                    *
++ * * * * * * * * * * * * * * * */
++//   GYRO2D :: API Code
++#define EXTEND_FUNC_CODE_SET_DATA_GYRO2D        ((unsigned int) 0x0D000001)
++//   GYRO2D :: API Version
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_V2      ((unsigned int) 0x02000000)
++//   GYRO2D :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_REQ_BUFSIZE_V2      16    //TBD (8 + 2gyro + 6pad)
++
++
++/* **********************************************
++ *  A2DP-Extended API:
++ * ***********************************************/
++/* * * * * * * * * * * * * * * *
++ *   GetA2DPSpecifis           *
++ * * * * * * * * * * * * * * * */
++//   GetA2DPSpecifis :: API Code
++#define EXTEND_FUNC_CODE_GET_SPECIFIC           ((unsigned int) 0x0A010001)
++//   GetA2DPSpecifis :: API Version
++#define EXTEND_FUNC_VER_GET_SPECIFIC_V1         ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_GET_SPECIFIC_V2         ((unsigned int) 0x02000000)
++
++/* ************************************************************************
++ * Version format info of EXTEND_FUNC_CODE_GET_SPECIFIC
++ * EXTEND_FUNC_VER_GET_SPECIFIC_V1:  Total Size: 41 bytes
++   * API Version:                   (4 bytes)
++   * API Code:                      (4 bytes)
++   * A2DP Codec Config Code:        (1 bytes)
++   * A2dp Specific1:                (8 bytes)
++   * A2dp Specific2:                (8 bytes)
++   * A2dp Specific3:                (8 bytes)
++   * A2dp Specific4:                (8 bytes)
++ * EXTEND_FUNC_VER_GET_SPECIFIC_V2:  Total Size: 64 bytes
++   * API Version:                   (4 bytes)
++   * API Code:                      (4 bytes)
++   * A2DP Codec Config Code:        (1 bytes)
++   * Reserved:                      (7 bytes)
++   * A2dp Specific1:                (8 bytes)
++   * A2dp Specific2:                (8 bytes)
++   * A2dp Specific3:                (8 bytes)
++   * A2dp Specific4:                (8 bytes)
++   * Capabilities Metadata sub fields:  (7*2 bytes)
++     * sub[0~1]:    JAS
++     * sub[2~3]:    AR
++     * sub[4~5]:    META
++     * sub[6~7]:    LLAC
++     * sub[8~9]:    MBR
++     * sub[10~11]:  LARC
++     * sub[12~13]:  LHDCV4
++   * Padded:                        (2 bytes)
++ * ************************************************************************/
++#define LHDC_EXTEND_FUNC_CONFIG_API_VERSION_SIZE        4       /* API version */
++#define LHDC_EXTEND_FUNC_CONFIG_API_CODE_SIZE           4       /* API index code */
++#define LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_SIZE       1       /* A2DP codec config code */
++#define LHDC_EXTEND_FUNC_CONFIG_RESERVED_V2             7       /* V2 Reserved bytes */
++#define LHDC_EXTEND_FUNC_CONFIG_SPECIFIC1_SIZE          8       /* Specific 1 */
++#define LHDC_EXTEND_FUNC_CONFIG_SPECIFIC2_SIZE          8       /* Specific 2 */
++#define LHDC_EXTEND_FUNC_CONFIG_SPECIFIC3_SIZE          8       /* Specific 3 */
++#define LHDC_EXTEND_FUNC_CONFIG_SPECIFIC4_SIZE          8       /* Specific 4 */
++/* Capabilities metadata fields(2 bytes for each tuple) */
++#define LHDC_EXTEND_FUNC_CONFIG_CAPMETA_SIZE_V2         (7<<1)  /* V2 Capabilities */
++#define LHDC_EXTEND_FUNC_CONFIG_PADDED_SIZE_V2          2       /* V2 Padded Fields */
++
++/* Total size of buffer */
++#define LHDC_EXTEND_FUNC_CONFIG_TOTAL_FIXED_SIZE_V1    (LHDC_EXTEND_FUNC_CONFIG_API_VERSION_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_API_CODE_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC1_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC2_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC3_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC4_SIZE)
++#define LHDC_EXTEND_FUNC_CONFIG_TOTAL_FIXED_SIZE_V2    (LHDC_EXTEND_FUNC_CONFIG_API_VERSION_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_API_CODE_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_RESERVED_V2 + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC1_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC2_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC3_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_SPECIFIC4_SIZE + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_CAPMETA_SIZE_V2 + \
++                                                          LHDC_EXTEND_FUNC_CONFIG_PADDED_SIZE_V2)
++/* Head of each field */
++#define LHDC_EXTEND_FUNC_CONFIG_API_VERSION_HEAD        (0)
++#define LHDC_EXTEND_FUNC_CONFIG_API_CODE_HEAD           (LHDC_EXTEND_FUNC_CONFIG_API_VERSION_HEAD + 4)  //4
++#define LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_HEAD       (LHDC_EXTEND_FUNC_CONFIG_API_CODE_HEAD + 4)     //8
++/* Following part in V1 */
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS1_HEAD_V1        (LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_HEAD + 1) //9~16
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS2_HEAD_V1        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS1_HEAD_V1 + 8)  //17~24
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS3_HEAD_V1        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS2_HEAD_V1 + 8)  //25~32
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS4_HEAD_V1        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS3_HEAD_V1 + 8)  //33~40
++/* Following part in V2 */
++#define LHDC_EXTEND_FUNC_A2DP_RESERVED_HEAD_V2          (LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_HEAD + 1) //9~15
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS1_HEAD_V2        (LHDC_EXTEND_FUNC_CONFIG_A2DPCFG_CODE_HEAD + 8) //16~23
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS2_HEAD_V2        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS1_HEAD_V2 + 8)  //24~31
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS3_HEAD_V2        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS2_HEAD_V2 + 8)  //32~39
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFICS4_HEAD_V2        (LHDC_EXTEND_FUNC_A2DP_SPECIFICS3_HEAD_V2 + 8)  //40~47
++#define LHDC_EXTEND_FUNC_A2DP_CAPMETA_HEAD_V2           (LHDC_EXTEND_FUNC_A2DP_SPECIFICS4_HEAD_V2 + 8)  //48~61
++#define LHDC_EXTEND_FUNC_A2DP_PADDED_HEAD_V2            (LHDC_EXTEND_FUNC_A2DP_CAPMETA_HEAD_V2 + LHDC_EXTEND_FUNC_CONFIG_CAPMETA_SIZE_V2)   //62~63
++
++/* code definition mapping to A2DP codec specific in a2dp_codec_api.h
++ * 0x01: codec_config_
++ * 0x02: codec_capability_
++ * 0x03: codec_local_capability_
++ * 0x04: codec_selectable_capability_
++ * 0x05: codec_user_config_
++ * 0x06: codec_audio_config_
++ */
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_FINAL_CFG          (0x01)
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_FINAL_CAP          (0x02)
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_LOCAL_CAP          (0x03)
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_SELECTABLE_CAP     (0x04)
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_USER_CFG           (0x05)
++#define LHDC_EXTEND_FUNC_A2DP_TYPE_SPECIFICS_AUDIO_CFG          (0x06)
++
++/************************
++ * Capability Meta Format: (denotes where source capabilities bits are stored in specifics)
++   * Capability Code:                   (1 byte)
++   * Saving Position Info:              (1 byte)
++ ************************/
++/* Capabilities's code: */
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_JAS_CODE      (0x01)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_AR_CODE       (0x02)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_META_CODE     (0x03)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_LLAC_CODE     (0x04)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_MBR_CODE      (0x05)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_LARC_CODE     (0x06)
++#define LHDC_EXTEND_FUNC_A2DP_LHDC_V4_CODE       (0x07)
++
++/* Capabilities's saving position Info:
++ *  1. in which specific                        (represented in leftmost 2-bits)
++ *  2. at which bit position of the specific    (represented in rightmost 6-bits)
++ * */
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFIC1_INDEX    (0x00)     //2-bit:00
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFIC2_INDEX    (0x40)     //2-bit:01
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFIC3_INDEX    (0x80)     //2-bit:10
++#define LHDC_EXTEND_FUNC_A2DP_SPECIFIC4_INDEX    (0xC0)     //2-bit:11
++/********************************************************************************/
++
++
++
++
++#define EXTEND_FUNC_RET_OK                      ((int) 0)
++#define EXTEND_FUNC_RET_INVALID_HANDLE          ((int) 0xE01)
++#define EXTEND_FUNC_RET_INVALID_PARAMETER       ((int) 0xE02)
++#define EXTEND_FUNC_RET_FUNC_NOT_SUPPORT        ((int) 0xE03)
++#define EXTEND_FUNC_RET_VERSION_NOT_SUPPORT     ((int) 0xE04)
++#define EXTEND_FUNC_RET_BUF_UNDERRUN            ((int) 0xE05)
++#define EXTEND_FUNC_RET_ERROR                   ((int) 0xE06)
++#define EXTEND_FUNC_RET_NOT_READY               ((int) 0xE07)
++#define EXTEND_FUNC_RET_REQ_BUFSIZE_NOT_MATCH   ((int) 0xE08)
++
++
++//
++// META
++//
++#define META_ST_VER_V1                           ((unsigned int) 0x00010000)
++#define META_ST_VER_V2                           ((unsigned int) 0x00020000)
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_SET_META {
++
++    unsigned char     header[8];
++    unsigned int      meta_ver;
++    unsigned char     meta_mem_size;
++    unsigned char     meta_enable;
++    unsigned char     meta_set;
++    unsigned char     meta_metadata_length;
++//  unsigned char     meta_metadata[64];
++
++} ST_LHDC_SET_META, *PST_LHDC_SET_META;
++#pragma pack(pop)
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_GET_META {
++
++    unsigned char     header[8];
++    unsigned int      meta_ver;
++    unsigned char     meta_mem_size;
++    unsigned char     meta_st;     // [0] 1: reserved bit, [1] 1: in meta mode/0: not in meta mode
++    unsigned char     jas_status;
++
++} ST_LHDC_GET_META, *PST_LHDC_GET_META;
++#pragma pack(pop)
++
++//
++// AR
++//
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_AR
++{
++    unsigned char     header[8];
++    unsigned int      ver;
++    unsigned int      size;
++    unsigned int      app_ar_enabled;
++    int Ch1_Pos;
++    int Ch2_Pos;
++    int Ch3_Pos;
++    int Ch4_Pos;
++    int Ch5_Pos;
++    int Ch6_Pos;
++    float Ch1_L_PreGain;
++    float Ch1_R_PreGain;
++    float Ch2_L_PreGain;
++    float Ch2_R_PreGain;
++    float Ch3_L_PreGain;
++    float Ch3_R_PreGain;
++    float Ch4_L_PreGain;
++    float Ch4_R_PreGain;
++    float Ch5_L_PreGain;
++    float Ch5_R_PreGain;
++    float Ch6_L_PreGain;
++    float Ch6_R_PreGain;
++    float Ch1_PostGain;
++    float Ch2_PostGain;
++    float Ch3_PostGain;
++    float Ch4_PostGain;
++    float Ch5_PostGain;
++    float Ch6_PostGain;
++    float Dry_Val;
++    float Wet_Val;
++    float Dis_1;
++    float Dis_2;
++    float Dis_3;
++    float Dis_4;
++    float Dis_5;
++    float Rev_1;
++    float Rev_2;
++    float Rev_3;
++    float Rev_4;
++    float Rev_5;
++    float Rev_gain;
++    float ThreeD_gain;
++} ST_LHDC_AR, *PST_LHDC_AR;
++#pragma pack(pop)
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_AR_GYRO
++{
++    unsigned char     header[8];
++    int world_coordinate_x;
++    int world_coordinate_y;
++    int world_coordinate_z;
++
++} ST_LHDC_AR_GYRO, *PST_LHDC_AR_GYRO;
++#pragma pack(pop)
++
++#ifdef NEW_API_SET
++//for NEW API used!!!!
++typedef struct {
++  uint32_t sample_rate;
++  LHDCBT_SMPL_FMT_T bits_per_sample;
++  LHDCBT_QUALITY_T audio_quality;
++  bool channel_split_enabled;
++  uint32_t packet_mtu;
++  uint32_t encode_interval;
++
++  bool output_size_cal;
++} lhdc_init_param_t;
++
++int lhdcBT_init(HANDLE_LHDC_BT handle, lhdc_init_param_t * param);
++#else
++HANDLE_LHDC_BT lhdcBT_get_handle(int version);
++
++
++void lhdcBT_free_handle(HANDLE_LHDC_BT handle);
++
++//static const char* LHDC_ENCODE_NAME = "lhdcBT_encode";
++//Encoder for V2
++int lhdcBT_encode(HANDLE_LHDC_BT hLhdcParam, void* p_pcm, unsigned char* p_stream);
++//Encoder for V3
++int lhdcBT_encodeV3(HANDLE_LHDC_BT hLhdcParam, void* p_pcm, unsigned char* out_put, uint32_t * written, uint32_t * out_fraems);
++
++int lhdcBT_get_bitrate(HANDLE_LHDC_BT hLhdcParam);
++
++int lhdcBT_set_bitrate(HANDLE_LHDC_BT handle, int bitrate_inx);
++
++//int lhdcBT_get_sampling_freq(HANDLE_LHDC_BT handle);
++
++//int lhdcBT_init_handle_encode(HANDLE_LHDC_BT handle,int sampling_freq, int bitPerSample, int bitrate_inx, int dualChannel, int need_padding, int mtu, int interval);
++
++//int lhdcBT_get_error_code(HANDLE_LHDC_BT handle);
++
++int lhdcBT_adjust_bitrate(HANDLE_LHDC_BT handle, size_t queueLength) ;
++
++//void lhdcBT_setLimitBitRate(HANDLE_LHDC_BT handle, int max_rate_index);
++
++//uint8_t lhdcBT_getSupportedVersion(HANDLE_LHDC_BT handle);
++
++int     lhdcBT_get_block_Size(HANDLE_LHDC_BT handle);
++
++int lhdcBT_set_ext_func_state(HANDLE_LHDC_BT handle, lhdcBT_ext_func_field_t field, bool enabled, void * priv, int priv_data_len);
++
++int lhdcBT_get_ext_func_state(HANDLE_LHDC_BT handle, lhdcBT_ext_func_field_t field, bool * enabled);
++
++//
++// Extra API
++//
++// 1. API -- Set User Config (Extend)
++int lhdcBT_set_user_exconfig(HANDLE_LHDC_BT handle, char* userConfig, int clen);
++// 2. API -- Get User Config (Extend)
++int lhdcBT_get_user_exconfig(HANDLE_LHDC_BT handle, char* userConfig, int clen);
++// 3. API -- Set User Data (Extend)
++void lhdcBT_set_user_exdata(HANDLE_LHDC_BT handle, char* userConfig, int clen);
++// 4. API -- Get Version 
++int lhdcBT_get_user_exApiver(HANDLE_LHDC_BT handle, char *version, int clen);
++
++#endif
++#ifdef __cplusplus
++}
++#endif
++#endif /* _LHDCBT_H_ */
+diff --git a/lhdc/inc/lhdcBT_dec.h b/lhdc/inc/lhdcBT_dec.h
+new file mode 100755
+index 0000000..8dae0e4
+--- /dev/null
++++ b/lhdc/inc/lhdcBT_dec.h
+@@ -0,0 +1,41 @@
++
++
++#ifndef _LHDCBT_DEC_H_
++#define _LHDCBT_DEC_H_
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include "lhdcUtil.h"
++
++
++
++typedef struct  
++{
++  lhdc_ver_t version;
++  uint32_t   sample_rate;
++  uint8_t    bits_depth;
++} tLHDCV3_DEC_CONFIG;
++
++
++
++int lhdcBT_dec_init_decoder(tLHDCV3_DEC_CONFIG *config);
++int lhdcBT_dec_check_frame_data_enough(const uint8_t *frameData, uint32_t frameBytes, uint32_t *packetBytes);
++int lhdcBT_dec_decode(const uint8_t *frameData, uint32_t frameBytes, uint8_t* pcmData, uint32_t* pcmBytes, uint32_t bits_depth);
++int lhdcBT_dec_deinit_decoder(void);
++
++
++#define LHDCBT_DEC_NOT_UPD_SEQ_NO			0
++#define LHDCBT_DEC_UPD_SEQ_NO				1
++
++
++#define LHDCBT_DEC_FUNC_SUCCEED             0
++#define LHDCBT_DEC_FUNC_FAIL                -1
++#define LHDCBT_DEC_FUNC_INPUT_NOT_ENOUGH    -2
++#define LHDCBT_DEC_FUNC_OUTPUT_NOT_ENOUGH   -3
++#define LHDCBT_DEC_FUNC_INVALID_SEQ_NO		-4
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* _LHDCBT_DEC_H_ */
+diff --git a/lhdc/inc/lhdcv5BT.h b/lhdc/inc/lhdcv5BT.h
+new file mode 100755
+index 0000000..e4ea5d8
+--- /dev/null
++++ b/lhdc/inc/lhdcv5BT.h
+@@ -0,0 +1,134 @@
++#ifndef _LHDCV5BT_H_
++#define _LHDCV5BT_H_
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include "lhdcv5_api.h"
++
++int32_t lhdcv5BT_free_handle 
++(
++    HANDLE_LHDCV5_BT	handle
++);
++
++int32_t lhdcv5BT_get_handle 
++(
++    uint32_t			version,
++    HANDLE_LHDCV5_BT	*handle
++);
++
++int32_t lhdcv5BT_set_lossless_raw_enable
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t          enabled
++);
++
++int32_t lhdcv5BT_get_bitrate
++(
++    HANDLE_LHDCV5_BT	handle,
++    uint32_t			* bitrate
++);
++
++int32_t lhdcv5BT_set_bitrate
++(
++    HANDLE_LHDCV5_BT 	handle,
++    uint32_t			bitrate_inx
++);
++
++int32_t lhdcv5BT_set_max_bitrate
++(
++    HANDLE_LHDCV5_BT	handle,
++    uint32_t			max_bitrate_inx
++);
++
++int32_t lhdcv5BT_set_min_bitrate
++(
++    HANDLE_LHDCV5_BT 	handle,
++    uint32_t			min_bitrate_inx
++);
++
++int32_t lhdcv5BT_adjust_bitrate
++(
++    HANDLE_LHDCV5_BT 	handle,
++    uint32_t			queueLen
++);
++
++int32_t lhdcv5BT_set_ext_func_state
++(
++    HANDLE_LHDCV5_BT 	handle,
++    LHDCV5_EXT_FUNC_T	field,
++    bool 				enabled,
++    void 				* priv,
++    uint32_t 			priv_data_len
++);
++
++int32_t lhdcv5BT_init_encoder
++(
++    HANDLE_LHDCV5_BT 	handle,
++    uint32_t 			sampling_freq,
++    uint32_t 			bits_per_sample,
++    uint32_t 			bitrate_inx,
++    uint32_t 			mtu,
++    uint32_t 			interval,
++    uint32_t      is_lossless_enable
++) ;
++
++int32_t lhdcv5BT_get_block_Size
++(
++    HANDLE_LHDCV5_BT	handle,
++    uint32_t			* samples_per_frame
++);
++
++int32_t lhdcv5BT_encode
++(
++    HANDLE_LHDCV5_BT 	handle,
++    void				* p_in_pcm,
++    uint32_t			pcm_bytes,
++    uint8_t				* p_out_buf,
++    uint32_t			out_buf_bytes,
++    uint32_t 			* p_out_bytes,
++    uint32_t 			* p_out_frames
++);
++
++//
++// LHDCV5 Extended APIs
++//
++// Extended API -- Get Version
++int lhdcv5BT_get_user_exApiver
++(
++    HANDLE_LHDCV5_BT handle,
++    char *userConfig,
++    int clen
++);
++
++// Extended API -- Get User Config
++int lhdcv5BT_get_user_exconfig
++(
++    HANDLE_LHDCV5_BT handle,
++    char* userConfig,
++    int clen
++);
++
++// Extended API -- Set User Config
++int lhdcv5BT_set_user_exconfig
++(
++    HANDLE_LHDCV5_BT handle,
++    const char* userConfig,
++    const int clen
++);
++
++// Extended API -- Set User Data
++void lhdcv5BT_set_user_exdata
++(
++    HANDLE_LHDCV5_BT handle,
++    const char* userConfig,
++    const int clen
++);
++
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* _LHDCV5BT_H_ */
+diff --git a/lhdc/inc/lhdcv5BT_dec.h b/lhdc/inc/lhdcv5BT_dec.h
+new file mode 100755
+index 0000000..b881b60
+--- /dev/null
++++ b/lhdc/inc/lhdcv5BT_dec.h
+@@ -0,0 +1,72 @@
++#ifndef _LHDCV5BT_DEC_H_
++#define _LHDCV5BT_DEC_H_
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include "lhdcv5_util_dec.h"
++
++#define LHDCV5BT_SAMPLE_RATE_44K    (44100)
++#define LHDCV5BT_SAMPLE_RATE_48K    (48000)
++#define LHDCV5BT_SAMPLE_RATE_96K    (96000)
++#define LHDCV5BT_SAMPLE_RATE_192K   (192000)
++
++#define LHDCV5BT_BIT_DEPTH_16    (16)
++#define LHDCV5BT_BIT_DEPTH_24    (24)
++#define LHDCV5BT_BIT_DEPTH_32    (32)
++
++#define LHDCV5BT_BIT_RATE_64K    (64000)
++#define LHDCV5BT_BIT_RATE_128K   (128000)
++#define LHDCV5BT_BIT_RATE_192K   (192000)
++#define LHDCV5BT_BIT_RATE_256K   (256000)
++#define LHDCV5BT_BIT_RATE_320K   (320000)
++#define LHDCV5BT_BIT_RATE_400K   (400000)
++#define LHDCV5BT_BIT_RATE_600K   (600000)
++#define LHDCV5BT_BIT_RATE_900K   (900000)
++#define LHDCV5BT_BIT_RATE_1000K  (1000000)
++
++#define LHDCV5BT_FRAME_DUR_5MS   (50)
++#define LHDCV5BT_FRAME_DUR_10MS  (100)
++
++typedef struct  
++{
++  lhdcv5_ver_t version;
++  uint32_t sample_rate;
++  uint32_t bits_depth;
++  uint32_t bit_rate;
++  uint32_t lossless_enable;
++  uint32_t lossless_raw_enable;
++} tLHDCV5_DEC_CONFIG;
++
++
++// lib APIs
++int32_t lhdcv5BT_dec_init_decoder(HANDLE_LHDCV5_BT *handle, tLHDCV5_DEC_CONFIG *config);
++int32_t lhdcv5BT_dec_check_frame_data_enough(const uint8_t *frameData, uint32_t frameBytes, uint32_t *packetBytes);
++int32_t lhdcv5BT_dec_decode(const uint8_t *frameData, uint32_t frameBytes, uint8_t* pcmData, uint32_t* pcmBytes, uint32_t bits_depth);
++int32_t lhdcv5BT_dec_deinit_decoder(HANDLE_LHDCV5_BT handle);
++
++#define LHDCBT_DEC_NOT_UPD_SEQ_NO			0
++#define LHDCBT_DEC_UPD_SEQ_NO				1
++
++typedef enum __LHDCV5BT_DEC_API_RET__
++{
++  LHDCV5BT_DEC_API_SUCCEED            =  0,
++  LHDCV5BT_DEC_API_FAIL               = -1,
++  LHDCV5BT_DEC_API_INVALID_INPUT      = -2,
++  LHDCV5BT_DEC_API_INVALID_OUTPUT     = -3,
++  LHDCV5BT_DEC_API_INVALID_SEQ_NO     = -4,
++  LHDCV5BT_DEC_API_INIT_DECODER_FAIL  = -5,
++  LHDCV5BT_DEC_API_CHANNEL_SETUP_FAIL = -6,
++  LHDCV5BT_DEC_API_FRAME_INFO_FAIL    = -7,
++  LHDCV5BT_DEC_API_INPUT_NOT_ENOUGH   = -8,
++  LHDCV5BT_DEC_API_OUTPUT_NOT_ENOUGH  = -9,
++  LHDCV5BT_DEC_API_DECODE_FAIL        = -10,
++  LHDCV5BT_DEC_API_ALLOC_MEM_FAIL  = -11,
++
++} LHDCV5BT_DEC_API_RET_T;
++
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* _LHDCBT_DEC_H_ */
+diff --git a/lhdc/include/cirbuf.h b/lhdc/include/cirbuf.h
+new file mode 100755
+index 0000000..5b11325
+--- /dev/null
++++ b/lhdc/include/cirbuf.h
+@@ -0,0 +1,28 @@
++#ifndef	_CIRBUF_H_
++#define	_CIRBUF_H_
++
++struct cirbuf_s
++{
++	unsigned int	idx;
++	unsigned int	odx;
++	unsigned int	s_len;
++	unsigned int	r_len;
++	unsigned int	max_len;
++	unsigned int    item_cnt;
++	unsigned char	*cbuf;
++};
++typedef  struct cirbuf_s savi_circ_buf;
++
++void cirbuf_init_lhdcv4( struct cirbuf_s *pcb, unsigned char *buf, unsigned int len);
++
++void cirbuf_reset_lhdcv4( struct cirbuf_s *pcb);
++
++unsigned int cirbuf_len_lhdcv4( struct cirbuf_s *pcb);
++unsigned int cirbuf_empty_len_lhdcv4( struct cirbuf_s *pcb);
++unsigned int cirbuf_get_cnt_lhdcv4( struct cirbuf_s *pcb);
++
++int cirbuf_get_lhdcv4( struct cirbuf_s *pcb, unsigned char *buf, unsigned int len, unsigned int cnt);
++int cirbuf_put_lhdcv4( struct cirbuf_s *pcb, unsigned char *buf, unsigned int len, unsigned int cnt);
++
++#endif	/* _CIRBUF_H_ */
++
+diff --git a/lhdc/include/lhdcUtil.h b/lhdc/include/lhdcUtil.h
+new file mode 100755
+index 0000000..1957feb
+--- /dev/null
++++ b/lhdc/include/lhdcUtil.h
+@@ -0,0 +1,192 @@
++/*
++ * lhdcUtil.h
++ *
++ */
++
++#ifndef LHDC_UTIL_H
++#define LHDC_UTIL_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++// Define for LHDC stream type.
++typedef enum {
++  VERSION_2 = 200,
++  VERSION_3 = 300,
++  VERSION_4 = 400,
++  VERSION_LLAC = 500
++}lhdc_ver_t;
++
++typedef enum {
++  LHDCV2_BLOCK_SIZE = 512,
++  LHDCV3_BLOCK_SIZE = 256,
++}lhdc_block_size_t;
++
++typedef struct _lhdc_frame_Info
++{
++  uint32_t frame_len; // bytes of an encoded frame
++  uint32_t isSplit;   // if need to output in split channel? (split: 1, not-split:0)
++  uint32_t isLeft;    // if isSplit is 1, the output data format: (left channel: 1; right channel: 0)
++
++} lhdc_frame_Info_t;
++
++typedef enum {
++  LHDC_OUTPUT_STEREO = 0,
++  LHDC_OUTPUT_LEFT_CAHNNEL,
++  LHDC_OUTPUT_RIGHT_CAHNNEL,
++} lhdc_channel_t;
++
++typedef enum{
++  LHDC_DEC_LOG_LEVEL_EMERG = 0,
++  LHDC_DEC_LOG_LEVEL_ALERT,
++  LHDC_DEC_LOG_LEVEL_CRIT,
++  LHDC_DEC_LOG_LEVEL_ERROR,
++  LHDC_DEC_LOG_LEVEL_WARNING,
++  LHDC_DEC_LOG_LEVEL_NOTICE,
++  LHDC_DEC_LOG_LEVEL_INFO,
++  LHDC_DEC_LOG_LEVEL_DEBUG
++}lhdc_dec_log_level;
++
++typedef int LHDCSample;
++
++#define LHDC_DEC_HDR_LATENCY_LOW   (0x00)
++#define LHDC_DEC_HDR_LATENCY_MID   (0x01)
++#define LHDC_DEC_HDR_LATENCY_HIGH  (0x02)
++#define LHDC_DEC_HDR_LATENCY_MASK  (LHDC_DEC_HDR_LATENCY_MID | LHDC_DEC_HDR_LATENCY_HIGH)
++
++#define LHDC_DEC_HDR_FRAME_NO_MASK (0xfc)
++
++//Return
++#define LHDC_UTIL_DEC_SUCCESS 0
++#define LHDC_UTIL_DEC_ERROR_NO_INIT -1
++#define LHDC_UTIL_DEC_ERROR_PARAM -2
++#define LHDC_UTIL_DEC_ERROR -3
++#define LHDC_UTIL_DEC_ERROR_WRONG_DEC -10
++
++//----------------------------------------------------------------
++// lhdc_util_dec_get_mem_req ()
++//
++//  Get internal memory size requirement of decoder
++//  Parameter
++//      [in] version: LHDC decoder subversion
++//      [in] mem_req_bytes: a returned value to report size bytes of memory requirement
++//  Return
++//      LHDC_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdc_util_dec_get_mem_req(lhdc_ver_t version, uint32_t *mem_req_bytes);
++
++//----------------------------------------------------------------
++// lhdcInit ()
++//
++//  Initialize the decoder library
++//  Parameter
++//      [in] ptr: a pointer to the memory resource allocated  from external to the decoder.
++//      [in] bitPerSample: bits per sample.
++//      [in] sampleRate: sample rate.
++//      [in] reserved: currently not-used
++//      [in] version: LHDC decoder subversion
++//  Return
++//      None
++//----------------------------------------------------------------
++void lhdcInit(uint32_t *ptr, uint32_t bitPerSample, uint32_t sampleRate, uint32_t reserved, lhdc_ver_t version);
++
++//----------------------------------------------------------------
++// lhdcDecodeProcess ()
++//
++//  Input an encoded frame data to decode process
++//  Parameter
++//      [in] pOutBuf: a pointer to the output PCM buffer
++//      [in] pInput: a pointer to the head of the input encoded frame
++//      [in] len: size bytes of the encoded frame
++//  Return
++//      Number of bytes of PCM data outputed after decoding
++//----------------------------------------------------------------
++uint32_t lhdcDecodeProcess(uint8_t *pOutBuf, uint8_t *pInput, uint32_t len);
++
++//----------------------------------------------------------------
++// getVersionCode ()
++//
++//  Return a char string of the software version of library
++//  Parameter
++ //     None
++//  Return
++//      A char string of lib version information.
++//----------------------------------------------------------------
++char* getVersionCode(void);
++
++//----------------------------------------------------------------
++// lhdcDestroy ()
++//
++//  Clean/Reset resources in library
++//  Note:
++//    1. Not to call the API when initializing the library at first-time.
++//    2. call this before lhdcInit() when re-initializing the library.
++//  Parameter
++ //     None
++//  Return
++//      None
++//----------------------------------------------------------------
++void lhdcDestroy(void);
++
++//----------------------------------------------------------------
++// lhdc_register_log_cb ()
++//
++//  Register a logger(printing function) callback instance from external
++//  Parameter
++//      [in] cb: a pointer to the callback function of logger.
++//      [in] msg_buff: buffer for storing the char string.
++//      [in] level: an integer of log level(see, lhdcv5_dec_log_level).
++//  Return
++//      LHDC_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdc_register_log_cb(void *cb, char *msg_buff, int32_t level);
++
++//----------------------------------------------------------------
++// lhdcGetSampleSize ()
++//
++//  Get the number of samples per frame
++//  Parameter
++//      None
++//  Return
++//      (value > 0): Number of samples per frame
++//      otherwise: Failure
++//----------------------------------------------------------------
++uint32_t lhdcGetSampleSize(void);
++
++//----------------------------------------------------------------
++// lhdcFetchFrameInfo ()
++//
++//  Get the number of samples per frame
++//  Parameter
++//      [in] frameData: a pointer to the head of a frame.
++//      [in] frameInfo: a returned pointer to frame info.
++//  Return
++//      true: Succeed
++//      false: Failure
++//----------------------------------------------------------------
++bool lhdcFetchFrameInfo(uint8_t *frameData, lhdc_frame_Info_t *frameInfo);
++
++//----------------------------------------------------------------
++// lhdcChannelSelsect ()
++//
++//  Setup channel allocation
++//  Parameter
++//      [in] channel_type: type of channel allocation
++//  Return
++//      LHDC_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++uint32_t lhdcChannelSelsect(lhdc_channel_t channel_type);
++
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* End of LHDC_UTIL_H */
+diff --git a/lhdc/include/lhdc_api.h b/lhdc/include/lhdc_api.h
+new file mode 100755
+index 0000000..fb0ab86
+--- /dev/null
++++ b/lhdc/include/lhdc_api.h
+@@ -0,0 +1,216 @@
++#ifndef __LHDC_API_H__
++#define __LHDC_API_H__
++
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++#include "lhdc_process.h"
++#include "cirbuf.h"
++#include <stdint.h>
++
++#define LHDC_VERSION            LHDCVER
++
++typedef enum {
++    LHDCBT_SMPL_FMT_S16 = 16,
++    LHDCBT_SMPL_FMT_S24 = 24,
++} LHDCBT_SMPL_FMT_T;
++
++
++typedef enum name {
++    LHDCBT_QUALITY_LOW0 = 0,
++    LHDCBT_QUALITY_LOW1,
++    LHDCBT_QUALITY_LOW2,
++    LHDCBT_QUALITY_LOW3,
++    LHDCBT_QUALITY_LOW4,
++    LHDCBT_QUALITY_LOW,
++    LHDCBT_QUALITY_MID,
++    LHDCBT_QUALITY_HIGH,
++    LHDCBT_QUALITY_AUTO,
++    LHDCBT_QUALITY_RESET_AUTO,
++    LHDCBT_QUALITY_MAX
++} LHDCBT_QUALITY_T;
++
++#define LHDCV2_BT_ENC_BLOCK_SIZE  512
++
++#define LHDCV3_BT_ENC_BLOCK_SIZE  256
++
++#define MAX_CHANNEL		    		2
++
++typedef enum _lhdc_enc_type_t {
++    ENC_TYPE_UNKNOWN = 0,
++    ENC_TYPE_LHDC,
++    ENC_TYPE_LLAC,
++    ENC_TYPE_MAX,
++    ENC_TYPE_ERR = ENC_TYPE_MAX
++} lhdc_enc_type_t;
++
++typedef enum{
++  LHDC_ENC_LOG_LEVEL_EMERG = 0,
++  LHDC_ENC_LOG_LEVEL_ALERT,
++  LHDC_ENC_LOG_LEVEL_CRIT,
++  LHDC_ENC_LOG_LEVEL_ERROR,
++  LHDC_ENC_LOG_LEVEL_WARNING,
++  LHDC_ENC_LOG_LEVEL_NOTICE,
++  LHDC_ENC_LOG_LEVEL_INFO,
++  LHDC_ENC_LOG_LEVEL_DEBUG
++}lhdc_enc_log_level;
++
++typedef struct _llac_para_t {
++    
++    uint8_t* lh4_enc;
++    int32_t  sample_rate;
++    int32_t  bits_per_sample;
++
++    LHDCBT_QUALITY_T qualityStatus;      //0xff == Auto bitrate
++    LHDCBT_QUALITY_T limitBitRateStatus;
++    int32_t  lastBitrate;     //Record lastbitrate for auto bitrate adjust.
++    int32_t  real_bitrate;
++
++    uint16_t avg_cnt;
++    uint32_t avgValue;
++
++    uint16_t changeBRCnt;
++    uint32_t chageBRAvg;
++
++    uint16_t upBitrateCnt;
++    uint32_t upBitrateSum;
++
++    uint16_t dnBitrateCnt;
++    uint32_t dnBitrateSum;
++
++    bool updateFramneInfo;
++    uint32_t samples_per_frame; //equal to block size
++    int32_t  out_nbytes;    //output size per frame;
++    uint32_t host_mtu_size;
++    uint32_t frame_per_packet;
++    uint32_t encode_interval;
++
++    //kaiden:20210311:autobirate:malloc maximum nbyte size
++    bool new_packet_flag;
++
++} llac_para_t;
++
++typedef struct _lhdc_para_t {
++
++    FFT_BLOCK * fft_blk;
++    int32_t  sample_rate;
++    int32_t  bits_per_sample;
++
++    LHDCBT_QUALITY_T qualityStatus;      //0xff == Auto bitrate
++    LHDCBT_QUALITY_T limitBitRateStatus;
++    int32_t lastBitrate;     //Record lastbitrate for auto bitrate adjust.
++    int32_t version;     // (version >= 2) ? (LHDCV3 or LLAC) : LHDCV2
++
++    uint16_t avg_cnt;
++    uint32_t avgValue;
++
++    uint16_t changeBRCnt;
++    uint32_t chageBRAvg;
++
++    uint16_t upBitrateCnt;
++    uint32_t upBitrateSum;
++
++    uint16_t dnBitrateCnt;
++    uint32_t dnBitrateSum;
++
++    bool updateFramneInfo;
++    uint32_t block_size;
++    uint32_t target_mtu_size;
++    uint32_t byte_per_frame;    //output size per frame;
++    uint32_t host_mtu_size;
++    uint32_t frame_per_packet;
++    uint32_t encode_interval;
++    uint32_t queue_frame_cnt;
++
++    bool hasMinBitrateLimit;
++
++} lhdc_para_t;
++
++//L_20210408 .start
++typedef struct _lhdc_ar_para_t {
++	int sample_rate;
++	int bits_per_sample;
++	int channels;
++	unsigned int samples_per_frame;
++	unsigned int    app_ar_enabled;
++        unsigned long   ulNumBytes;
++        unsigned char*  pucARParams;
++        unsigned int	uiARParamsBytes;//Ask AR how many mem size
++        unsigned char*  pucLhdcArMem;
++        unsigned int	uiLhdcArMemBytes;//Ask AR how many mem size
++} lhdc_ar_para_t;
++//L_20210408 .end
++
++typedef union _enc_t {
++        lhdc_para_t *lhdc;
++        llac_para_t *llac;
++} enc_t;
++typedef struct _lhdc_control_block_t {
++
++    lhdc_enc_type_t enc_type;       //LLAC or LHDC
++    int err;
++
++    enc_t enc;
++    lhdc_ar_para_t * ar_filter; //AR Param
++
++} lhdc_cb_t;
++
++
++inline static int32_t TARGET_BITRATE_LIMIT(int32_t X, int32_t Y){
++     //((X < Y) ? (Y) : (X))
++
++     if (X < Y)
++        return Y;
++    else
++        return X;
++
++}
++
++typedef void * HANDLE_LHDC_BT;
++
++// Common APIs
++int32_t lhdc_util_enc_register_log_cb(void *cb, char *msg_buff, int32_t level);
++extern llac_para_t * llac_encoder_new(void);
++extern void llac_encoder_free(llac_para_t * llac_handle);
++extern int32_t llac_encoder_get_frame_len(llac_para_t *handler);
++extern int32_t llac_encoder_get_target_bitrate(llac_para_t  *handler);
++extern int32_t llac_encoder_init(llac_para_t * handler, uint32_t sample_rate,
++        uint32_t bits_per_sample, uint32_t bitrate_inx, uint32_t mtu_size,
++        uint32_t encode_interval);
++extern int32_t llac_encoder_set_target_mtu(llac_para_t *handler, uint32_t mtu);
++
++extern lhdc_para_t * lhdc_encoder_new(int version);
++extern void lhdc_encoder_free(lhdc_para_t * handler);
++extern int32_t lhdc_encoder_get_frame_len(lhdc_para_t *handler);
++extern int32_t lhdc_encoder_get_target_bitrate(lhdc_para_t * handler);
++extern bool lhdc_get_ext_func_state(lhdc_enc_type_t type, void *h,
++        lhdc_ext_func_t ext_type);
++extern int32_t lhdc_encoder_init(lhdc_para_t * handler, int32_t sampling_freq,
++        uint32_t bitPerSample, uint32_t bitrate_inx,
++        uint32_t dualChannel, uint32_t need_padding, uint32_t mtu,
++        uint32_t interval);
++extern int32_t lhdc_encoder_set_target_mtu(lhdc_para_t * handler, uint32_t mtu);
++
++extern void lhdc_util_reset_up_bitrate(lhdc_enc_type_t type, void * h);
++extern void lhdc_util_reset_down_bitrate(lhdc_enc_type_t type, void * h);
++extern bool lhdc_util_get_ext_func_state(lhdc_enc_type_t type, void *h, lhdc_ext_func_t ext_type);
++extern int32_t lhdc_util_encv4_process(HANDLE_LHDC_BT handle, void* p_pcm,
++        unsigned char* out_put, uint32_t * written, uint32_t * out_fraems);
++extern uint32_t lhdc_util_get_bitrate(uint32_t index);
++
++// Extended feature API: AR
++extern void ar_process_free(lhdc_ar_para_t * handle);
++extern lhdc_ar_para_t * ar_process_new(void);
++extern int ar_process_init(lhdc_ar_para_t * handle, int sample_rate, int bits_per_sample,
++        int channels, unsigned int samples_per_frame);
++extern int ar_set_gyro_pos(lhdc_ar_para_t * handle, int world_coordinate_x,
++        int world_coordinate_y, int world_coordinate_z);
++extern int ar_set_cfg(lhdc_ar_para_t * handle,int *Pos, float *Gain,
++        unsigned int app_ar_enabled);
++extern int ar_get_cfg(lhdc_ar_para_t * handle,int *Pos, float *Gain);
++
++#ifdef __cplusplus
++}
++#endif
++#endif //End of __LHDC_API_H__
+diff --git a/lhdc/include/lhdc_cfg.h b/lhdc/include/lhdc_cfg.h
+new file mode 100755
+index 0000000..8b2e018
+--- /dev/null
++++ b/lhdc/include/lhdc_cfg.h
+@@ -0,0 +1,34 @@
++#ifndef __LHDC_CONFIG_H__
++#define __LHDC_CONFIG_H__
++
++//
++// Config for LHDC Encode
++//
++
++
++//#define ENC_LPF_FIXED_POINT			1
++
++
++// 20190402 .start
++//#define ENC_LPC_V_MAX_ORDER			1
++//#define ENC_LPC_V_USE_32BIT			1
++// 20190402 .end
++
++
++
++//
++// Config for LHDC Decode
++//
++
++//#define DEC_LPF_FIXED_POINT			1
++
++
++
++// 20190402 .start
++//#define DEC_LPC_V_MAX_ORDER			1
++//#define DEC_ADSP_LPC_V_USE_ADSP		1
++//#define DEC_ADSP_LPC_V_MAX_ORDER		1
++// 20190402 .end
++
++
++#endif
+diff --git a/lhdc/include/lhdc_enc_config.h b/lhdc/include/lhdc_enc_config.h
+new file mode 100755
+index 0000000..696de88
+--- /dev/null
++++ b/lhdc/include/lhdc_enc_config.h
+@@ -0,0 +1,7 @@
++#ifndef	_LHDC_ENC_CONFIG_H_
++#define	_LHDC_ENC_CONFIG_H_
++
++
++#define LHDC_ENC_SINK_BUF_LEN       ( 10 * 1024)
++
++#endif	/* _LHDC_ENC_CONFIG_H_ */
+diff --git a/lhdc/include/lhdc_process.h b/lhdc/include/lhdc_process.h
+new file mode 100755
+index 0000000..4ae9100
+--- /dev/null
++++ b/lhdc/include/lhdc_process.h
+@@ -0,0 +1,106 @@
++#ifndef _PROCESS_BLOCK_H_
++#define _PROCESS_BLOCK_H_
++#include <stdbool.h>
++#include <stdint.h>
++
++struct FFT_block_s;
++typedef struct FFT_block_s FFT_BLOCK;
++
++typedef enum {
++	EXT_FUNC_AR,
++	EXT_FUNC_LARC,
++	EXT_FUNC_EXT_FLG,
++	EXT_FUNC_JAS,
++	EXT_FUNC_META
++} lhdc_ext_func_t;
++
++
++typedef enum _lhdc_error {
++    LHDC_ST_OK,
++    LHDC_ST_ERR,
++    LHDC_ST_MAX
++} LHDC_STATE;
++
++
++int LossyEncoderLoadQualitySetting(FFT_BLOCK *fb, char *file_name);
++
++/**
++ * Allocate new LHDC control block.
++ */
++//Adjust by John
++//FFT_BLOCK *LossyEncoderNew(void);
++FFT_BLOCK *LossyEncoderNew(int32_t version);
++
++/**
++ * Destroy LHDC control block.
++ */
++int LossyEncoderDelete(FFT_BLOCK *fb);
++
++/**
++ * Initial LHDC encoder.
++ * Input :
++ *  fb: LHDC control block.
++ *  sample_rate : The sampling rate setting value as you wanted. (Only support 44.1Khz/48Khz/96KHz)
++ *  channels    : Fixed to 2 channel.
++ *  block_size  : Fixed to 512.
++ *  sink_buf_len: Fixed to 10 * 1024.
++ *  target_byte_rate : The target byte rate.(eg. 400k bit per sec = 50k byte per sec, Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ *  fast_mode   : Always fixed to 0.
++ *  split       : Fixed to 0.
++ *  need_padding: Fixed to 0.
++ *  process_size: Fixed to 256.
++ *
++ * Return value :
++ *  LHDC_ST_ERR : Parameters of init have error.
++ *  LHDC_ST_OK : LHDC encoder initial OK.
++ */
++//void LossyEncoderInit(FFT_BLOCK *fb, int sample_rate, int bits_per_sample, int channels, int block_size, int sink_buf_len, int target_byte_rate, int fast_mode, int one_frame_per_channel, int need_min_byte_rate, int process_size, int target_mtu_byte, int no_btr_limit_frame_cnt);
++void LossyEncoderInit(FFT_BLOCK *fb, int sample_rate, int bits_per_sample, int channels, int block_size, int sink_buf_len, int target_byte_rate, int fast_mode, int one_frame_per_channel, int need_min_byte_rate, int process_size, int target_mtu_byte, int no_btr_limit_frame_cnt, int min_bits_reserved, int lhdc_ver);
++
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  wav : The PCM data. please input non-planer and compact PCM data.
++ *        (eg. The input stream format is 96KHz/24bits stereo and the LHDC request 512 samples for each frame.
++ *         So the PCM data length should be 512 * 2 * (24/8) = 3072 bytes. The data order should be L/R, L/R, L/R....).
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessWav(FFT_BLOCK *fb, unsigned char *wav, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  pcm0 : The left channel PCM data.
++ *  pcm1 : The right channel PCM data.
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessPCM(FFT_BLOCK *fb, int *pcm0, int *pcm1, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * To change target byte rate at runtime.
++ * (Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ */
++void LossyEncoderSetTargetByteRate(FFT_BLOCK *fb, int target_byte_rate);
++void LossyEncoderResetAlignmentBuf(FFT_BLOCK *fb);
++void LossyEncoderUpdateFrameSize(FFT_BLOCK *fb, int target_mtu_byte, int target_byte_rate);//For auto bit rate
++
++void LhdcExtFuncArEnable(FFT_BLOCK *fb, int enable_ar);
++void LhdcExtFuncJasEnable(FFT_BLOCK *fb, int enable_Jas);
++void LhdcExtFuncMetaEnable(FFT_BLOCK *fb, int enable_meta, unsigned char *pmeta_data, int meta_data_len, int conti_frame_cnt);
++bool LhdcGetExtFuncState(FFT_BLOCK *fb, lhdc_ext_func_t ext_func);
++#endif // _PROCESS_BLOCK_H_
+diff --git a/lhdc/include/lhdcv2_process.h b/lhdc/include/lhdcv2_process.h
+new file mode 100755
+index 0000000..8d13c3e
+--- /dev/null
++++ b/lhdc/include/lhdcv2_process.h
+@@ -0,0 +1,91 @@
++#ifndef _PROCESSV2_BLOCK_H_
++#define _PROCESSV2_BLOCK_H_
++
++
++#ifndef __FFT_BLOCK__
++#define __FFT_BLOCK__
++typedef void *FFT_BLOCK;
++#endif //End of __FFT_BLOCK__
++
++
++#ifndef __LHDC_STATUS__
++#define __LHDC_STATUS__
++typedef enum _lhdc_error {
++    LHDC_ST_OK,
++    LHDC_ST_ERR,
++    LHDC_ST_MAX
++} LHDC_STATE;
++#endif //End of __LHDC_STATUS__
++
++
++//int LossyEncoderLoadQualitySetting(FFT_BLOCK *fb, char *file_name);
++
++/**
++ * Allocate new LHDC control block.
++ */
++FFT_BLOCK LossyEncoderNewV2(void);
++
++/**
++ * Destroy LHDC control block.
++ */
++int LossyEncoderDeleteV2(FFT_BLOCK fb);
++
++/**
++ * Initial LHDC encoder.
++ * Input :
++ *  fb: LHDC control block.
++ *  sample_rate : The sampling rate setting value as you wanted. (Only support 44.1Khz/48Khz/96KHz)
++ *  channels    : Fixed to 2 channel.
++ *  block_size  : Fixed to 512.
++ *  sink_buf_len: Fixed to 10 * 1024.
++ *  target_byte_rate : The target byte rate.(eg. 400k bit per sec = 50k byte per sec, Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ *  fast_mode   : Always fixed to 0.
++ *  split       : Fixed to 0.
++ *  need_padding: Fixed to 0.
++ *  process_size: Fixed to 256.
++ *
++ * Return value :
++ *  LHDC_ST_ERR : Parameters of init have error.
++ *  LHDC_ST_OK : LHDC encoder initial OK.
++ */
++LHDC_STATE LossyEncoderInitV2(FFT_BLOCK fb, int sample_rate, int bits_per_sample, int channels, int block_size, int sink_buf_len, int target_byte_rate, int fast_mode, int one_frame_per_channel, int need_min_byte_rate, int process_size);
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  wav : The PCM data. please input non-planer and compact PCM data.
++ *        (eg. The input stream format is 96KHz/24bits stereo and the LHDC request 512 samples for each frame.
++ *         So the PCM data length should be 512 * 2 * (24/8) = 3072 bytes. The data order should be L/R, L/R, L/R....).
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessWavV2(FFT_BLOCK fb, unsigned char *wav, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  pcm0 : The left channel PCM data.
++ *  pcm1 : The right channel PCM data.
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessPCMV2(FFT_BLOCK fb, int *pcm0, int *pcm1, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * To change target byte rate at runtime.
++ * (Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ */
++void LossyEncoderSetTargetByteRateV2(FFT_BLOCK fb, int target_byte_rate);
++#endif // _PROCESSV2_BLOCK_H_
+diff --git a/lhdc/include/lhdcv3_process.h b/lhdc/include/lhdcv3_process.h
+new file mode 100755
+index 0000000..306afd7
+--- /dev/null
++++ b/lhdc/include/lhdcv3_process.h
+@@ -0,0 +1,92 @@
++#ifndef _PROCESSV3_BLOCK_H_
++#define _PROCESSV3_BLOCK_H_
++
++
++#ifndef __FFT_BLOCK__
++#define __FFT_BLOCK__
++typedef void *FFT_BLOCK;
++#endif //End of __FFT_BLOCK__
++
++
++#ifndef __LHDC_STATUS__
++#define __LHDC_STATUS__
++typedef enum _lhdc_error {
++    LHDC_ST_OK,
++    LHDC_ST_ERR,
++    LHDC_ST_MAX
++} LHDC_STATE;
++#endif //End of __LHDC_STATUS__
++
++
++//int LossyEncoderLoadQualitySetting(FFT_BLOCK *fb, char *file_name);
++
++/**
++ * Allocate new LHDC control block.
++ */
++FFT_BLOCK LossyEncoderNewV3(void);
++
++/**
++ * Destroy LHDC control block.
++ */
++int LossyEncoderDeleteV3(FFT_BLOCK fb);
++
++/**
++ * Initial LHDC encoder.
++ * Input :
++ *  fb: LHDC control block.
++ *  sample_rate : The sampling rate setting value as you wanted. (Only support 44.1Khz/48Khz/96KHz)
++ *  channels    : Fixed to 2 channel.
++ *  block_size  : Fixed to 256.
++ *  sink_buf_len: Fixed to 10 * 1024.
++ *  target_byte_rate : The target byte rate.(eg. 400k bit per sec = 50k byte per sec, Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ *  fast_mode   : Always fixed to 0.
++ *  split       : Fixed to 0.
++ *  need_padding: Fixed to 0.
++ *  process_size: Fixed to 256.
++ *
++ * Return value :
++ *  LHDC_ST_ERR : Parameters of init have error.
++ *  LHDC_ST_OK : LHDC encoder initial OK.
++ */
++void LossyEncoderInitV3(FFT_BLOCK fb, int sample_rate, int bits_per_sample, int channels, int block_size, int sink_buf_len, int target_byte_rate, int fast_mode, int one_frame_per_channel, int need_min_byte_rate, int process_size, int target_mtu_byte, int no_btr_limit_frame_cnt);
++
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  wav : The PCM data. please input non-planer and compact PCM data.
++ *        (eg. The input stream format is 96KHz/24bits stereo and the LHDC request 512 samples for each frame.
++ *         So the PCM data length should be 512 * 2 * (24/8) = 3072 bytes. The data order should be L/R, L/R, L/R....).
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessWavV3(FFT_BLOCK fb, unsigned char *wav, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * LHDC encode function
++ *  fb: LHDC control block.
++ *  pcm0 : The left channel PCM data.
++ *  pcm1 : The right channel PCM data.
++ *  ns  : The number of samples, not PCM data byte length. The LHDC encoder only supports 512.
++ *  final   : Fixed to 0.
++ *  out : Output buffer pointer.
++ *  out_len : The output buffer size to protect overwrite.
++ *
++ *  Return value :
++ *      The return value should be the encoded size, otherwise an error occurs (less than or equal to 0)
++ *
++ */
++int LossyEncoderProcessPCMV3(FFT_BLOCK fb, int *pcm0, int *pcm1, int ns, int final, unsigned char *out, int out_len);
++
++/**
++ * To change target byte rate at runtime.
++ * (Only support 400kbps, 500kbps, 560kbps, 900kbps)
++ */
++void LossyEncoderSetTargetByteRateV3(FFT_BLOCK fb, int target_byte_rate);
++#endif // _PROCESSV3_BLOCK_H_
+diff --git a/lhdc/include/lhdcv5BT_ext_func.h b/lhdc/include/lhdcv5BT_ext_func.h
+new file mode 100755
+index 0000000..f861216
+--- /dev/null
++++ b/lhdc/include/lhdcv5BT_ext_func.h
+@@ -0,0 +1,188 @@
++
++
++#ifndef _LHDCBT_EXT_FUNC_H_
++#define _LHDCBT_EXT_FUNC_H_
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++
++#define EXTEND_FUNC_RET_OK                      ((int) 0)
++#define EXTEND_FUNC_RET_INVALID_HANDLE          ((int) 0xE01)
++#define EXTEND_FUNC_RET_INVALID_PARAMETER       ((int) 0xE02)
++#define EXTEND_FUNC_RET_FUNC_NOT_SUPPORT        ((int) 0xE03)
++#define EXTEND_FUNC_RET_VERSION_NOT_SUPPORT     ((int) 0xE04)
++#define EXTEND_FUNC_RET_BUF_UNDERRUN            ((int) 0xE05)
++#define EXTEND_FUNC_RET_ERROR                   ((int) 0xE06)
++#define EXTEND_FUNC_RET_NOT_READY               ((int) 0xE07)
++#define EXTEND_FUNC_RET_REQ_BUFSIZE_NOT_MATCH   ((int) 0xE08)
++
++
++/* **********************************************
++ *  API: Version Control
++ * ***********************************************/
++#define EXTEND_FUNC_GENERIC_VERSION_NUMBER_V1               ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_GENERIC_VERSION_NUMBER_V2               ((unsigned int) 0x02000000)
++#define EXTEND_FUNC_MIN_BUFFER_LEN                          (8)
++
++/* **********************************************
++ *  LIB API: Config Type
++ * ***********************************************/
++/* * * * * * * * * * * * * * * *
++ *   META                      *
++ * * * * * * * * * * * * * * * */
++//   META :: API Code
++#define EXTEND_FUNC_CODE_SET_CONFIG_META        ((unsigned int) 0x0C000001)
++#define EXTEND_FUNC_CODE_GET_CONFIG_META        ((unsigned int) 0x0C010001)
++//   META :: API Version
++#define EXTEND_FUNC_VER_SET_CONFIG_META_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_META_V2      ((unsigned int) 0x02000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_META_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_META_V2      ((unsigned int) 0x02000000)
++//   META :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_CONFIG_META_REQ_BUFSIZE_V2      16  //TBD
++#define EXTEND_FUNC_VER_GET_CONFIG_META_REQ_BUFSIZE_V2      16  //TBD
++
++/* * * * * * * * * * * * * * * *
++ *   AR                        *
++ * * * * * * * * * * * * * * * */
++//   AR :: API Code
++#define EXTEND_FUNC_CODE_SET_CONFIG_AR          ((unsigned int) 0x0C000002)
++#define EXTEND_FUNC_CODE_GET_CONFIG_AR          ((unsigned int) 0x0C010002)
++//   AR :: API Version
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V1        ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V2        ((unsigned int) 0x02000000)
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_V3        ((unsigned int) 0x03000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_V1        ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_V2        ((unsigned int) 0x02000000)
++//   AR :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_CONFIG_AR_REQ_BUFSIZE_V2      16    //TBD
++#define EXTEND_FUNC_VER_GET_CONFIG_AR_REQ_BUFSIZE_V2      16    //TBD
++
++
++/* **********************************************
++ *  LIB API: Data Type
++ * ***********************************************/
++/* * * * * * * * * * * * * * * *
++ *   GYRO2D                    *
++ * * * * * * * * * * * * * * * */
++//   GYRO2D :: API Code
++#define EXTEND_FUNC_CODE_SET_DATA_GYRO2D        ((unsigned int) 0x0D000001)
++//   GYRO2D :: API Version
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_V1      ((unsigned int) 0x01000000)
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_V2      ((unsigned int) 0x02000000)
++//   GYRO2D :: API Min Required Buffer Size
++#define EXTEND_FUNC_VER_SET_DATA_GYRO2D_REQ_BUFSIZE_V2      16    //TBD (8 + 2gyro + 6pad)
++
++
++/* * * * * * * * * * * * * * * *
++ *   GetA2DPSpecifis           *
++ * * * * * * * * * * * * * * * */
++//   GetA2DPSpecifis :: API Code
++#define EXTEND_FUNC_CODE_GET_SPECIFIC           ((unsigned int) 0x0A010001)
++//   GetA2DPSpecifis :: API Version
++#define EXTEND_FUNC_VER_GET_SPECIFIC_V2         ((unsigned int) 0x02000000)
++
++//
++// META
++//
++#define META_ST_VER_V1                           ((unsigned int) 0x00010000)
++#define META_ST_VER_V2                           ((unsigned int) 0x00020000)
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_SET_META {
++
++  unsigned char     header[8];
++  unsigned int      meta_ver;
++  unsigned char     meta_mem_size;
++  unsigned char     meta_enable;
++  unsigned char     meta_set;
++  unsigned char     meta_metadata_length;
++  //  unsigned char     meta_metadata[64];
++
++} ST_LHDC_SET_META, *PST_LHDC_SET_META;
++#pragma pack(pop)
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_GET_META {
++
++  unsigned char     header[8];
++  unsigned int      meta_ver;
++  unsigned char     meta_mem_size;
++  unsigned char     meta_st;     // [0] 1: reserved bit, [1] 1: in meta mode/0: not in meta mode
++  unsigned char     jas_status;
++
++} ST_LHDC_GET_META, *PST_LHDC_GET_META;
++#pragma pack(pop)
++
++//
++// AR
++//
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_AR
++{
++  unsigned char     header[8];
++  unsigned int      ver;
++  unsigned int      size;
++  unsigned int      app_ar_enabled;
++  int Ch1_Pos;
++  int Ch2_Pos;
++  int Ch3_Pos;
++  int Ch4_Pos;
++  int Ch5_Pos;
++  int Ch6_Pos;
++  float Ch1_L_PreGain;
++  float Ch1_R_PreGain;
++  float Ch2_L_PreGain;
++  float Ch2_R_PreGain;
++  float Ch3_L_PreGain;
++  float Ch3_R_PreGain;
++  float Ch4_L_PreGain;
++  float Ch4_R_PreGain;
++  float Ch5_L_PreGain;
++  float Ch5_R_PreGain;
++  float Ch6_L_PreGain;
++  float Ch6_R_PreGain;
++  float Ch1_PostGain;
++  float Ch2_PostGain;
++  float Ch3_PostGain;
++  float Ch4_PostGain;
++  float Ch5_PostGain;
++  float Ch6_PostGain;
++  float Dry_Val;
++  float Wet_Val;
++  float Dis_1;
++  float Dis_2;
++  float Dis_3;
++  float Dis_4;
++  float Dis_5;
++  float Rev_1;
++  float Rev_2;
++  float Rev_3;
++  float Rev_4;
++  float Rev_5;
++  float Rev_gain;
++  float ThreeD_gain;
++} ST_LHDC_AR, *PST_LHDC_AR;
++#pragma pack(pop)
++
++#pragma pack (push)
++#pragma pack (1)
++typedef struct __ST_LHDC_AR_GYRO
++{
++  unsigned char     header[8];
++  int world_coordinate_x;
++  int world_coordinate_y;
++  int world_coordinate_z;
++
++} ST_LHDC_AR_GYRO, *PST_LHDC_AR_GYRO;
++#pragma pack(pop)
++
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* _LHDCBT_EXT_FUNC_H_ */
+diff --git a/lhdc/include/lhdcv5_api.h b/lhdc/include/lhdcv5_api.h
+new file mode 100755
+index 0000000..80ddf8c
+--- /dev/null
++++ b/lhdc/include/lhdcv5_api.h
+@@ -0,0 +1,1011 @@
++/*
++ ******************************************************************
++ LHDC 5.0 utilities API header
++ ******************************************************************
++ */
++
++#ifndef __LHDCV5_API_H__
++#define __LHDCV5_API_H__
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/* *
++ * High quality lossless requires very high bitrate for transmission (ex:mHDT).
++ * The definitions are for testing VBR or VBR-Plus mechanisms only
++ * */
++//#define LHDC_V5_LLESS24_NO_MHDT_TEST
++//#define LHDC_V5_LLESS96K24_NO_MHDT_TEST
++
++typedef enum __LHDCV5_SAMPLE_FREQ__
++{
++  LHDCV5_SR_44100HZ  =  44100,
++  LHDCV5_SR_48000HZ  =  48000,
++  LHDCV5_SR_96000HZ  =  96000,
++  LHDCV5_SR_192000HZ = 192000,
++} LHDCV5BT_SAMPLE_FREQ_T;
++
++typedef enum __LHDCV5BT_SMPL_FMT__
++{
++  LHDCV5BT_SMPL_FMT_S16 = 16,
++  LHDCV5BT_SMPL_FMT_S24 = 24,
++  LHDCV5BT_SMPL_FMT_S32 = 32,
++} LHDCV5BT_SMPL_FMT_T;
++
++typedef enum __LHDCV5_SAMPLE_FRAME__
++{
++  LHDCV5_SAMPLE_FRAME_2P5MS_96000KHZ  = 240,
++
++  LHDCV5_SAMPLE_FRAME_5MS_44100KHZ  = 240,
++  LHDCV5_SAMPLE_FRAME_5MS_48000KHZ  = 240,
++  LHDCV5_SAMPLE_FRAME_5MS_96000KHZ  = 480,
++  LHDCV5_SAMPLE_FRAME_5MS_192000KHZ = 960,
++
++  LHDCV5_SAMPLE_FRAME_10MS_44100KHZ  = 480,
++  LHDCV5_SAMPLE_FRAME_10MS_48000KHZ  = 480,
++  LHDCV5_SAMPLE_FRAME_10MS_96000KHZ  = 960,
++  LHDCV5_SAMPLE_FRAME_10MS_192000KHZ = 1920,
++  LHDCV5_MAX_SAMPLE_FRAME = 1920,
++} LHDCV5_SAMPLE_FRAME_T;
++
++typedef enum __LHDCV5_FRAME_DURATION__
++{
++  LHDCV5_FRAME_5MS   = 50,
++  LHDCV5_FRAME_7P5MS = 75,
++  LHDCV5_FRAME_10MS  = 100,
++  LHDCV5_FRAME_1S    = 10000,
++} LHDCV5_FRAME_DURATION_T;
++
++typedef enum __LHDCV5_ENC_INTERVAL__
++{
++  LHDCV5_ENC_INTERVAL_10MS = 10,
++  LHDCV5_ENC_INTERVAL_20MS = 20,
++} LHDCV5_ENC_INTERVAL_T;
++
++typedef enum __LHDCV5_QUALITY__
++{
++  // standard quality index (sync to UI)
++  LHDCV5_QUALITY_LOW0 = 0,    //base of standard
++  LHDCV5_QUALITY_LOW1,        //160K
++  LHDCV5_QUALITY_LOW2,        //192K
++  LHDCV5_QUALITY_LOW3,        //256K/240K
++  LHDCV5_QUALITY_LOW4,        //320K
++  LHDCV5_QUALITY_LOW,         //400K
++  LHDCV5_QUALITY_MID,         //500K
++  LHDCV5_QUALITY_HIGH,        //900K
++  LHDCV5_QUALITY_HIGH1,       //1000K
++  LHDCV5_QUALITY_HIGH2,       //1100K
++  LHDCV5_QUALITY_HIGH3,       //1200K
++  LHDCV5_QUALITY_HIGH4,       //1300K
++  LHDCV5_QUALITY_HIGH5,       //1400K
++  LHDCV5_QUALITY_MAX_BITRATE = LHDCV5_QUALITY_HIGH5,
++  // standard adaptive mode (sync to UI)
++  LHDCV5_QUALITY_AUTO,
++  // end of standard (not sync to UI)
++  LHDCV5_QUALITY_UNLIMIT,
++
++  // quality mode control command
++  LHDCV5_QUALITY_CTRL_RESET_ABR = 128,  //base of control command
++  // end of control
++  LHDCV5_QUALITY_CTRL_END,
++
++  // always at bottom of table
++  LHDCV5_QUALITY_INVALID
++} LHDCV5_QUALITY_T;
++
++#define LHDCV5_ABR_DEFAULT_BITRATE_INX (LHDCV5_QUALITY_LOW)
++#define LHDCV5_VBR_DEFAULT_BITRATE_INX (LHDCV5_QUALITY_HIGH2)
++
++typedef enum __LHDCV5_MTU_SIZE__
++{
++  LHDCV5_MTU_MIN   = 300,
++  LHDCV5_MTU_2MBPS = 660,
++  LHDCV5_MTU_3MBPS = 1023,
++  LHDCV5_MTU_MHDT_4DH5 = 1392,
++  LHDCV5_MTU_MHDT_6DH5 = 2089,
++  LHDCV5_MTU_MHDT_8DH5 = 2820,
++  LHDCV5_MTU_MAX   = 8192,
++} LHDCV5_MTU_SIZE_T;
++
++typedef enum __LHDCV5_VERSION__
++{
++  LHDCV5_VERSION_1 = 1,
++  LHDCV5_VERSION_INVALID
++} LHDCV5_VERSION_T;
++
++typedef enum __LHDCV5_ENC_TYPE__ 
++{
++  LHDCV5_ENC_TYPE_UNKNOWN = 0,
++  LHDCV5_ENC_TYPE_LHDCV5,
++  LHDCV5_ENC_TYPE_INVALID
++} LHDCV5_ENC_TYPE_T;
++
++typedef enum __LHDCV5_EXT_FUNC__
++{
++  LHDCV5_EXT_FUNC_AR = 0,
++  LHDCV5_EXT_FUNC_LARC,
++  LHDCV5_EXT_FUNC_JAS,
++  LHDCV5_EXT_FUNC_META,
++  LHDCV5_EXT_FUNC_INVALID
++} LHDCV5_EXT_FUNC_T;
++
++typedef enum __LHDCV5_META_PARAM__
++{
++  LHDCV5_META_LOOP_CNT_MAX = 100,
++  LHDCV5_META_LOOP_CNT_STD = 20,
++  LHDCV5_META_LEN_FIXED = 8,
++  LHDCV5_META_LEN_MAX = 128
++} LHDCV5_META_PARAM_T;
++
++typedef enum __LHDCV5_ABR_TYPE__
++{
++  LHDCV5_ABR_44K_RES = 0,
++  LHDCV5_ABR_48K_RES,
++  LHDCV5_ABR_96K_RES,
++  LHDCV5_ABR_192K_RES,
++  LHDCV5_ABR_INVALID
++} LHDCV5_ABR_TYPE_T;
++
++typedef enum __LHDCV5_VBR_TYPE__
++{
++  LHDCV5_VBR_48K_RES,
++  LHDCV5_VBR_96K_RES,
++  LHDCV5_VBR_INVALID
++} LHDCV5_VBR_TYPE_T;
++
++typedef enum __LHDCV5_ABR_BITRATE_RANGE__
++{
++  LHDCV5_ABR_MIN_BITRATE = 160,
++  LHDCV5_ABR_MAX_BITRATE = 900,
++} LHDCV5_ABR_BITRATE_RANGE_T;
++
++typedef enum __LHDCV5_VBR_BITRATE_RANGE__
++{
++  LHDCV5_VBR_MIN_BITRATE = 900,
++  LHDCV5_VBR_PROMOTE_BITRATE = 1100,
++  LHDCV5_VBR_MAX_BITRATE = 1400,
++} LHDCV5_VBR_BITRATE_RANGE_T;
++
++typedef enum __LHDCV5_VBR_LLESS24_BITRATE_RANGE__
++{
++  LHDCV5_VBR_LLES24_MIN_BITRATE = 1350,
++#ifdef LHDC_V5_LLESS24_NO_MHDT_TEST
++  LHDCV5_VBR_LLES24_PROMOTE_BITRATE = 1350,   //debug-only when no mHDT
++  LHDCV5_VBR_LLES24_MAX_BITRATE = 1400,       //debug-only when no mHDT
++#else
++  LHDCV5_VBR_LLES24_PROMOTE_BITRATE = 1650,
++  LHDCV5_VBR_LLES24_MAX_BITRATE = 2100,
++#endif
++
++#ifdef LHDC_V5_LLESS96K24_NO_MHDT_TEST
++  LHDCV5_VBR_LLES96K24_MIN_BITRATE = 1350,
++  LHDCV5_VBR_LLES96K24_PROMOTE_BITRATE = 1350,   //debug-only when no mHDT
++  LHDCV5_VBR_LLES96K24_MAX_BITRATE = 1400,       //debug-only when no mHDT
++#else
++  LHDCV5_VBR_LLES96K24_MIN_BITRATE = 2700,
++  LHDCV5_VBR_LLES96K24_PROMOTE_BITRATE = 3300,
++  LHDCV5_VBR_LLES96K24_MAX_BITRATE = 4200,
++#endif
++} LHDCV5_VBR_LLESS24_BITRATE_RANGE_T;
++
++typedef enum __LHDCV5_LOSSLESS_STATUS__
++{
++  LHDCV5_LLESS_DISABLED = 0,
++  LHDCV5_LLESS_ENABLED = 1,
++} LHDCV5_LOSSLESS_STATUS_T;
++
++typedef enum __LHDCV5_LOSSLESS_ON_STATUS__
++{
++  LHDCV5_LLESS_OFF = 0,
++  LHDCV5_LLESS_ON = 1,
++} LHDCV5_LOSSLESS_ON_STATUS_T;
++
++typedef enum __LHDCV5_LOSSLESS_RAW_STATUS__
++{
++  LHDCV5_LLESS_RAW_DISABLED = 0,
++  LHDCV5_LLESS_RAW_ENABLED = 1,
++} LHDCV5_LOSSLESS_RAW_STATUS_T;
++
++typedef enum __LHDCV5_LOG_LEVEL__
++{
++  LHDCV5_LOG_LEVEL_EMERG = 0,
++  LHDCV5_LOG_LEVEL_ALERT,
++  LHDCV5_LOG_LEVEL_CRIT,
++  LHDCV5_LOG_LEVEL_ERROR,
++  LHDCV5_LOG_LEVEL_WARNING,
++  LHDCV5_LOG_LEVEL_NOTICE,
++  LHDCV5_LOG_LEVEL_INFO,
++  LHDCV5_LOG_LEVEL_DEBUG,
++} LHDCV5_LOG_LEVEL_T;
++
++typedef enum __LHDCV5_FUNC_RET__
++{
++  LHDCV5_FRET_SUCCESS                   =     0,
++  LHDCV5_FRET_INVALID_INPUT_PARAM       =    -1,
++  LHDCV5_FRET_INVALID_HANDLE_CB         =    -2,
++  LHDCV5_FRET_INVALID_HANDLE_PARA       =    -3,
++  LHDCV5_FRET_INVALID_HANDLE_ENC        =    -4,
++  LHDCV5_FRET_INVALID_HANDLE_CBUF       =    -5,
++  LHDCV5_FRET_INVALID_HANDLE_AR         =    -6,
++  LHDCV5_FRET_INVALID_CODEC             =    -7,
++  LHDCV5_FRET_CODEC_NOT_READY           =    -8,
++  LHDCV5_FRET_AR_NOT_READY              =    -9,
++  LHDCV5_FRET_ERROR                     =   -10,
++  LHDCV5_FRET_BUF_NOT_ENOUGH            =   -11,
++} LHDCV5_FUNC_RET_T;
++
++typedef struct _lhdcv5_abr_para_t 
++{
++  uint32_t  version;            // version of LHDC 5.0 CODEC
++  uint32_t  sample_rate;        // sample rate (Hz)
++  uint32_t  bits_per_sample;    // bits per sample (bit)
++  uint32_t  bits_per_sample_ui; // bits per sample (bit) (from UI)
++
++  // Lossy ABR mechanism
++  uint32_t  upBitrateCnt;       // (ABR) up bitrate check parameter
++  uint32_t  upBitrateSum;       // (ABR) up bitrate check parameter
++  uint32_t  dnBitrateCnt;       // (ABR) down bitrate check parameter
++  uint32_t  dnBitrateSum;       // (ABR) down bitrate check parameter
++
++  // Lossless VBR parameter
++  uint32_t  lless_upBitrateSum;   // (VBR) number of encoded lossy frames
++  uint32_t  lless_dnBitrateSum;   // (VBR) number of encoded lossless frames
++  uint32_t  lless_upBitrateCnt;   // (VBR) number of encoded frames
++  uint32_t  lless_dnBitrateCnt;   // (VBR) number of encoded frames
++  uint32_t  lless_upCheckBitrateCnt;    // (VBR) times of entering adjust func to exam up case
++  uint32_t  lless_dnCheckBitrateCnt;    // (VBR) times of entering adjust func to exam down case
++
++  // Lossless VBR configuration
++  uint32_t lless_upRateTimeCnt;     // (VBR) param: check interval of up
++  uint32_t lless_dnRateTimeCnt;     // (VBR) param: check interval of down
++  uint32_t lless_upLossyRatioTh;    // (VBR) param: lossy ratio threshold of up
++  uint32_t lless_dnLosslessRatioTh; // (VBR) param: lossless ratio threshold of down
++
++  // Lossless VBR statistics
++  uint32_t  lless_stat_showBitrateCnt;      // (VBR) times of entering adjust func to exam print stats
++  float     lless_stat_dnBitrateCnt_all;    // (VBR) aggregate sum of lless_bitrateCnt
++  float     lless_stat_dnBitrateSum_all;    // (VBR) aggregate sum of lless_dnBitrateSum
++  float     lless_stat_upBitrateCnt_all;    // (VBR) aggregate sum of lless_bitrateCnt
++  float     lless_stat_upBitrateSum_all;    // (VBR) aggregate sum of lless_dnBitrateSum
++  bool      lless_stat_bitrateRec_done;     // (VBR) flag to determine debug print after a duration
++
++  // function configuration
++  uint32_t  lastBitrate;        // Last bit rate (kbps) set for LHDC 5.0 encoder
++  uint32_t  qualityStatus;      // current bit rate (index) (LOW0 ~ AUTO) is same as UI setting
++  uint32_t  is_lless_enabled;   // current lossless status: enabled(1)/disabled(0)
++  uint32_t  is_lless_on;        // current lossless running status: ON(1)/OFF(0)
++  uint32_t  is_lless_raw;       // lossless raw mode: enabled(1)/disabled(0)
++} lhdcv5_abr_para_t;
++
++
++typedef void * HANDLE_LHDCV5_BT;
++/*
++ ******************************************************************
++ LHDCV5 encoder utilities functions group
++ ******************************************************************
++ */
++//----------------------------------------------------------------
++// lhdcv5_util_enc_register_log_cb ()
++//
++//  Register a logger(printing function) callback instance from external
++//  Parameter
++//      [in] cb: a pointer to the callback function of logger.
++//      [in] mgr_lic_buff: buffer for storing the char string.
++//      [in] level: an integer of log level.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_enc_register_log_cb
++(
++    void  *cb,
++    char  *mgr_lic_buff,
++    int32_t  level
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_free_handle ()
++//
++// Reset resources in the encoder(not free memory, call this before free handle)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_free_handle
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_mem_req ()
++//
++// Get size of memory resources required by LHDC 5.0 Encoder
++//  Parameter
++//      [in] version: subversion defined in BT A2DP capability.
++//      [in] mem_req_bytes: a returned pointer to size bytes required by encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_mem_req
++(
++    uint32_t  version,
++    uint32_t  *mem_req_bytes
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_handle ()
++//
++// Initialize memory resources required by LHDC 5.0 Encoder
++//  Parameter
++//      [in] version: version defined in BT A2DP capability.
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] mem_size: required size bytes.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_handle
++(
++    uint32_t  version,
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  mem_size
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_target_bitrate ()
++//
++// Get the bit rate (bps) used during LHDC 5.0 encoding
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] bitrate: a returned pointer to the bit rate (bps).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_target_bitrate
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  *bitrate
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_target_bitrate_inx ()
++//
++// Set target bit rate by index to LHDC 5.0 encoding
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] bitrate_inx: bit rate (index) to set
++//           range [LHDCV5_QUALITY_LOW0, LHDCV5_QUALITY_AUTO].
++//      [in] bitrate_inx_set: a returned pointer to the set bit rate (index).
++//      [in] upd_qual_status: a control if update "audio quality" field by the bitrate_inx:
++//           in Fixed bitrate Mode: set true to change the "audio quality" by the bitrate_inx.
++//           in Auto bitrate Mode: set false to keep the "audio quality" in Auto Bitrate Mode.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_target_bitrate_inx
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  bitrate_inx,
++    uint32_t  *bitrate_inx_set,
++    bool  upd_qual_status
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_max_bitrate_inx ()
++//
++// Set the maximum bitrate of peer device
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] max_bitrate_inx: MAX. bit rate (index) for LHDC 5.0 encoding
++//           range [LHDCV5_QUALITY_LOW, LHDCV5_QUALITY_MAX_BITRATE].
++//      [in] max_bitrate_inx_set: a returned pointer to MAX. set bit rate (index).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_max_bitrate_inx
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  max_bitrate_inx,
++    uint32_t  *max_bitrate_inx_set
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_min_bitrate_inx ()
++//
++// Set the minimum bitrate of peer device
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] min_bitrate_inx: MIN. bit rate (index) for LHDC 5.0 encoding
++//           range [LHDCV5_QUALITY_LOW0, LHDCV5_QUALITY_LOW].
++//      [in] min_bitrate_inx_set: a returned pointer to MIN. bit rate (index) set.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_min_bitrate_inx
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  min_bitrate_inx,
++    uint32_t  *min_bitrate_inx_set
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_adjust_bitrate ()
++//
++// Get the parameters of auto bit rate mode
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] enc_type_ptr: a returned pointer to encoder type.
++//      [in] abr_para_ptr: a returned pointer to auto bitrate parameters.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_adjust_bitrate
++(
++    HANDLE_LHDCV5_BT  handle,
++    LHDCV5_ENC_TYPE_T  *enc_type_ptr,
++    lhdcv5_abr_para_t  **abr_para_ptr
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_reset_up_bitrate ()
++//
++// Reset Auto Bitrate bit rate uptier checking parameters
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_reset_up_bitrate
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_reset_down_bitrate ()
++//
++// Reset Auto Bitrate bit rate donwtier checking parameters
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_reset_down_bitrate
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_ext_func_state ()
++//
++// Get the extend function state
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] ext_type: specify the extend function
++//      [in] enable_ptr: a returned pointer "enabled"(true) or "disabled"(false)
++//           of the extend function.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_ext_func_state
++(
++    HANDLE_LHDCV5_BT  handle,
++    LHDCV5_EXT_FUNC_T ext_type,
++    bool  *enable_ptr
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_ext_func_state ()
++//
++// Set the extend function state
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] ext_type: specify the extend function.
++//      [in] func_enable: "enabled" (true) or "disabled" (false).
++//      [in] data_ptr: (if META enabled) a pointer to the extra data needed for specific extend function
++//           (input NULL if not META).
++//      [in] data_len: (if META enabled) number of size bytes of data_ptr
++//           (input 0 if not META).
++//      [in] loop_cnt: (if META enabled) number of loop to send meta data
++//           (input 0 if not META).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_ext_func_state
++(
++    HANDLE_LHDCV5_BT  handle,
++    LHDCV5_EXT_FUNC_T  ext_type,
++    bool  func_enable,
++    uint8_t  *data_ptr,
++    uint32_t  data_len,
++    uint32_t  loop_cnt
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_init_encoder ()
++//
++// Initialize LHDC 5.0 encoder
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] sampling_freq: sample frequency, ex: 44100(44.1KHz).
++//      [in] bits_per_sample: bits per sample, ex: 16 or 24.
++//      [in] bitrate_inx: bit rate index.
++//      [in] frame_duration: frame length in the unit of 0.1ms, ex: 50(5ms), 100(10ms).
++//      [in] mtu: transmitting MTU size in byte.
++//      [in] interval: period of encoding, ex: 20(20ms).
++//      [in] is_lossless_enable: enable(1) or disable(0) lossless feature
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_init_encoder
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  sampling_freq,
++    uint32_t  bits_per_sample,
++    uint32_t  bitrate_inx,
++    uint32_t  frame_duration,
++    uint32_t  mtu,
++    uint32_t  interval,
++    uint32_t  is_lossless_enable
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_block_Size ()
++//
++// Get number of samples per block for LHDC 5.0 encoder
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] block_size: a returned pointer to the number of samples per block(frame).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_block_Size
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  *block_size
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_enc_process ()
++//
++// Encode pcm samples by LHDC 5.0
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] p_pcm: a pointer to the input PCM frame buffer.
++//      [in] pcm_bytes: byte length of PCM frame in the input pcm buffer.
++//      [in] out_put: a pointer to the output encoded frame buffer.
++//      [in] out_buf_bytes: byte length of the output buffer.
++//      [in] written: a returned pointer to the bytes of output encoded frames.
++//      [in] out_frames: a returned pointer to the number of output encoded frames.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_enc_process
++(
++    HANDLE_LHDCV5_BT  handle,
++    void  *p_pcm,
++    uint32_t  pcm_bytes,
++    uint8_t  *out_put,
++    uint32_t  out_buf_bytes,
++    uint32_t  *written,
++    uint32_t  *out_frames
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_bitrate ()
++//
++// Get bit rate (kbps) by the bit rate stage index
++//  Parameter
++//      [in] bitrate_inx: bit rate (index).
++//      [in] bitrate: a returned pointer to bit rate (kbps).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_bitrate
++(
++    uint32_t  bitrate_inx,
++    uint32_t  *bitrate
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_bitrate_inx ()
++//
++// Get bit rate stage index by bit rate (kbps)
++//  Parameter
++//      [in] bitrate: bit rate (kbps).
++//      [in] bitrate_inx: a returned pointer to bit rate (index).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_bitrate_inx
++(
++    uint32_t  bitrate,
++    uint32_t  *bitrate_inx
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_vbr_up_th ()
++//
++// Set VBR tier up threshold (percentage)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] value : value of percentage to configure VBR UPtier threshold.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_vbr_up_th
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  value
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_vbr_dn_th ()
++//
++// Set VBR tier down threshold (percentage)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] value : value of percentage to configure VBR DOWNtier threshold.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_vbr_dn_th
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  value
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_vbr_up_intv ()
++//
++// Set count of VBR tier up checking interval
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] value : number of ticks for VBR UP checking interval.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_vbr_up_intv
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  value
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_vbr_dn_intv ()
++//
++// Set count of VBR tier down checking interval
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] value : number of ticks for VBR UP checking interval.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_vbr_dn_intv
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  value
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_lossless_enabled ()
++//
++// Get status of lossless enabled(1)/disabled(0)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] enabled : a returned pointer to lossless enabled(1)/disabled(0).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_lossless_enabled
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  *enabled
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_lossless_status ()
++//
++// Get lossless runtime status ON(1)/OFF(0)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] status: lossless runtime status: ON(1)/OFF(0).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_lossless_status
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  *status
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_lossless_status ()
++//
++// Set lossless runtime status ON(1)/OFF(0)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] status_set: lossless runtime status: ON(1)/OFF(0).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_lossless_status
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  status_set
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_lossless_raw_enabled ()
++//
++// Set lossless raw mode enabled(1)/disabled(0)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] enabled: lossless raw mode enabled(1)/disabled(0).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_lossless_raw_enabled
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  status_set
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_vbr_process ()
++//
++// Perform VBR process (when lossless is enabled)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] vbr_type : selecting bitrate table of VBR.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_vbr_process
++(
++    HANDLE_LHDCV5_BT  handle,
++    LHDCV5_VBR_TYPE_T  vbr_type
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_vbr_plus_process ()
++//
++// Perform VBR-plus process (lossless raw enabled only)
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] vbr_type : selecting bitrate table of VBR.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_vbr_plus_process
++(
++    HANDLE_LHDCV5_BT  handle,
++    LHDCV5_VBR_TYPE_T  vbr_type
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_current_mtu ()
++//
++// Get current mtu (bytes) which configured into encoder
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] current_mtu: a returned pointer to the mtu (size bytes).
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_current_mtu
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  *current_mtu
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_set_target_mtu ()
++//
++// Set the mtu (bytes) for LHDC 5.0 encoding
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] target_mtu: new mtu to set.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_set_target_mtu
++(
++    HANDLE_LHDCV5_BT  handle,
++    uint32_t  target_mtu
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_reset_up_bitrate_vbr ()
++//
++// Reset VBR bit rate tier up checking parameters
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_reset_up_bitrate_vbr
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_reset_down_bitrate_vbr ()
++//
++// Reset VBR bit rate tier down checking parameters
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_reset_down_bitrate_vbr
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_reset_lossless_stat ()
++//
++// Reset lossless statistics record
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_reset_lossless_stat
++(
++    HANDLE_LHDCV5_BT  handle
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_get_lib_auth_string ()
++//
++// Get license authentication string form LHDC library
++//  Parameter
++//      [in] str_buf: a pointer to the buffer to store returned string
++//      [in] buf_byte_size: byte size of str_buf
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_get_lib_auth_string
++(
++    uint8_t  *str_buf,
++    uint32_t  buf_byte_size
++);
++
++/* * ************************************************************
++ * Following APIs are only supported for AR feature built version
++ * * ************************************************************/
++//----------------------------------------------------------------
++// lhdcv5_util_ar_set_gyro_pos ()
++//
++// Input gyro coordination to AR function
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] world_coordinate_x: x coordinate.
++//      [in] world_coordinate_y: y coordinate.
++//      [in] world_coordinate_z: z coordinate.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_ar_set_gyro_pos
++(
++    HANDLE_LHDCV5_BT  handle,
++    int32_t  world_coordinate_x,
++    int32_t  world_coordinate_y,
++    int32_t  world_coordinate_z
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_ar_set_cfg ()
++//
++// Setup AR configuration
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] pos_ptr: a pointer to position of multi-channel.
++//      [in] pos_item_num: number of channel position.
++//      [in] gain_ptr: a pointer to gain of multi-channel.
++//      [in] gain_item_num: number of gain.
++//      [in] app_ar_enabled: a flag of AR enable/disable.
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_ar_set_cfg
++(
++    HANDLE_LHDCV5_BT  handle,
++    int32_t  *pos_ptr,
++    uint32_t  pos_item_num,
++    float  *gain_ptr,
++    uint32_t  gain_item_num,
++    uint32_t  app_ar_enabled
++);
++
++//----------------------------------------------------------------
++// lhdcv5_util_ar_get_cfg ()
++//
++// Get AR configuration
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] pos_ptr: a pointer to position of multi-channel
++//      [in] gain_ptr: a pointer to gain of multi-channel
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_ar_get_cfg
++(
++    HANDLE_LHDCV5_BT  handle,
++    int32_t  *pos_ptr,
++    uint32_t  pos_item_num,
++    float  *gain_ptr,
++    uint32_t  gain_item_num
++);
++
++/* * ************************************************************
++ * Following APIs are only supported w Meta feature is enabled
++ * * ************************************************************/
++//----------------------------------------------------------------
++// lhdcv5_util_meta_set_data ()
++//
++// Embed the meta data (8 BYTEs) to encoded frame
++//  Parameter
++//      [in] handle: a pointer to the memory resource allocated to the encoder.
++//      [in] enable_embed_meta:
++//          1: enable to embed meta data (8 BYTEs) to next encoded frame
++//          0: disable to embed meta data
++//      [in] meta_data: a pointer to a buffer contains meta data (8 BYTEs)
++//      [in] embed_frame_cnt: duplicate meta data to the number of continuous encoded frames
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_meta_set_data
++(
++    void  *handle,
++    int32_t  enable_embed_meta,
++    uint8_t  *meta_data,
++    int32_t  embed_frame_cnt
++);
++
++#ifdef __cplusplus
++}
++#endif
++#endif //End of __LHDCV5_API_H__
+diff --git a/lhdc/include/lhdcv5_util_dec.h b/lhdc/include/lhdcv5_util_dec.h
+new file mode 100755
+index 0000000..1a8f9bc
+--- /dev/null
++++ b/lhdc/include/lhdcv5_util_dec.h
+@@ -0,0 +1,226 @@
++/*
++ * lhdcv5_util_dec.h
++ *
++ */
++
++#ifndef LHDCV5_UTIL_DEC_H
++#define LHDCV5_UTIL_DEC_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef void * HANDLE_LHDCV5_BT;
++
++typedef enum {
++  VERSION_5 = 550
++} lhdcv5_ver_t;
++
++typedef struct _lhdcv5_frame_Info {
++  uint32_t frame_len;
++  uint32_t isSplit;
++  uint32_t isLeft;
++} lhdcv5_frame_Info_t;
++
++typedef enum {
++  LHDCV5_OUTPUT_STEREO = 0,
++  LHDCV5_OUTPUT_LEFT_CAHNNEL,
++  LHDCV5_OUTPUT_RIGHT_CAHNNEL,
++} lhdcv5_channel_t;
++
++typedef enum {
++  LHDCV5_DEC_LLESS_OFF = 0,
++  LHDCV5_DEC_LLESS_ON = 1,
++} lhdcv5_dec_lossless_status_t;
++
++typedef enum {
++  LHDCV5_DEC_LLESS_RAW_OFF = 0,
++  LHDCV5_DEC_LLESS_RAW_ON = 1,
++} lhdcv5_dec_lossless_raw_status_t;
++
++typedef enum {
++  LHDCV5_DEC_LOG_LEVEL_EMERG = 0,
++  LHDCV5_DEC_LOG_LEVEL_ALERT,
++  LHDCV5_DEC_LOG_LEVEL_CRIT,
++  LHDCV5_DEC_LOG_LEVEL_ERROR,
++  LHDCV5_DEC_LOG_LEVEL_WARNING,
++  LHDCV5_DEC_LOG_LEVEL_NOTICE,
++  LHDCV5_DEC_LOG_LEVEL_INFO,
++  LHDCV5_DEC_LOG_LEVEL_DEBUG
++} lhdcv5_dec_log_level_t;
++
++typedef enum __LHDCV5_DEC_FUNC_RET__ {
++  LHDCV5_UTIL_DEC_SUCCESS = 0,
++  LHDCV5_UTIL_DEC_ERROR_NO_INIT = -1,
++  LHDCV5_UTIL_DEC_ERROR_PARAM = -2,
++  LHDCV5_UTIL_DEC_ERROR = -3,
++  LHDCV5_UTIL_DEC_ERROR_RESOURCE_NOT_CLEANED = -4,
++  LHDCV5_UTIL_DEC_ERROR_WRONG_DEC = -10,
++} lhdcv5_dec_func_ret_t;
++
++#define LHDCV5_DEC_HDR_LATENCY_LOW   (0x00)
++#define LHDCV5_DEC_HDR_LATENCY_MID   (0x01)
++#define LHDCV5_DEC_HDR_LATENCY_HIGH  (0x02)
++#define LHDCV5_DEC_HDR_LATENCY_MASK  (LHDCV5_DEC_HDR_LATENCY_MID | LHDCV5_DEC_HDR_LATENCY_HIGH)
++
++#define LHDCV5_DEC_HDR_FRAME_NO_MASK (0xfc)
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_get_mem_req ()
++//
++//  Get internal memory size requirement of decoder
++//  Parameter
++//      [in] version: LHDC decoder subversion
++//      [in] mem_req_bytes: a returned value to report size bytes of memory requirement
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_get_mem_req(lhdcv5_ver_t version, uint32_t *mem_req_bytes);
++
++//----------------------------------------------------------------
++// lhdcv5_util_init_decoder ()
++//
++//  Initial LHDC 5.0 Decoder
++//  Parameter
++//      [in] ptr: a pointer to the memory resource allocated to the decoder.
++//      [in] bitPerSample: bit per sample
++//      [in] sampleRate: sample rate
++//      [in] bitrate: bit rate (not-used anymore, set to 0)
++//      [in] is_lossless_enable: configure if lossless feature is enable/disable
++//      [in] is_lossless_raw_enable: configure if lossless raw mode is enable/disable
++//      [in] version: LHDC decoder subversion
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_init_decoder(uint32_t *ptr, uint32_t bitPerSample, uint32_t sampleRate, uint32_t bitrate,
++    uint32_t is_lossless_enable, uint32_t is_lossless_raw_enable, lhdcv5_ver_t version);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_process ()
++//
++//  Input an encoded frame data to decode process
++//  Parameter
++//      [in] pOutBuf: a pointer to the output PCM buffer
++//      [in] pInput: a pointer to the head of the input encoded frame
++//      [in] InLen: size bytes of the encoded frame
++//      [in] OutLen: a returned value to report size bytes of the output PCM frame
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_process(uint8_t *pOutBuf, uint8_t *pInput, uint32_t InLen, uint32_t *OutLen);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_destroy ()
++//
++//  Reset decoder resources(only clean the database field, not including free memory)
++//  Parameter
++//      [in] none
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_destroy(void);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_get_sample_size ()
++//
++//  Get number of samples in an encoded frame
++//  Parameter
++//      [in] frame_samples: a returned value to report number of samples in an encoded frame
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_get_sample_size (uint32_t *frame_samples);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_fetch_frame_info ()
++//
++//  Get number of samples in an encoded frame
++//  Parameter
++//      [in] frameData: a pointer to an encoded frame header.
++//      [in] frameDataLen: size bytes of an encoded frame header.
++//      [in] frameInfo: a returned value to report the frame information
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_fetch_frame_info(uint8_t *frameData, uint32_t frameDataLen, lhdcv5_frame_Info_t *frameInfo);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_channel_selsect ()
++//
++//  Configure format type of decoder output to buffer
++//  Parameter
++//      [in] channel_type: type of output
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_channel_selsect(lhdcv5_channel_t channel_type);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_register_log_cb ()
++//
++//  Register a logger(printing function) callback instance from external
++//  Parameter
++//      [in] cb: a pointer to the callback function of logger.
++//      [in] msg_buff: buffer for storing the char string.
++//      [in] level: an integer of log level(see, lhdcv5_dec_log_level).
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_register_log_cb(void *cb, char *msg_buff, int32_t level);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_set_log_level ()
++//
++//  Configure log level condition to logger
++//  Parameter
++//      [in] level: an integer of log level(see, lhdcv5_dec_log_level).
++//  Return
++//      LHDCV5_UTIL_DEC_SUCCESS: Succeed
++//      otherwise: Failure
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_set_log_level(int32_t level);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_get_version ()
++//
++//  Get the LHDC V5 decoder library software version
++//  Parameter
++//      [in] none
++//  Return
++//      A char string of "LHDC V5 decoder lib software version"
++//----------------------------------------------------------------
++char *lhdcv5_util_dec_get_version(void);
++
++//----------------------------------------------------------------
++// lhdcv5_util_dec_get_lib_auth_string ()
++//
++// Get license authentication string form LHDC library
++//  Parameter
++//      [in] str_buf: a pointer to the buffer to store returned string
++//      [in] buf_byte_size: byte size of str_buf
++//  Return
++//      LHDCV5_FRET_SUCCESS: Succeed
++//      otherwise: Fail
++//----------------------------------------------------------------
++int32_t lhdcv5_util_dec_get_lib_auth_string
++(
++    uint8_t  *str_buf,
++    uint32_t  buf_byte_size
++);
++
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* End of LHDCV5_UTIL_DEC_H */
+diff --git a/lhdc/include/llac_enc_api.h b/lhdc/include/llac_enc_api.h
+new file mode 100755
+index 0000000..5cba67d
+--- /dev/null
++++ b/lhdc/include/llac_enc_api.h
+@@ -0,0 +1,128 @@
++/***********************************************************************
++*                               LLAC encoder                           *
++*                                                                      *
++*                                                                      *
++************************************************************************/
++
++#ifndef LLAC_ENC_API_H
++#define LLAC_ENC_API_H
++
++/*
++ * LLAC: 
++ * API Usage
++ *
++ * STEP1.   call llac_enc_mem_alloc() once to allocate the memory
++ * STEP2_0. call llac_enc_set_extra_func() before llac_enc_initial()
++            to enable or disable extra function if needed (for AR, LARC and EXTH ,default is disable)
++ * STEP2.   call llac_enc_initial() once to initialize encoder
++ * STEP3_0. call llac_enc_set_bitrate() before llac_enc_process() 
++ *          to set new bitrate if needed (for autobitrate usage)
++ * STEP3.   call llac_enc_process() in a while loop to encode each frame
++ * STEP4.   call llac_enc_mem_free() once to release the allocated memory 
++ *        when the encode process are done 
++ */
++
++
++
++/*
++ * LLAC: 
++ *      LLAC_MAX_CHANNELS:   Max number of channels
++ *      LLAC_MAX_SAMPLES:    Max number of samples per channel
++ *      LLAC_MAX_BYTES:      Max size of encoded output data in bytess
++ */
++#define LLAC_MAX_CHANNELS 2
++#define LLAC_MAX_SAMPLES 480
++#define LLAC_MAX_BYTES 600
++
++
++/**
++ * LLAC:
++ * llac_enc_mem_alloc - allocate all the memory needed for LLAC encoder
++ * Return: the address of the allocated memory
++ */
++unsigned char* llac_enc_mem_alloc(void);
++
++
++/**
++ * LLAC:
++ * llac_enc_set_extra_func - set extra function enable/disable (for AR, LARC and EXTH)
++ * @func_index: can only be EXTRA_FUNC_AR, EXTRA_FUNC_LARC or EXTRA_FUNC_EXTH
++ * @func_enable: can only be EXTRA_FUNC_DISABLE or EXTRA_FUNC_ENABLE
++ * @llac_enc_mem_addr: the address returned by llac_enc_mem_alloc()
++ */
++#define EXTRA_FUNC_AR 0
++#define EXTRA_FUNC_LARC 1
++#define EXTRA_FUNC_EXTH 2
++
++#define EXTRA_FUNC_DISABLE 0
++#define EXTRA_FUNC_ENABLE 1
++
++void llac_enc_set_extra_func(unsigned char func_index,
++    unsigned char func_enable,
++    unsigned char* llac_enc_mem_addr);
++
++
++bool llac_enc_get_extra_func(unsigned char func_index,
++                             unsigned char* llac_enc_mem_addr);
++
++/**
++ * LLAC:
++ * llac_enc_initial - do encoder initialization
++ * @sampleRate: sample rate of input file
++ * @nChannels: channel number of input file
++ * @bps_in: bit per sample of input file 
++ * @bps_out: bit per sample of output file
++ * @frame_ms: frame duration in millisecond
++ * @target_bitrate: targeted bitrate
++ * @nBytes: size of encoded output data in bytes
++ * @nSamples: number of sample per channel
++ * @real_bitrate: the actual bitrate that the encoder is gonna use
++ * @llac_enc_mem_addr: the address returned by llac_enc_mem_alloc()
++ */
++void llac_enc_initial(unsigned int sampleRate,
++                          short nChannels,
++                          short bps_in,
++                          short bps_out,
++                          float frame_ms,
++                          int target_bitrate,
++                          int* nBytes,
++                          unsigned int* nSamples,
++                          int* real_bitrate,
++                          unsigned char* llac_enc_mem_addr);
++
++
++/**
++ * LLAC:
++ * llac_enc_set_bitrate - set new bitrate (for autobitrate usage)
++ * @target_bitrate: targeted bitrate
++ * @nBytes: size of encoded output data in bytes
++ * @real_bitrate: the actual bitrate that the encoder is gonna use
++ * @llac_enc_mem_addr: the address returned by llac_enc_mem_alloc()
++ */
++void llac_enc_set_bitrate(int target_bitrate,
++    int* nBytes,
++    int* real_bitrate,
++    unsigned char* llac_enc_mem_addr);
++
++
++/**
++ * LLAC:
++ * llac_enc_process - do encode process for one frame
++ * @input: input buffer
++ * @output: output buffer
++ * @llac_enc_mem_addr: the address returned by llac_enc_mem_alloc()
++ * Return:  size of encoded output data in bytes
++ */
++int llac_enc_process(int* input,
++                         unsigned char* output,
++                         unsigned char* llac_enc_mem_addr);
++
++
++/**
++ * LLAC:
++ * llac_enc_mem_free - release all the memory needed for LLAC encoder
++ * @llac_enc_mem_addr: the address returned by llac_enc_mem_alloc()
++ */
++void llac_enc_mem_free(unsigned char* llac_enc_mem_addr);
++
++#endif /* LLAC_ENC_API_H */
+\ No newline at end of file
+diff --git a/lhdc/lhdc_encoder_probe.cc b/lhdc/lhdc_encoder_probe.cc
+new file mode 100644
+index 0000000..a1801dd
+--- /dev/null
++++ b/lhdc/lhdc_encoder_probe.cc
+@@ -0,0 +1,65 @@
++// SPDX-License-Identifier: Apache-2.0
++// Standalone synthetic-PCM encoder smoke test. No Bluetooth or audio state changes.
++#include <dlfcn.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++template<class T> static T symbol(void* library, const char* name) {
++    auto result=reinterpret_cast<T>(dlsym(library,name));
++    if (!result) { fprintf(stderr,"Missing symbol %s: %s\n",name,dlerror()); exit(2); }
++    return result;
++}
++static int test_v3(const char* path,int rate,int bits,int version) {
++    void* lib=dlopen(path,RTLD_NOW|RTLD_LOCAL);
++    if (!lib) {fprintf(stderr,"dlopen: %s\n",dlerror());return 2;}
++    auto get=symbol<void*(*)(int)>(lib,"lhdcBT_get_handle");
++    auto init=symbol<int(*)(void*,int,int,int,int,int,int,int)>(lib,"lhdcBT_init_encoder");
++    auto size=symbol<int(*)(void*)>(lib,"lhdcBT_get_block_Size");
++    auto encode=symbol<int(*)(void*,void*,unsigned char*,uint32_t*,uint32_t*)>(lib,"lhdcBT_encodeV3");
++    auto free_handle=symbol<void(*)(void*)>(lib,"lhdcBT_free_handle");
++    // The wrapper uses 2 for V3 and 3 for V4 (not the over-the-air version field).
++    void* handle=get(version); if (!handle) return 3;
++    int rc=init(handle,rate,bits,2,0,0,660,20);
++    if (rc) {fprintf(stderr,"V3 init=%d\n",rc);free_handle(handle);return 4;}
++    int samples=size(handle); if (samples<=0||samples>8192) return 5;
++    unsigned char pcm[65536]={},out[65536]={}; uint64_t bytes=0,frames=0;
++    for (int n=0;n<100;n++) {
++        uint32_t written=0,count=0;rc=encode(handle,pcm,out,&written,&count);
++        if (rc<0||written>sizeof(out)) return 6;
++        bytes+=written; frames+=count;
++    }
++    printf("{\"codec\":\"LHDC V%d\",\"rate\":%d,\"bits\":%d,\"samples_per_frame\":%d,\"frames\":%llu,\"bytes\":%llu}\n",version==2?3:4,rate,bits,samples,(unsigned long long)frames,(unsigned long long)bytes);
++    free_handle(handle);dlclose(lib);return bytes&&frames?0:7;
++}
++static int test_v5(const char* path,int rate,int bits) {
++    void* lib=dlopen(path,RTLD_NOW|RTLD_LOCAL);
++    if (!lib) {fprintf(stderr,"dlopen: %s\n",dlerror());return 2;}
++    auto get=symbol<int(*)(uint32_t,void**)>(lib,"lhdcv5BT_get_handle");
++    auto init=symbol<int(*)(void*,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)>(lib,"lhdcv5BT_init_encoder");
++    auto size=symbol<int(*)(void*,uint32_t*)>(lib,"lhdcv5BT_get_block_Size");
++    auto encode=symbol<int(*)(void*,void*,uint32_t,uint8_t*,uint32_t,uint32_t*,uint32_t*)>(lib,"lhdcv5BT_encode");
++    auto free_handle=symbol<int(*)(void*)>(lib,"lhdcv5BT_free_handle");
++    void* handle=nullptr;int rc=get(1,&handle);if (rc||!handle) return 3;
++    rc=init(handle,rate,bits,6,660,20,0);
++    if (rc) {fprintf(stderr,"V5 init=%d\n",rc);free_handle(handle);return 4;}
++    uint32_t samples=0;if(size(handle,&samples)||samples==0||samples>8192)return 5;
++    unsigned char pcm[65536]={},out[65536]={};uint64_t bytes=0,frames=0;
++    // V5 uses 32-bit containers for 24/32-bit input, as the Bluetooth feeding path does.
++    uint32_t pcm_bytes=samples*2*(bits==16?2:4);
++    for (int n=0;n<100;n++) {
++        uint32_t written=0,count=0;rc=encode(handle,pcm,pcm_bytes,out,sizeof(out),&written,&count);
++        if(rc||written>sizeof(out)) {fprintf(stderr,"V5 encode=%d\n",rc);return 6;}
++        bytes+=written;frames+=count;
++    }
++    printf("{\"codec\":\"LHDC V5\",\"rate\":%d,\"bits\":%d,\"samples_per_frame\":%u,\"frames\":%llu,\"bytes\":%llu}\n",rate,bits,samples,(unsigned long long)frames,(unsigned long long)bytes);
++    free_handle(handle);dlclose(lib);return bytes&&frames?0:7;
++}
++int main(int argc,char** argv) {
++    if(argc!=5){fprintf(stderr,"Usage: probe v3|v4|v5 library rate bits\n");return 1;}
++    if(strcmp(argv[1],"v3")==0)return test_v3(argv[2],atoi(argv[3]),atoi(argv[4]),2);
++    if(strcmp(argv[1],"v4")==0)return test_v3(argv[2],atoi(argv[3]),atoi(argv[4]),3);
++    if(strcmp(argv[1],"v5")==0)return test_v5(argv[2],atoi(argv[3]),atoi(argv[4]));
++    return 1;
++}
+diff --git a/sm8450-common-vendor.mk b/sm8450-common-vendor.mk
+index 94f07ae..6d3e541 100644
+--- a/sm8450-common-vendor.mk
++++ b/sm8450-common-vendor.mk
+@@ -141,7 +141,6 @@ PRODUCT_COPY_FILES += \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/init/vppservice.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/vppservice.rc \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/init/wfdvndservice.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/wfdvndservice.rc \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_cape/video_system_specs.json:$(TARGET_COPY_OUT_VENDOR)/etc/media_cape/video_system_specs.json \
+-    vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_codecs_cape.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_cape.xml \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_codecs_diwali_v0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_diwali_v0.xml \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_codecs_diwali_v1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_diwali_v1.xml \
+     vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_codecs_diwali_v2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_diwali_v2.xml \
+@@ -925,3 +924,10 @@ PRODUCT_PACKAGES += \
+ 
+ PRODUCT_BOOT_JARS += \
+     WfdCommon
++
++# Retain the original codec XML unless the Dolby Vision candidate is selected.
++ifeq ($(TARGET_DITING_DOLBY_VISION),true)
++PRODUCT_COPY_FILES += vendor/xiaomi/sm8450-common/dolby-vision/media_codecs_cape.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_cape.xml
++else
++PRODUCT_COPY_FILES += vendor/xiaomi/sm8450-common/proprietary/vendor/etc/media_codecs_cape.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_cape.xml
++endif

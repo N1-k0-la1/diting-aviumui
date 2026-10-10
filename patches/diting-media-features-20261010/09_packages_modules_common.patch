@@ -1,0 +1,39 @@
+diff --git a/build/allowed_deps.txt b/build/allowed_deps.txt
+index 8599db1..c57253c 100644
+--- a/build/allowed_deps.txt
++++ b/build/allowed_deps.txt
+@@ -13,6 +13,7 @@
+ # See go/apex-allowed-deps-error for more details.
+ # TODO(b/157465465): introduce automated quality signals and remove this list.
+ 
++
+ absl_algorithm(minSdkVersion:apex_inherit)
+ absl_algorithm_container(minSdkVersion:apex_inherit)
+ absl_base(minSdkVersion:apex_inherit)
+@@ -494,6 +495,7 @@ dagger2(minSdkVersion:current)
+ datastallprotosnano(minSdkVersion:29)
+ device_policy_aconfig_flags_java_export(minSdkVersion:30)
+ display_flags_lib-export(minSdkVersion:30)
++diting-lhdc-headers(minSdkVersion:33)
+ dlmalloc(minSdkVersion:apex_inherit)
+ dnsproxyd_protocol_headers(minSdkVersion:29)
+ dnsproxyd_protocol_headers(minSdkVersion:30)
+@@ -1202,6 +1204,7 @@ libstatssocket_headers(minSdkVersion:29)
+ libstatssocket_rs(minSdkVersion:36)
+ libstd(minSdkVersion:29)
+ libstd_detect.rust_sysroot(minSdkVersion:29)
++libstdc++(minSdkVersion:33)
+ libstrsim(minSdkVersion:29)
+ libsync(minSdkVersion:(no version))
+ libsync_wrapper(minSdkVersion:29)
+@@ -1597,6 +1600,10 @@ prebuilt_libc_headers(minSdkVersion:(no version))
+ prebuilt_libcap(minSdkVersion:(no version))
+ prebuilt_libclang_rt.builtins(minSdkVersion:(no version))
+ prebuilt_libclang_rt.ubsan_minimal(minSdkVersion:(no version))
++prebuilt_liblhdc(minSdkVersion:33)
++prebuilt_liblhdcBT_enc(minSdkVersion:33)
++prebuilt_liblhdcv5(minSdkVersion:33)
++prebuilt_liblhdcv5BT_enc(minSdkVersion:33)
+ prebuilt_libnativehelper_compat_libc++(minSdkVersion:(no version))
+ prebuilt_libnativehelper_header_only(minSdkVersion:(no version))
+ prebuilt_libperfetto_client_experimental(minSdkVersion:(no version))

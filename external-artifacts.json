@@ -11,5 +11,240 @@
     "certificate_sha256": "3df7f89d3b8d1315f05710c914fccbcf3a4e24980afddccb8dcebde90836a390",
     "redistribution_in_this_repository": false,
     "note": "The URL is mutable. If its hash differs, obtain the exact official version; do not bypass the check."
+  },
+  "media": {
+    "binary_redistribution_in_repository": false,
+    "files": [
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/bin/hw/dolbycodec2",
+        "sha256": "9c25d004895d9ed041f73df572ae6795b6a39b00bdff65f36bb5ed08548f779a",
+        "bytes": 15240,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/bin/hw/dolbycodec2"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/bin/hw/dvs-hal-service",
+        "sha256": "470f75f7ce51bd629fd127278d5ed92f96f72ef36648f472abee820e782e87c1",
+        "bytes": 20896,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/bin/hw/dvs-hal-service"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib/libstagefright_foundation-swiitchoff.so",
+        "sha256": "f9be6f76ca4d3f54ec747bfb0c0866556e5dd0f59adafcdf614f8df8eb3223d2",
+        "bytes": 201369,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib/libstagefright_foundation-swiitchoff.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.avc.dec.so",
+        "sha256": "e130252b08519cfd7d89ec0c140f48e6ac2ab7305b43869f57b7402afcbc46cd",
+        "bytes": 271553,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.avc.dec.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.avc.sec.dec.so",
+        "sha256": "edb44ba0b8d45aed7b51e896f9d8e5a131dd6b45b036500e263dba29de06c6ff",
+        "bytes": 271561,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.avc.sec.dec.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.client.so",
+        "sha256": "7227583b6a737b49cce7d0a57ce8dd88f575bfc4d0e70763f8e3d689848aadc9",
+        "bytes": 210753,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.client.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.egl.so",
+        "sha256": "768fb7f54d0547e506e0e020c8ea80510efcbeb4b8065f040e449343d700e210",
+        "bytes": 134065,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.egl.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.hevc.dec.so",
+        "sha256": "9922529250e7a804649005a3bf04389038b966114f65b67bad33f20c62566631",
+        "bytes": 271553,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.hevc.dec.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.hevc.enc.so",
+        "sha256": "ffbcdeaa20c4b852f1e57503dffb279691fb3c6c8b58be6a1f01a6446ac775fd",
+        "bytes": 271849,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.hevc.enc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.hevc.sec.dec.so",
+        "sha256": "aa1db30e6e1c93dbb4324fed255e8cb723d7d524c902475c3ad1261a30376eea",
+        "bytes": 271561,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.hevc.sec.dec.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/c2.dolby.store.so",
+        "sha256": "f6bb028a29ac38ebb89362ddee4bdf023a65f3f28047de58c763a8951a311692",
+        "bytes": 81257,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/c2.dolby.store.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/libdolbyottcameracontrol.so",
+        "sha256": "289fb04c62fef63d2c4e6786f618f96c375fe44fbc565ad4dacc38cbca861e01",
+        "bytes": 2374480,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/libdolbyottcameracontrol.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/libdolbyvision.so",
+        "sha256": "ad1f3b9a7e88ca128853742ed5228e852f865f94639de4b854a7af3efead1ed7",
+        "bytes": 685457,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/libdolbyvision.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/libstagefright_foundation-swiitchoff.so",
+        "sha256": "2f0cc2f878a14fe20d0f6efc26a3a3131a6f6b0c09a20d29db828545cd5879c7",
+        "bytes": 300281,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/libstagefright_foundation-swiitchoff.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "dolby-vision/proprietary/vendor/lib64/vendor.dolby.dvs@1.0.so",
+        "sha256": "2c5d4eece7d807d79cf2551e3da1a6f0fbeb7a4bbc1ae4353ff3243ecffdedeb",
+        "bytes": 121464,
+        "mode": "100644",
+        "repository": "https://github.com/Avicii-Labs/android_hardware_dolby",
+        "revision": "30250166e08e6b4bc795aa361446851a0b2970be",
+        "source_path": "proprietary/vendor/lib64/vendor.dolby.dvs@1.0.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/arm64-v8a/liblhdc.so",
+        "sha256": "3cdc73f296a56864e245dfca8385d2d4f9a21793d05336c754779802b984573a",
+        "bytes": 4001592,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/arm64-v8a/liblhdc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/arm64-v8a/liblhdcBT_enc.so",
+        "sha256": "ef1fe85ca5980a121f12c5710cd32a3ed4a4551f9096952b5fcbdf46cf1246ea",
+        "bytes": 27432,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/arm64-v8a/liblhdcBT_enc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/arm64-v8a/liblhdcv5.so",
+        "sha256": "0fd2f572cc730c3e5d14ad2c73b9c0883dff4ca155c3dda1da386f7efc9e8856",
+        "bytes": 3542504,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/arm64-v8a/liblhdcv5.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/arm64-v8a/liblhdcv5BT_enc.so",
+        "sha256": "7fd7d59c0342b57cd5fdf9345035a8603e63a16ce7236246c8e861f3cd0574f1",
+        "bytes": 23280,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/arm64-v8a/liblhdcv5BT_enc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/armeabi-v7a/liblhdc.so",
+        "sha256": "3bf01e30737314e86c6df5c667031cbd8463ded9017db83c88e641568a5af7c7",
+        "bytes": 3777436,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/armeabi-v7a/liblhdc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/armeabi-v7a/liblhdcBT_enc.so",
+        "sha256": "29999fbd2613200a68f1d20059350e66c54665fdb6b5bafbf792c148c06e666e",
+        "bytes": 17336,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/armeabi-v7a/liblhdcBT_enc.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/armeabi-v7a/liblhdcv5.so",
+        "sha256": "384f7ff522db09f3e863248ae5d68014872e0654ce058cad688457e8ad60507d",
+        "bytes": 3400564,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/armeabi-v7a/liblhdcv5.so"
+      },
+      {
+        "project": "vendor/xiaomi/sm8450-common",
+        "path": "lhdc/libs/armeabi-v7a/liblhdcv5BT_enc.so",
+        "sha256": "a75ddd669abaa6b99c34259545b09ce621a1ad360f9be66308809414d6701780",
+        "bytes": 18900,
+        "mode": "100755",
+        "repository": "https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc",
+        "revision": "63fa4e2f923721ef7e1d25c90a5268afd196df8d",
+        "source_path": "5.10/libs/armeabi-v7a/liblhdcv5BT_enc.so"
+      }
+    ]
   }
 }

@@ -5,6 +5,7 @@
   <remote name="diting-upstream" fetch="https://github.com/" />
   <remote name="github" fetch="https://github.com/" review="review.lineageos.org" />
   <remote name="openeuicc-official" fetch="https://gitea.angry.im/" />
+  <remote name="release-pixel-gitlab" fetch="https://gitlab.com/" />
   <default remote="github" revision="refs/heads/lineage-23.2" sync-j="4" sync-c="true" />
   <project name="LineageOS/android_bionic" path="bionic" revision="ff9fe01e7e1e81febaf32b15fa561aec480a112c" upstream="refs/heads/lineage-23.2" dest-branch="refs/heads/lineage-23.2" groups="pdk" />
   <project name="LineageOS/android_bootable_deprecated-ota" path="bootable/deprecated-ota" revision="4b3b72782cd4bdb28a5b6a087bac441967320487" upstream="refs/heads/lineage-23.2" dest-branch="refs/heads/lineage-23.2" groups="pdk-cw" />
@@ -134,7 +135,7 @@
   <project name="LineageOS/android_hardware_st_nfc" path="hardware/st/nfc" revision="b041ec04520f697943a290bcff6921049bd033bb" upstream="refs/heads/lineage-23.2" dest-branch="refs/heads/lineage-23.2" groups="pdk" />
   <project name="LineageOS/android_hardware_xiaomi" path="hardware/xiaomi" remote="diting-upstream" revision="af5766acc6d6766eddeb52574996247128428ff6" upstream="refs/heads/lineage-23.2" dest-branch="af5766acc6d6766eddeb52574996247128428ff6" groups="local::diting" />
   <project name="LineageOS/android_kernel_configs" path="kernel/configs" revision="091688a5c5186cd124a0d19b06441bb8b04c3073" upstream="refs/heads/lineage-23.2" dest-branch="refs/heads/lineage-23.2" groups="pdk,vts" />
-  <project name="LineageOS/android_kernel_xiaomi_sm8450" path="kernel/xiaomi/sm8450" remote="diting-upstream" revision="eff4b40407a1b6f1b1ab84554cbb540bcb495175" upstream="refs/heads/lineage-23.2" groups="local::diting" />
+  <project name="LineageOS/android_kernel_xiaomi_sm8450" path="kernel/xiaomi/sm8450" remote="diting-upstream" revision="eff4b40407a1b6f1b1ab84554cbb540bcb495175" upstream="refs/heads/lineage-23.2" dest-branch="eff4b40407a1b6f1b1ab84554cbb540bcb495175" groups="local::diting" />
   <project name="LineageOS/android_kernel_xiaomi_sm8450-devicetrees" path="kernel/xiaomi/sm8450-devicetrees" remote="diting-upstream" revision="2e649a7f3e762903eedad43d8256b91e28b512d8" upstream="refs/heads/lineage-23.2" groups="local::diting" />
   <project name="LineageOS/android_kernel_xiaomi_sm8450-modules" path="kernel/xiaomi/sm8450-modules" remote="diting-upstream" revision="3b30ba7df6608c97c0ba2d55d679a6b5987c4c66" upstream="refs/heads/lineage-23.2" groups="local::diting" />
   <project name="LineageOS/android_packages_apps_Aperture" path="packages/apps/Aperture" revision="f7c0a93f787cc9e0db4193b6094bd51575567898" upstream="refs/heads/lineage-23.2" dest-branch="refs/heads/lineage-23.2" />
@@ -267,7 +268,7 @@
   <project name="PeterCxy/OpenEUICC" path="packages/apps/OpenEUICC" remote="openeuicc-official" revision="89d677e07d0ebbd2d157ede2cb31f76aec737e3a" groups="local::diting-esim" sync-s="true" />
   <project name="PeterCxy/android_prebuilts_openeuicc-deps" path="prebuilts/openeuicc-deps" remote="openeuicc-official" revision="540216793010cabc49782bd01844cd8dd28a4c7c" upstream="540216793010cabc49782bd01844cd8dd28a4c7c" dest-branch="540216793010cabc49782bd01844cd8dd28a4c7c" groups="local::diting-esim" />
   <project name="TheMuppets/proprietary_vendor_xiaomi_diting" path="vendor/xiaomi/diting" remote="diting-upstream" revision="6f318c6ee949b7912be97cdb4d2fb8f3e5ef284a" upstream="refs/heads/lineage-23.2" groups="local::diting" />
-  <project name="TheMuppets/proprietary_vendor_xiaomi_sm8450-common" path="vendor/xiaomi/sm8450-common" remote="diting-upstream" revision="9f5f2f5b631508e5120f1925afc766ca645fedaf" upstream="refs/heads/lineage-23.2" groups="local::diting" />
+  <project name="TheMuppets/proprietary_vendor_xiaomi_sm8450-common" path="vendor/xiaomi/sm8450-common" remote="diting-upstream" revision="9f5f2f5b631508e5120f1925afc766ca645fedaf" upstream="refs/heads/lineage-23.2" dest-branch="9f5f2f5b631508e5120f1925afc766ca645fedaf" groups="local::diting" />
   <project name="android_art" path="art" remote="avium" revision="37b48c57cd4ce46ed13de6005568ef3e3538384e" upstream="refs/heads/avium-16.2" dest-branch="refs/heads/avium-16.2" />
   <project name="android_bootable_recovery" path="bootable/recovery" remote="avium" revision="4bc289da84d66a0e40c181eb86804d359c8c63f0" upstream="refs/heads/avium-16.2" dest-branch="refs/heads/avium-16.2" groups="pdk" />
   <project name="android_build" path="build/make" remote="avium" revision="b404a57290647f7970db489301efd4f241ce4691" upstream="refs/heads/avium-16.2" dest-branch="refs/heads/avium-16.2" groups="pdk,sysui-studio">
