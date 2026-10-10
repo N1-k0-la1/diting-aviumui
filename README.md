@@ -9,7 +9,7 @@
 - [本批安装说明 / Installation](INSTALL-MEDIA.md)
 - [精确成品校验 / Artifact metadata](MEDIA-RELEASE.json)
 - [构建 / Build](BUILD.md) · [鸣谢 / Credits](CREDITS.md)
-- [自编译 OrangeFox 源码 / Recovery candidate source](recovery/orangefox-diting-20261010/README.md)：同时接受 diting / ditingp；首版实机验收尚未完成。
+- [自编译 OrangeFox 源码 / Recovery candidate source](recovery/orangefox-diting-20261010/README.md)：同时接受 diting / ditingp；首版 12T Pro 测试循环狐狸标志，正在定位，暂不用于刷机。
 
 源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 60 份有序补丁。
 Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。

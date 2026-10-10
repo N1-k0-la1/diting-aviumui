@@ -110,5 +110,9 @@
   "image_sha256": "5272bd2d47882d168c88b71a27e38ddc1ffafa5a74b7755ccb8efe24592ab8bf",
   "image_bytes": 104857600,
   "image_audit": "IMAGE-AUDIT.json",
-  "encrypted_backups_compiled_out": true
+  "encrypted_backups_compiled_out": true,
+  "phone_boot_test_reported_failed": true,
+  "reported_boot_symptom": "Repeating OrangeFox logo on 12T Pro",
+  "runtime_root_cause_confirmed": false,
+  "candidate_not_recommended_for_rom_installation": true
 }

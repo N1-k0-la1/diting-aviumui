@@ -1,8 +1,13 @@
 # Unofficial OrangeFox for diting / ditingp
 
+**First phone test failed:** the maintainer reports a repeating Fox logo on 12T Pro.
+The active Recovery partition hash matches this candidate. The phone has returned to Android.
+No live Recovery crash log has been captured yet; the cause is unconfirmed.
+**Do not use this candidate for ROM installation or advertise it as a working Recovery.**
+
 This is the corresponding source bundle for the project's Android 16 Recovery candidate.
 It is separate from the ROM patch series. The first 100 MiB image has compiled and passed static image/AVB/dependency checks.
-It has **not** been boot-tested; no claim is made that it fixes the previous OrangeFox logo loop.
+The initial 12T Pro boot test failed with a repeating Fox logo; the previous loop has not been fixed.
 See IMAGE-AUDIT.json and [the phone test checklist](TESTING.md).
 Encrypted backups are compiled out by the current upstream default; this is separate from FBE storage decryption.
 
