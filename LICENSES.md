@@ -10,6 +10,12 @@ See CREDITS.md and external-artifacts.json for pinned attribution and input hash
 
 # Licensing
 
+The separate `recovery/orangefox-diting-20261010` source bundle retains the licenses of
+OrangeFox, TeamWin and the diting device tree. New Recovery helper/test files and
+OrangeFox modifications are GPL-3.0-or-later as marked. Original Android device files
+retain their own notices. The public OTA certificate does not include a private key.
+The general repository license does not override these component licenses.
+
 This is a collection of pinned upstream references and modifications to multiple projects,
 not a relicensing of Android, LineageOS, AviumUI, vendor blobs or third-party applications.
 Each patch remains subject to the license and copyright notices of its destination project/files.

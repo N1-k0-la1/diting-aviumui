@@ -26,4 +26,10 @@ User-installed root and hiding modules are separate from the ROM.
 - Xiaomi 与 Qualcomm、[diting 固件归档](https://dumps.tadiphone.dev/dumps/xiaomi/diting)：硬件基础与 diting 屏幕的杜比配置。
 - 感谢实际测试和反馈的用户。新增媒体组件不构成相关商标、格式或流媒体认证。
 
+## 自编译 Recovery / Recovery candidate
+
+- [OrangeFox](https://gitlab.com/OrangeFox) 与 [TeamWin](https://github.com/TeamWin)：Recovery 和 Android 16 构建基础。
+- [AviderMin](https://github.com/AviderMin/ofrp_device_xiaomi_diting)：本次 diting 设备树的直接基础；保留上游版权与许可声明。
+- AOSP、Xiaomi / Qualcomm，以及 Recovery 上游贡献者。
+
 - **@anatdx：我的精神支柱。**

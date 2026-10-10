@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "source_manifest_url": "https://gitlab.com/OrangeFox/Manifest",
+  "source_manifest_commit": "4c65ca28fa67580172ee6bf99892a054c19dcebe",
+  "branch": "fox_16.0",
+  "canonical_device": "diting",
+  "accepted_aliases": [
+    "diting",
+    "ditingp"
+  ],
+  "upstream_projects": 405,
+  "manifest_sha256": "e8b3bc68db26d2ef70052d315d939bc69ec1e3a118c3a8ebfb3d1ca055156023",
+  "projects": [
+    {
+      "path": "device/xiaomi/diting",
+      "url": "https://github.com/AviderMin/ofrp_device_xiaomi_diting",
+      "upstream_commit": "1a1b5d3f6c908145e360da990a70b41042929615",
+      "local_build_commit": "e614431bc7125fd1fd9e3f4f058df8687662d04b",
+      "patch": "device.patch",
+      "patch_sha256": "cb78c4991abf6696d200e7614d7641b922d0219155b7cfeda49fc263ff56c674",
+      "changed_files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "d3f1da84ac1089f4d13d1d880b0c488fb57c56f1dcaff586435256b3edacac6d",
+          "git_mode": "100644"
+        },
+        {
+          "path": "AndroidProducts.mk",
+          "sha256": "5aeb7fa9d890c2758609217a935d375e21de8ac86dab2eefe40c9b3c48ca0b5c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "BoardConfig.mk",
+          "sha256": "deb7b65082709f20cf4af5f000491315722dafbfafc2833b395d5b8c725f4930",
+          "git_mode": "100644"
+        },
+        {
+          "path": "README.md",
+          "sha256": "7d4b8427267ed53892c28d55eb0b7db33bbf6f5dc4d9357511a8a87242260b39",
+          "git_mode": "100644"
+        },
+        {
+          "path": "device.mk",
+          "sha256": "c7d2360b375cd993fa9845deb9e66251e7fc3c579dc851f06fb6a3ac6ed4454f",
+          "git_mode": "100644"
+        },
+        {
+          "path": "fox_diting.mk",
+          "sha256": "6cddcd1ad6f0716afaa9c7c52886dafd6d1323a6af6bfa811258fe9bdb4934a8",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc",
+          "sha256": "82f0d524e402ff8aaff66e7adf1b1005ceb7e34941301d6425c6d3bfd2153af6",
+          "git_mode": "100644"
+        },
+        {
+          "path": "security/avium-release.x509.pem",
+          "sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+          "git_mode": "100644"
+        },
+        {
+          "path": "twrp_diting.mk",
+          "sha256": "9db4fd37ac5c5b0be3ca5af9844fcc03dcea413c082ed83a7feb0d6aef31511c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "vendorsetup.sh",
+          "sha256": "60e639c1f248154e752155b6e252ec7488e38956f15f6bb64ccb703ad3d36884",
+          "git_mode": "100644"
+        }
+      ]
+    },
+    {
+      "path": "bootable/recovery",
+      "url": "https://gitlab.com/OrangeFox/bootable/Recovery",
+      "upstream_commit": "0f7831d3240f4c3925a0b5fd7d2c907ddf8704c2",
+      "local_build_commit": "3b5f4c1a0f71e3112bae451a6308f43a222709b6",
+      "patch": "recovery.patch",
+      "patch_sha256": "10ce496e50f8aec49496e588f25a85f00a44162858d5eba0b7acc8819db54b1a",
+      "changed_files": [
+        {
+          "path": "diting_ota_aliases.h",
+          "sha256": "7cfe8ca00ee1f0acb9d7fb27259d4aa76dae6ec21b497299ce57fbd290c99b32",
+          "git_mode": "100644"
+        },
+        {
+          "path": "install/install.cpp",
+          "sha256": "0b6696b784a8d2dc0d8991054ee6fda6b57a72fd86ae5a921f4cca5f60adaa7b",
+          "git_mode": "100755"
+        },
+        {
+          "path": "twrpinstall/install.cpp",
+          "sha256": "676e3aa10829a18b9852993aec396f3728715adcee0a1d8864cb2b43f326247d",
+          "git_mode": "100755"
+        }
+      ]
+    }
+  ],
+  "target": "twrp_diting-bp2a-eng",
+  "build_target": "recoveryimage",
+  "build_jobs": 4,
+  "excludes_standalone_kernel": true,
+  "recovery_partition_bytes": 104857600,
+  "public_ota_certificate_sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+  "runtime_boot_verified": false,
+  "previous_fox_loop_root_cause_confirmed": false,
+  "scope": "First candidate for the project Android 16 AviumUI ROM; no universal firmware compatibility claim",
+  "build_completed": true,
+  "image_sha256": "5272bd2d47882d168c88b71a27e38ddc1ffafa5a74b7755ccb8efe24592ab8bf",
+  "image_bytes": 104857600,
+  "image_audit": "IMAGE-AUDIT.json",
+  "encrypted_backups_compiled_out": true
+}
