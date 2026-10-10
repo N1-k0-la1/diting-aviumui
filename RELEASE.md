@@ -72,3 +72,9 @@ Full Bluetooth/NFC/GPS/audio/charging/touch and long-term standby regression rem
 Paid mobile-data and roaming tests were deliberately not performed.
 No universal detector, Play Integrity or hardware-attestation pass is guaranteed.
 Do not relock the bootloader. Only the tested diting eSIM variant is qualified at this stage.
+
+## 2026-10-10 Camera component hotfix
+
+Aperture camera update compiled, release-signed, installed and verified on 12T Pro. Both batch14 Vanilla/GMS camera signer certificates match the update. FHD/UHD-to-macro switching now falls back to valid 720p video, while main-camera preferences return when switching back. HD-only cameras retain native FPS ranges; macro no longer advertises the ineffective 60fps overlay. A short macro video was saved and fully decoded.
+
+This is a standalone app update, with source included in the patch series as patch 51. It is not a rebuilt batch15 ROM. K50 camera behavior and HDR/long-term regression remain unverified. Users reported a successful latest-Vanilla TWRP install, but the TWRP version is unknown and this does not establish blanket recovery compatibility. Dolby Vision/LHDC are separate pending investigations. See CAMERA-HOTFIX.md and CAMERA-HOTFIX.json.

@@ -1,0 +1,57 @@
+--- a/app/src/main/java/org/lineageos/aperture/models/Camera.kt
++++ b/app/src/main/java/org/lineageos/aperture/models/Camera.kt
+@@ -7,6 +7,7 @@
+ 
+ import android.hardware.camera2.CameraCharacteristics
+ import android.hardware.camera2.CameraMetadata
++import android.media.MediaRecorder
+ import android.os.Build
+ import androidx.annotation.OptIn
+ import androidx.camera.camera2.interop.Camera2CameraInfo
+@@ -19,6 +20,7 @@
+ import androidx.camera.core.ImageCapture
+ import androidx.camera.extensions.ExtensionsManager
+ import androidx.camera.video.Quality
++import androidx.camera.video.QualitySelector
+ import androidx.camera.video.Recorder
+ import androidx.core.util.toClosedRange
+ import androidx.lifecycle.asFlow
+@@ -94,8 +96,27 @@
+         VideoDynamicRange.fromDynamicRange(it)
+     }
+ 
++    private val supportedVideoOutputSizes = camera2CameraInfo.getCameraCharacteristic(
++        CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
++    )?.getOutputSizes(MediaRecorder::class.java)?.toSet()
++
+     private val videoQualityForDynamicRanges = supportedVideoDynamicRanges.associateWith {
+-        videoCapabilities.getSupportedQualities(it.dynamicRange)
++        dynamicRange ->
++        videoCapabilities.getSupportedQualities(dynamicRange.dynamicRange).filter { quality ->
++            // Some auxiliary cameras expose video profiles that exceed their stream sizes.
++            // QualitySelector reports SDR profile sizes; do not use those to filter HDR.
++            if (dynamicRange != VideoDynamicRange.SDR || supportedVideoOutputSizes == null) {
++                true
++            } else {
++                QualitySelector.getResolution(cameraInfo, quality)?.let { resolution ->
++                    supportedVideoOutputSizes.contains(resolution)
++                } ?: true
++            }
++        }
++    }
++
++    private val supportsFullHdVideo = videoQualityForDynamicRanges.values.any { qualities ->
++        qualities.any { quality -> quality == Quality.FHD || quality == Quality.UHD }
+     }
+ 
+     val supportedVideoQualities =
+@@ -106,7 +127,8 @@
+                     additionalVideoFrameRates[it].orEmpty().forEach { (frameRate, remove) ->
+                         if (remove) {
+                             remove(frameRate)
+-                        } else {
++                        } else if (supportsFullHdVideo || frameRate in supportedVideoFrameRates) {
++                            // HD-only auxiliary cameras must retain their native FPS ranges.
+                             add(frameRate)
+                         }
+                     }

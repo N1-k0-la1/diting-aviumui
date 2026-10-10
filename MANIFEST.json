@@ -142,5 +142,6 @@
   "release_type": "testing; no stable/certification guarantee",
   "source_url": "https://github.com/N1-k0-la1/diting-aviumui",
   "packaged_at": "2026-10-08T19:47:54.853808+08:00",
-  "public_files_shared_by_user": false
+  "public_files_shared_by_user": false,
+  "camera_component_hotfix": "CAMERA-HOTFIX.json"
 }

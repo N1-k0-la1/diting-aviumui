@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-10",
+  "component_only": true,
+  "new_full_rom_built": false,
+  "apk": "Aperture-diting-camera-fix-20261010.apk",
+  "bytes": 8280179,
+  "sha256": "8de9ca08176234c802dad0e7fba18d93a628cf1f5d058e921ff05e169069664a",
+  "certificate_sha256": "5ee112a1d428c01925b7b5f18a1cfdfe17eba14d72d46511b8b40e77352271b0",
+  "matches_batch14_vanilla_and_gms_camera_signers": true,
+  "package": "org.lineageos.aperture",
+  "version_code": 36,
+  "upstream_base": "f7c0a93f787cc9e0db4193b6094bd51575567898",
+  "modified_source_commit": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
+  "source_patch": "patches/diting-camera-hotfix/01_aperture_video_capabilities.patch",
+  "source_patch_sha256": "4f3a0d6351ca6f55c58706cbdbed5752cdc307ea668b636bde98db492ff5f321",
+  "compiled": true,
+  "installed_and_apk_hash_verified": true,
+  "tested_model": "Xiaomi 12T Pro",
+  "k50_independently_tested": false,
+  "tests": [
+    "main FHD/30 to macro HD/30",
+    "main UHD/30 to macro HD/30 and return to UHD/30",
+    "main FHD/60 to macro HD/24 and return to FHD/60",
+    "macro HD/24 short recording saved and completely decoded",
+    "prior FHD/24 and microphone preferences restored"
+  ],
+  "sample_video": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "decoded_frames": 173,
+    "duration_seconds": 7.148789,
+    "audio_disabled_for_test": true,
+    "test_video_removed": true
+  },
+  "full_hardware_hdr_long_term_regression": "not performed",
+  "scope": "Aperture video capability handling; Dolby Vision and LHDC remain separate investigation items"
+}

@@ -351,6 +351,13 @@
       "original_commit": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
       "patch": "patches/diting-release-variants-batch14/02_kernel_android12_kmi9_naming.patch",
       "sha256": "1cd14ed0c56605b98c953cabacf4f848559c195b04a4278e8fa7f5434b689768"
+    },
+    {
+      "project": "packages/apps/Aperture",
+      "base": "f7c0a93f787cc9e0db4193b6094bd51575567898",
+      "original_commit": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
+      "patch": "patches/diting-camera-hotfix/01_aperture_video_capabilities.patch",
+      "sha256": "4f3a0d6351ca6f55c58706cbdbed5752cdc307ea668b636bde98db492ff5f321"
     }
   ],
   "upstream_bases": {
@@ -376,7 +383,8 @@
     "frameworks/av": "8df18dcdc9b2479605234eedbd1aee88feb181d0",
     "packages/modules/adb": "e7ed41a85f5a0a8c9db0ed7ba21c6ebd277b5db6",
     "build/make": "b404a57290647f7970db489301efd4f241ce4691",
-    "kernel/xiaomi/sm8450": "eff4b40407a1b6f1b1ab84554cbb540bcb495175"
+    "kernel/xiaomi/sm8450": "eff4b40407a1b6f1b1ab84554cbb540bcb495175",
+    "packages/apps/Aperture": "f7c0a93f787cc9e0db4193b6094bd51575567898"
   },
   "original_final_revisions": {
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
@@ -401,9 +409,10 @@
     "frameworks/av": "590c7ae662372afae401c1938adbcd60c6eb51b7",
     "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
     "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
-    "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9"
+    "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
+    "packages/apps/Aperture": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8"
   },
   "optional_gms_projects": 3,
-  "candidate": "batch14-build-in-progress",
+  "candidate": "batch14-full-ROM-plus-20261010-camera-component-hotfix",
   "source_projects_with_gms": 1190
 }

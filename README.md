@@ -6,9 +6,11 @@ AviumUI 16.2.2 / Android 16 的 diting 非官方定制项目，面向 Xiaomi 12T
 当前第十四批 Vanilla / GMS 候选为真实 `user` 构建、维护者私有发布签名、无内置 root。
 维护者决定先分发测试候选并按反馈迭代；尚未完成全面硬件回归或长期稳定性验收。本仓库暂未提供 ROM 下载链接。
 
-本仓库包含 1187 个基础项目、3 个可选 GMS 项目的固定版本清单、50 份有序补丁、构建说明和鸣谢。
+本仓库包含 1187 个基础项目、3 个可选 GMS 项目的固定版本清单、51 份有序补丁、构建说明和鸣谢。
 第十四批两候选已完成构建与主机核对，使用规范内核命名和区域 eSIM 限制。GMS 版已在 12T Pro 开机，核对新内核／签名构建身份／SELinux，并完成相机、eSIM、Google 登录和商店下载初测；完整硬件与长期回归仍待完成。
 Vanilla 第十四批尚未实测；K50 至尊版暂为源码支持、待实测。当前完整 GMS Classic Integrity 为 BASIC-only，不承诺 DEVICE／STRONG。
+2026-10-10 发布后相机修复：已编译并在 12T Pro 验证签名相机更新，修复录像切入微距退出及微距无效 60fps 显示。适配原 batch14 Vanilla / GMS 的相同相机证书；K50 尚待反馈。本次是组件更新，原 ROM ZIP 保持 batch14。见 [相机修复 / Camera hotfix](CAMERA-HOTFIX.md)。
+
 Via 补丁只保留元数据变更；对应官方 APK 由构建者另行获取并校验。
 
 - [构建与签名说明 / Build](BUILD.md)
@@ -19,6 +21,8 @@ Via 补丁只保留元数据变更；对应官方 APK 由构建者另行获取�
 - [许可说明 / Licensing](LICENSES.md)
 
 ## English
+
+A signed post-release camera hotfix was built and validated on 12T Pro on 2026-10-10. It fixes unsupported macro video stream sizes and invalid high-FPS UI options. The original batch14 ROM ZIPs are unchanged; K50 testing remains pending. See [Camera hotfix](CAMERA-HOTFIX.md).
 
 Unofficial AviumUI 16.2.2 / Android 16 customization targeting Xiaomi 12T Pro and Redmi K50 Ultra (`diting`).
 Batch14 Vanilla/GMS candidates passed host qualification. GMS has booted on 12T Pro with preliminary camera/eSIM, Google login and Play Store download checks; full hardware and long-term regression are pending. Batch14 Vanilla and K50 Ultra remain untested. The current full-GMS Classic Integrity result is BASIC only.
