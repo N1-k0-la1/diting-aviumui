@@ -5,6 +5,7 @@ import argparse, hashlib, json, pathlib, shutil, subprocess
 PACKAGE = pathlib.Path(__file__).resolve().parents[1]
 def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def contained(root, relative):
+    root = root.resolve()
     p = (root/relative).resolve()
     if not p.is_relative_to(root) or p == root: raise RuntimeError(relative)
     return p
@@ -19,9 +20,17 @@ def main():
     output = args.output.resolve()
     if output.exists(): raise RuntimeError('Output already exists; use a new directory.')
     prepared = []
+    checkout_heads = {}
     for item in files:
-        checkout = (args.lhdc_checkout if item['path'].startswith('lhdc/') else args.dolby_checkout).resolve(strict=True)
-        head = subprocess.check_output(['git','-C',str(checkout),'rev-parse','HEAD'],text=True).strip()
+        if item['path'].startswith('lhdc/'):
+            checkout = args.lhdc_checkout.resolve(strict=True)
+        elif item['path'].startswith('dolby-vision/'):
+            checkout = args.dolby_checkout.resolve(strict=True)
+        else:
+            raise RuntimeError('Unknown media input family: '+item['path'])
+        if checkout not in checkout_heads:
+            checkout_heads[checkout] = subprocess.check_output(['git','-C',str(checkout),'rev-parse','HEAD'],text=True).strip()
+        head = checkout_heads[checkout]
         if head != item['revision']: raise RuntimeError('Donor checkout revision differs: '+item['path'])
         supplied = contained(checkout,item['source_path'])
         if digest(supplied) != item['sha256']: raise RuntimeError('Donor input hash differs: '+item['path'])

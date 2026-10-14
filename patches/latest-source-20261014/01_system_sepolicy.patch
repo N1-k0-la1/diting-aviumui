@@ -1,0 +1,23 @@
+diff --git a/contexts/file_contexts_test_data b/contexts/file_contexts_test_data
+index 8bb0ca7248f8da649786b05434b2c98cbd1a15f9..8ffd2cf3bb471c7b19dfcf98269f9e026b135f1c 100644
+--- a/contexts/file_contexts_test_data
++++ b/contexts/file_contexts_test_data
+@@ -1437,3 +1437,6 @@
+ /system/system_ext/etc/permissions/LineageSettingsProvider.xml rom_framework_config_file
+ /system_ext/etc/permissions/LineageSetupWizard.xml rom_framework_config_file
+ /system/system_ext/etc/permissions/LineageSetupWizard.xml rom_framework_config_file
++
++/data/fonts/user-custom font_data_file
++/data/fonts/user-custom/0123456789abcdef.font font_data_file
+diff --git a/private/file_contexts b/private/file_contexts
+index 18257237ab08f7009c27cb9b6a6f1768ad4d21f1..e3df9c7df017211fb2bcd3b211bafd3a467a9465 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -654,6 +654,7 @@
+ /data/rollback/\d+/[^/]+/.*\.apk  u:object_r:apk_data_file:s0
+ /data/rollback/\d+/[^/]+/.*\.apex u:object_r:staging_data_file:s0
+ /data/fonts/files(/.*)?     u:object_r:font_data_file:s0
++/data/fonts/user-custom(/.*)? u:object_r:font_data_file:s0
+ /data/misc_ce             u:object_r:system_userdir_file:s0
+ /data/misc_de             u:object_r:system_userdir_file:s0
+ /data/system_ce           u:object_r:system_userdir_file:s0

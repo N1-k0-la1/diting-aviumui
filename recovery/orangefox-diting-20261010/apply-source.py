@@ -18,33 +18,37 @@ def git(folder, *command):
 def sha(file):
     return hashlib.sha256(file.read_bytes()).hexdigest()
 
-assert sha(BUNDLE / 'manifest.xml') == record['manifest_sha256']
+def require(condition, *message):
+    if not condition:
+        raise RuntimeError(" ".join(str(item) for item in message) or "verification failed")
+
+require(sha(BUNDLE / 'manifest.xml') == record['manifest_sha256'], 'manifest hash mismatch')
 changed_projects = {p['path']: p for p in record['projects']}
 for project in ET.parse(BUNDLE / 'manifest.xml').getroot().findall('project'):
     relative = project.get('path', project.get('name'))
     folder = source / relative
     head = git(folder, 'rev-parse', 'HEAD').decode().strip()
     if relative not in changed_projects:
-        assert head == project.attrib['revision'], ('Unexpected upstream revision', relative, head)
-        assert not git(folder, 'status', '--porcelain').strip(), ('Dirty upstream source', relative)
+        require(head == project.attrib['revision'], 'Unexpected upstream revision', relative, head)
+        require(not git(folder, 'status', '--porcelain').strip(), 'Dirty upstream source', relative)
 
 # Check both projects and all patch inputs before the first mutation.
 for project in record['projects']:
     folder = source / project['path']
-    assert sha(BUNDLE / project['patch']) == project['patch_sha256']
+    require(sha(BUNDLE / project['patch']) == project['patch_sha256'], 'patch hash mismatch', project['path'])
     head = git(folder, 'rev-parse', 'HEAD').decode().strip()
     if args.verify_applied:
-        assert head in (project['upstream_commit'], project['local_build_commit']), (project['path'], head)
+        require(head in (project['upstream_commit'], project['local_build_commit']), project['path'], head)
         allowed = {p['path'] for p in project['changed_files']}
         for entry in git(folder, 'status', '--porcelain', '-z', '--untracked-files=all').decode().split('\0'):
             if entry:
-                assert entry[3:] in allowed, ('Unrelated change', project['path'], entry)
+                require(entry[3:] in allowed, 'Unrelated change', project['path'], entry)
         for item in project['changed_files']:
             file = folder / item['path']
-            assert (sha(file) if file.is_file() else None) == item['sha256'], (project['path'], item['path'])
+            require((sha(file) if file.is_file() else None) == item['sha256'], project['path'], item['path'])
     else:
-        assert head == project['upstream_commit'], (project['path'], head)
-        assert not git(folder, 'status', '--porcelain').strip(), project['path']
+        require(head == project['upstream_commit'], project['path'], head)
+        require(not git(folder, 'status', '--porcelain').strip(), project['path'])
         git(folder, 'apply', '--check', str(BUNDLE / project['patch']))
 
 if not args.verify_applied:
@@ -53,5 +57,5 @@ if not args.verify_applied:
         git(folder, 'apply', str(BUNDLE / project['patch']))
         for item in project['changed_files']:
             file = folder / item['path']
-            assert (sha(file) if file.is_file() else None) == item['sha256'], (project['path'], item['path'])
+            require((sha(file) if file.is_file() else None) == item['sha256'], project['path'], item['path'])
 print('Pinned recovery source inputs verified.' if args.verify_applied else 'Both patches applied and exact changed-file hashes verified.')

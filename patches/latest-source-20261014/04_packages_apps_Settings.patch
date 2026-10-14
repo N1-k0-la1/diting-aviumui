@@ -1,0 +1,944 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 350a8e4c473ad1c0fdf92335a407f659deb65167..55243aa30a2eee4c5b55505f43ded2a0e344d894 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -93,6 +93,7 @@
+     <uses-permission android:name="android.permission.SUGGEST_MANUAL_TIME_AND_ZONE" />
+     <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS" />
+     <uses-permission android:name="android.permission.REBOOT" />
++    <uses-permission android:name="android.permission.UPDATE_FONTS" />
+     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+     <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
+     <uses-permission android:name="android.permission.READ_SEARCH_INDEXABLES" />
+@@ -6070,5 +6071,7 @@
+ 
+         <!-- This is the longest AndroidManifest.xml ever. -->
+ 
++        <service android:name=".display.FontImportValidationService"
++            android:exported="false" android:isolatedProcess="true" android:process=":font_validation" />
+     </application>
+ </manifest>
+diff --git a/res/values-zh-rCN/custom_font_strings.xml b/res/values-zh-rCN/custom_font_strings.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..f289d72da9174bc3d365a6c3cfc94810e00a4354
+--- /dev/null
++++ b/res/values-zh-rCN/custom_font_strings.xml
+@@ -0,0 +1,17 @@
++<?xml version='1.0' encoding='utf-8'?>
++<resources>
++  <string name="font_custom_title">导入字体</string>
++  <string name="font_custom_named">导入 · %1$s</string>
++  <string name="font_custom_import">导入字体文件</string>
++  <string name="font_custom_supported">单字体静态 TTF 或 OTF，最大 64 MiB</string>
++  <string name="font_custom_checking">正在检查字体…</string>
++  <string name="font_custom_invalid">无法使用此字体。请选择有效的单字体静态 TTF 或 OTF 文件，大小不超过 64 MiB。</string>
++  <string name="font_custom_preview">字体预览</string>
++  <string name="font_custom_restart_note">重启后，各应用将统一使用此字体。缺少的字符和 emoji 保留系统回退字体；原始文件不会被修改。</string>
++  <string name="font_custom_save_restart">保存并重启</string>
++  <string name="font_custom_restart">重启</string>
++  <string name="font_custom_later">稍后</string>
++  <string name="font_custom_apply_error">导入字体未能应用，当前字体仍然可用。</string>
++  <string name="font_custom_remove">移除导入的字体</string>
++  <string name="font_custom_remove_note">移除导入副本。若正在使用它，将恢复默认字体；原始文件保留。</string>
++</resources>
+\ No newline at end of file
+diff --git a/res/values-zh-rCN/font_style_strings.xml b/res/values-zh-rCN/font_style_strings.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..c6e47228440df45dbea56ff70d59799865322964
+--- /dev/null
++++ b/res/values-zh-rCN/font_style_strings.xml
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="font_style_title">字体样式</string>
++    <string name="font_style_default">默认字体</string>
++    <string name="font_style_condensed">紧凑 · Roboto Condensed</string>
++    <string name="font_style_source">Source Sans Pro</string>
++    <string name="font_style_serif">衬线 · 思源宋体</string>
++    <string name="font_style_restore">恢复默认字体</string>
++    <string name="font_style_latin_note">主要改变英文字母和数字的样式。</string>
++    <string name="font_style_serif_note">中文也会使用衬线字体。</string>
++    <string name="font_style_note">点击预览即可应用字体。自带字体的应用可能不受影响；字体模块可能覆盖这里的选择。</string>
++    <string name="font_style_apply_error">无法应用字体，已保留之前的主题设置。</string>
++</resources>
+diff --git a/res/values/custom_font_strings.xml b/res/values/custom_font_strings.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..2c336739a315f2a70ae7e7d601e52ac82d3b2cb0
+--- /dev/null
++++ b/res/values/custom_font_strings.xml
+@@ -0,0 +1,17 @@
++<?xml version='1.0' encoding='utf-8'?>
++<resources>
++  <string name="font_custom_title">Imported font</string>
++  <string name="font_custom_named">Imported · %1$s</string>
++  <string name="font_custom_import">Import a font</string>
++  <string name="font_custom_supported">Single-face static TTF or OTF, up to 64 MiB</string>
++  <string name="font_custom_checking">Checking font…</string>
++  <string name="font_custom_invalid">This font could not be used. Select a valid single-face static TTF or OTF file up to 64 MiB.</string>
++  <string name="font_custom_preview">Font preview</string>
++  <string name="font_custom_restart_note">Restart to apply this font consistently across apps. Missing characters and emoji use system fallback fonts. Your original file is kept.</string>
++  <string name="font_custom_save_restart">Save and restart</string>
++  <string name="font_custom_restart">Restart</string>
++  <string name="font_custom_later">Later</string>
++  <string name="font_custom_apply_error">The imported font could not be applied. Your current font remains available.</string>
++  <string name="font_custom_remove">Remove imported font</string>
++  <string name="font_custom_remove_note">Remove the imported copy. If selected, the default font will be restored. Your original file is kept.</string>
++</resources>
+\ No newline at end of file
+diff --git a/res/values/font_style_strings.xml b/res/values/font_style_strings.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..5dde19c399abad372f2e30326899ce7db2ab3744
+--- /dev/null
++++ b/res/values/font_style_strings.xml
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="font_style_title">Font style</string>
++    <string name="font_style_default">Default</string>
++    <string name="font_style_condensed">Compact · Roboto Condensed</string>
++    <string name="font_style_source">Source Sans Pro</string>
++    <string name="font_style_serif">Serif · Noto Serif</string>
++    <string name="font_style_restore">Restore default font</string>
++    <string name="font_style_preview" translatable="false">字体预览，简体中文與繁體中文\nThe quick brown fox · Aa Bb 0123456789</string>
++    <string name="font_style_latin_note">Changes mainly Latin letters and numbers.</string>
++    <string name="font_style_serif_note">Includes a serif style for Chinese characters.</string>
++    <string name="font_style_note">Tap a preview to apply its font. Apps with their own fonts may look unchanged. Font modules can override this choice.</string>
++    <string name="font_style_apply_error">Could not apply the font. Your previous theme was kept.</string>
++</resources>
+diff --git a/res/xml/display_settings.xml b/res/xml/display_settings.xml
+index d25b0a2f84958254794340f250f9dc7aa3a66c45..aa61f5ed564ac71e4283a4f70f693341f95e5001 100644
+--- a/res/xml/display_settings.xml
++++ b/res/xml/display_settings.xml
+@@ -152,6 +152,13 @@
+             settings:searchable="true"/>
+     </PreferenceCategory>
+ 
++    <Preference
++        android:key="font_style"
++        android:title="@string/font_style_title"
++        android:fragment="com.android.settings.display.FontStyleSettings"
++        android:order="-155"
++        settings:controller="com.android.settings.display.FontStylePreferenceController" />
++
+     <PreferenceCategory
+         android:key="category_other"
+         android:title="@string/category_name_display_controls"
+diff --git a/res/xml/font_style_settings.xml b/res/xml/font_style_settings.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..e6e25cfff4c5e7daaa258e34f33498c789412492
+--- /dev/null
++++ b/res/xml/font_style_settings.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++    android:title="@string/font_style_title"
++    android:persistent="false" />
+diff --git a/src/com/android/settings/SettingsApplication.java b/src/com/android/settings/SettingsApplication.java
+index a1382e680bf1f52fea8995dd84bfb6b93a0c6281..0af5eb2f5ee368e0c2beb6efa5dd959b40dbbba4 100644
+--- a/src/com/android/settings/SettingsApplication.java
++++ b/src/com/android/settings/SettingsApplication.java
+@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
+ import android.database.ContentObserver;
+ import android.hardware.fingerprint.FingerprintManager;
+ import android.net.Uri;
++import android.os.Process;
+ import android.provider.Settings;
+ import android.util.FeatureFlagUtils;
+ import android.util.Log;
+@@ -70,12 +71,19 @@ public class SettingsApplication extends Application {
+     @Override
+     protected void attachBaseContext(Context base) {
+         super.attachBaseContext(base);
++        // The isolated font renderer must not access Settings providers or app data.
++        if (Process.isIsolated()) {
++            return;
++        }
+         FeatureFactory.setFactory(this, getFeatureFactory());
+     }
+ 
+     @Override
+     public void onCreate() {
+         super.onCreate();
++        if (Process.isIsolated()) {
++            return;
++        }
+ 
+         // Force all loadLabel() calls to sanitize package labels
+         PackageItemInfo.forceSafeLabels();
+@@ -127,7 +135,9 @@ public class SettingsApplication extends Application {
+ 
+     @Override
+     public void onTerminate() {
+-        BackupRestoreStorageManager.getInstance(this).removeAll();
++        if (!Process.isIsolated()) {
++            BackupRestoreStorageManager.getInstance(this).removeAll();
++        }
+         super.onTerminate();
+     }
+ 
+@@ -176,6 +186,9 @@ public class SettingsApplication extends Application {
+     @Override
+     public void onTrimMemory(int level) {
+         super.onTrimMemory(level);
++        if (Process.isIsolated()) {
++            return;
++        }
+         AppIconCacheManager.getInstance().trimMemory(level);
+     }
+ 
+diff --git a/src/com/android/settings/core/gateway/SettingsGateway.java b/src/com/android/settings/core/gateway/SettingsGateway.java
+index ee937cc73aa1120905ebe69b4430b92413941d69..801c9361933ee18ce25bdb37d6fe36a60fb155d8 100644
+--- a/src/com/android/settings/core/gateway/SettingsGateway.java
++++ b/src/com/android/settings/core/gateway/SettingsGateway.java
+@@ -406,6 +406,7 @@ public class SettingsGateway {
+             NfcAndPaymentFragment.class.getName(),
+             ColorAndMotionFragment.class.getName(),
+             ColorContrastFragment.class.getName(),
++            com.android.settings.display.FontStyleSettings.class.getName(),
+             LongBackgroundTasksDetails.class.getName(),
+             RegionPickerFragment.class.getName(),
+             RegionalPreferencesEntriesFragment.class.getName(),
+diff --git a/src/com/android/settings/display/CustomFontImport.java b/src/com/android/settings/display/CustomFontImport.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..425652fc45a9d6de56f62bfe6c16da4e73de7abb
+--- /dev/null
++++ b/src/com/android/settings/display/CustomFontImport.java
+@@ -0,0 +1,251 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import android.app.Activity;
++import android.app.AlertDialog;
++import android.content.Intent;
++import android.content.ComponentName;
++import android.content.Context;
++import android.content.ServiceConnection;
++import android.database.Cursor;
++import android.graphics.Typeface;
++import android.graphics.fonts.Font;
++import android.graphics.fonts.FontFamily;
++import android.net.Uri;
++import android.os.Bundle;
++import android.os.Handler;
++import android.os.IBinder;
++import android.os.Looper;
++import android.os.Message;
++import android.os.Messenger;
++import android.os.ParcelFileDescriptor;
++import android.os.PowerManager;
++import android.os.ServiceManager;
++import android.provider.OpenableColumns;
++import android.widget.LinearLayout;
++import android.widget.TextView;
++import android.widget.Toast;
++
++import com.android.internal.graphics.fonts.CustomFontFileValidator;
++import com.android.internal.graphics.fonts.IFontManager;
++import com.android.settings.R;
++import com.android.settingslib.utils.ThreadUtils;
++
++import java.io.File;
++import java.io.FileOutputStream;
++import java.io.InputStream;
++
++/** User-initiated, copied imports; no persistent grants and no original file modification. */
++final class CustomFontImport {
++    static final int REQUEST_FONT = 6401;
++    private final FontStyleSettings mFragment;
++    private boolean mBusy;
++
++    CustomFontImport(FontStyleSettings fragment) { mFragment = fragment; }
++
++    private static IFontManager manager() {
++        return IFontManager.Stub.asInterface(ServiceManager.getService(android.content.Context.FONT_SERVICE));
++    }
++
++    static Bundle status() {
++        try {
++            IFontManager manager = manager();
++            return manager == null ? null : manager.getUserCustomFontStatus();
++        } catch (Exception | LinkageError e) { return null; }
++    }
++
++    static Typeface previewTypeface() {
++        try (ParcelFileDescriptor descriptor = manager().openUserCustomFont()) {
++            Font font = new Font.Builder(descriptor).build();
++            return new Typeface.CustomFallbackBuilder(new FontFamily.Builder(font).build())
++                    .setSystemFallback("sans-serif").build();
++        } catch (Exception | LinkageError e) { return Typeface.DEFAULT; }
++    }
++
++    void pick() {
++        if (mBusy) return;
++        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
++        intent.addCategory(Intent.CATEGORY_OPENABLE);
++        intent.setType("*/*");
++        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
++        mFragment.startActivityForResult(intent, REQUEST_FONT);
++    }
++
++    void result(int resultCode, Intent data) {
++        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || mBusy) return;
++        mBusy = true;
++        Uri uri = data.getData();
++        Activity activity = mFragment.getActivity();
++        if (activity == null) { mBusy = false; return; }
++        Toast.makeText(activity, R.string.font_custom_checking, Toast.LENGTH_SHORT).show();
++        ThreadUtils.postOnBackgroundThread(() -> {
++            File staged = null;
++            try {
++                String label = "Custom font";
++                try (Cursor cursor = activity.getContentResolver().query(uri,
++                        new String[] {OpenableColumns.DISPLAY_NAME}, null, null, null)) {
++                    if (cursor != null && cursor.moveToFirst()) label = cursor.getString(0);
++                }
++                staged = File.createTempFile("font-import-", ".font", activity.getCacheDir());
++                try (InputStream input = activity.getContentResolver().openInputStream(uri);
++                        FileOutputStream output = new FileOutputStream(staged)) {
++                    if (input == null) throw new java.io.IOException("Missing font stream");
++                    byte[] buffer = new byte[16384];
++                    long size = 0;
++                    int count;
++                    while ((count = input.read(buffer)) != -1) {
++                        size += count;
++                        if (size > CustomFontFileValidator.MAX_BYTES) throw new java.io.IOException("Too large");
++                        output.write(buffer, 0, count);
++                    }
++                    output.getFD().sync();
++                }
++                CustomFontFileValidator.validate(staged);
++                if (!staged.setReadOnly()) throw new java.io.IOException("Cannot seal preview");
++                File accepted = staged;
++                String name = label;
++                activity.runOnUiThread(() -> {
++                    if (!mFragment.isAdded() || activity.isFinishing()) { mBusy = false; accepted.delete(); return; }
++                    validateIsolated(accepted, name);
++                });
++                staged = null;
++            } catch (Exception | LinkageError e) {
++                if (staged != null) staged.delete();
++                activity.runOnUiThread(() -> {
++                    mBusy = false;
++                    if (mFragment.isAdded()) Toast.makeText(activity, R.string.font_custom_invalid,
++                            Toast.LENGTH_LONG).show();
++                });
++            }
++        });
++    }
++
++    private void validateIsolated(File file, String label) {
++        Activity activity = mFragment.getActivity();
++        Handler handler = new Handler(Looper.getMainLooper());
++        final boolean[] finished = {false};
++        final boolean[] bound = {false};
++        final ServiceConnection[] connection = new ServiceConnection[1];
++        java.util.function.Consumer<Boolean> complete = valid -> {
++            if (finished[0]) return;
++            finished[0] = true;
++            if (bound[0]) activity.unbindService(connection[0]);
++            mBusy = false;
++            if (!valid || !mFragment.isAdded() || activity.isFinishing()) {
++                file.delete();
++                if (mFragment.isAdded()) Toast.makeText(activity, R.string.font_custom_invalid, Toast.LENGTH_LONG).show();
++                return;
++            }
++            try {
++                Font font = new Font.Builder(file).build();
++                Typeface typeface = new Typeface.CustomFallbackBuilder(new FontFamily.Builder(font).build())
++                        .setSystemFallback("sans-serif").build();
++                showPreview(file, label, typeface);
++            } catch (Exception e) {
++                file.delete();
++                Toast.makeText(activity, R.string.font_custom_invalid, Toast.LENGTH_LONG).show();
++            }
++        };
++        Messenger reply = new Messenger(new Handler(Looper.getMainLooper()) {
++            @Override public void handleMessage(Message message) { complete.accept(message.arg1 == 1); }
++        });
++        connection[0] = new ServiceConnection() {
++            @Override public void onServiceConnected(ComponentName component, IBinder binder) {
++                ThreadUtils.postOnBackgroundThread(() -> {
++                    // Isolated processes cannot read Settings' system_app_data_file cache.
++                    // A sealed appdomain_tmpfs descriptor is shared without opening any path.
++                    try (android.os.SharedMemory memory = android.os.SharedMemory.create(
++                            "font_validation", Math.toIntExact(file.length()))) {
++                        java.nio.ByteBuffer mapping = memory.mapReadWrite();
++                        try (InputStream input = new java.io.FileInputStream(file)) {
++                            byte[] buffer = new byte[16384];
++                            int count;
++                            while ((count = input.read(buffer)) != -1) mapping.put(buffer, 0, count);
++                        } finally {
++                            android.os.SharedMemory.unmap(mapping);
++                        }
++                        if (!memory.setProtect(android.system.OsConstants.PROT_READ)) {
++                            throw new java.io.IOException("Cannot seal validation memory");
++                        }
++                        Message request = Message.obtain();
++                        Bundle data = new Bundle();
++                        data.putParcelable("font", memory);
++                        request.setData(data);
++                        request.replyTo = reply;
++                        new Messenger(binder).send(request);
++                    } catch (Exception e) { handler.post(() -> complete.accept(false)); }
++                });
++            }
++            @Override public void onServiceDisconnected(ComponentName component) { complete.accept(false); }
++            @Override public void onBindingDied(ComponentName component) { complete.accept(false); }
++        };
++        try {
++            bound[0] = activity.bindService(new Intent(activity, FontImportValidationService.class),
++                    connection[0], Context.BIND_AUTO_CREATE);
++            if (!bound[0]) complete.accept(false);
++            handler.postDelayed(() -> complete.accept(false), 20000);
++        } catch (Exception e) { complete.accept(false); }
++    }
++
++    private void showPreview(File file, String label, Typeface typeface) {
++        Activity activity = mFragment.getActivity();
++        LinearLayout preview = new LinearLayout(activity);
++        preview.setOrientation(LinearLayout.VERTICAL);
++        int padding = Math.round(24 * activity.getResources().getDisplayMetrics().density);
++        preview.setPadding(padding, padding, padding, padding);
++        TextView name = new TextView(activity);
++        String displayLabel = label == null ? "Custom font" : label.replaceAll("[\\p{Cntrl}]", "").trim();
++        name.setText(displayLabel.substring(0, Math.min(displayLabel.length(), 80)));
++        preview.addView(name);
++        TextView sample = new TextView(activity);
++        sample.setText(R.string.font_style_preview);
++        sample.setTextSize(22);
++        sample.setTypeface(typeface);
++        preview.addView(sample);
++        TextView note = new TextView(activity);
++        note.setText(R.string.font_custom_restart_note);
++        preview.addView(note);
++        new AlertDialog.Builder(activity).setTitle(R.string.font_custom_preview)
++                .setView(preview).setNegativeButton(android.R.string.cancel, null)
++                .setPositiveButton(R.string.font_custom_save_restart, (dialog, which) -> apply(file, label))
++                .setOnDismissListener(dialog -> { if (!mBusy) file.delete(); }).show();
++    }
++
++    private void apply(File file, String label) {
++        mBusy = true;
++        Activity activity = mFragment.getActivity();
++        ThreadUtils.postOnBackgroundThread(() -> {
++            boolean success = false;
++            try (ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)) {
++                manager().installUserCustomFont(descriptor, label);
++                success = true;
++            } catch (Exception | LinkageError e) { /* Keep the previous theme selection on failure. */ }
++            finally { file.delete(); }
++            boolean applied = success;
++            activity.runOnUiThread(() -> {
++                mBusy = false;
++                if (applied) activity.getSystemService(PowerManager.class).reboot(null);
++                else if (mFragment.isAdded()) Toast.makeText(activity, R.string.font_custom_apply_error,
++                        Toast.LENGTH_LONG).show();
++            });
++        });
++    }
++
++    void remove() {
++        Activity activity = mFragment.getActivity();
++        new AlertDialog.Builder(activity).setTitle(R.string.font_custom_remove)
++                .setMessage(R.string.font_custom_remove_note)
++                .setNegativeButton(android.R.string.cancel, null)
++                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
++                    try {
++                        if (!mFragment.restoreBeforeRemovingImport()) throw new IllegalStateException();
++                        manager().removeUserCustomFont();
++                        activity.recreate();
++                    } catch (Exception | LinkageError e) {
++                        Toast.makeText(activity, R.string.font_custom_apply_error, Toast.LENGTH_LONG).show();
++                    }
++                }).show();
++    }
++}
+diff --git a/src/com/android/settings/display/FontImportValidationService.java b/src/com/android/settings/display/FontImportValidationService.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..524ef8eae5d9b84043e557337512e6ec7ea975cb
+--- /dev/null
++++ b/src/com/android/settings/display/FontImportValidationService.java
+@@ -0,0 +1,54 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import android.app.Service;
++import android.content.Intent;
++import android.graphics.Bitmap;
++import android.graphics.Canvas;
++import android.graphics.Paint;
++import android.graphics.Typeface;
++import android.graphics.fonts.Font;
++import android.graphics.fonts.FontFamily;
++import android.os.Handler;
++import android.os.IBinder;
++import android.os.Looper;
++import android.os.Message;
++import android.os.Messenger;
++import android.os.SharedMemory;
++
++/** Native font parsing/rasterization occurs in an unprivileged isolated process first. */
++public final class FontImportValidationService extends Service {
++    private final Messenger mMessenger = new Messenger(new Handler(Looper.getMainLooper()) {
++        @Override public void handleMessage(Message message) {
++            boolean valid = false;
++            Bitmap bitmap = null;
++            try (SharedMemory memory = message.getData().getParcelable("font", SharedMemory.class)) {
++                if (memory == null) return;
++                // Ashmem descriptors can report st_size=0; use the region's actual bounds.
++                // Font retains the mapped direct buffer; its cleaner owns the mapping lifetime.
++                Font font = new Font.Builder(memory.mapReadOnly()).build();
++                Typeface face = new Typeface.CustomFallbackBuilder(new FontFamily.Builder(font).build())
++                        .setSystemFallback("sans-serif").build();
++                bitmap = Bitmap.createBitmap(512, 128, Bitmap.Config.ARGB_8888);
++                Paint paint = new Paint();
++                paint.setTypeface(face);
++                paint.setTextSize(28);
++                new Canvas(bitmap).drawText("Aa 0123 中文繁體 😀", 4, 64, paint);
++                valid = true;
++            } catch (Exception e) {
++                valid = false;
++            } finally {
++                if (bitmap != null) bitmap.recycle();
++            }
++            try {
++                Message reply = Message.obtain();
++                reply.arg1 = valid ? 1 : 0;
++                if (message.replyTo != null) message.replyTo.send(reply);
++            } catch (android.os.RemoteException e) { /* The requesting screen was closed. */ }
++        }
++    });
++
++    @Override public IBinder onBind(Intent intent) { return mMessenger.getBinder(); }
++}
+diff --git a/src/com/android/settings/display/FontStyleConfig.java b/src/com/android/settings/display/FontStyleConfig.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..465278ea5970233ca4fb12527076ed76353233b6
+--- /dev/null
++++ b/src/com/android/settings/display/FontStyleConfig.java
+@@ -0,0 +1,51 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import org.json.JSONException;
++import org.json.JSONObject;
++
++/** Edits only the font category of the shared system theme configuration. */
++final class FontStyleConfig {
++    static final String CUSTOM = "com.android.theme.font.custom";
++    static final String CATEGORY = "android.theme.customization.font";
++    static final String DEFAULT = "default";
++    static final String CONDENSED = "com.android.theme.font.condensed";
++    static final String SOURCE = "com.android.theme.font.sourcesanspro";
++    static final String SERIF = "com.android.theme.font.notoserif";
++
++    static boolean isKnownKey(String key) {
++        return DEFAULT.equals(key) || CONDENSED.equals(key)
++                || SOURCE.equals(key) || SERIF.equals(key) || CUSTOM.equals(key);
++    }
++
++    static String selectedKey(String json) {
++        try {
++            String key = parse(json).optString(CATEGORY, DEFAULT);
++            return isKnownKey(key) ? key : DEFAULT;
++        } catch (JSONException e) {
++            return DEFAULT;
++        }
++    }
++
++    static String withFont(String json, String key) throws JSONException {
++        if (!isKnownKey(key)) {
++            throw new IllegalArgumentException("Unknown font style");
++        }
++        // Do not silently discard colours, icon shapes or a malformed existing theme.
++        JSONObject theme = parse(json);
++        if (DEFAULT.equals(key)) {
++            theme.remove(CATEGORY);
++        } else {
++            theme.put(CATEGORY, key);
++        }
++        return theme.toString();
++    }
++
++    private static JSONObject parse(String json) throws JSONException {
++        return json == null || json.isEmpty() ? new JSONObject() : new JSONObject(json);
++    }
++
++    private FontStyleConfig() {}
++}
+diff --git a/src/com/android/settings/display/FontStylePreferenceController.java b/src/com/android/settings/display/FontStylePreferenceController.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c9ff1ed623d718c5da080d725ceef687eae38a9
+--- /dev/null
++++ b/src/com/android/settings/display/FontStylePreferenceController.java
+@@ -0,0 +1,57 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import android.content.Context;
++import android.content.om.OverlayInfo;
++import android.content.om.OverlayManager;
++import android.os.UserHandle;
++import android.os.UserManager;
++import android.provider.Settings;
++
++import com.android.settings.R;
++import com.android.settings.core.BasePreferenceController;
++
++public class FontStylePreferenceController extends BasePreferenceController {
++    public FontStylePreferenceController(Context context, String key) {
++        super(context, key);
++    }
++
++    @Override
++    public int getAvailabilityStatus() {
++        if (mContext.getSystemService(UserManager.class).isManagedProfile()) {
++            return DISABLED_FOR_USER;
++        }
++        return hasPresets(mContext) ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++    }
++
++    static boolean hasPresets(Context context) {
++        OverlayManager manager = context.getSystemService(OverlayManager.class);
++        if (manager == null) return false;
++        for (String key : new String[] {
++                FontStyleConfig.CONDENSED, FontStyleConfig.SOURCE, FontStyleConfig.SERIF}) {
++            OverlayInfo info = manager.getOverlayInfo(key, UserHandle.of(context.getUserId()));
++            if (info == null || !"android".equals(info.targetPackageName)
++                    || !FontStyleConfig.CATEGORY.equals(info.category)
++                    || !info.isMutable) return false;
++        }
++        return true;
++    }
++
++    @Override
++    public CharSequence getSummary() {
++        String key = FontStyleConfig.selectedKey(Settings.Secure.getStringForUser(
++                mContext.getContentResolver(), Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
++                mContext.getUserId()));
++        return mContext.getText(titleFor(key));
++    }
++
++    static int titleFor(String key) {
++        if (FontStyleConfig.CUSTOM.equals(key)) return R.string.font_custom_title;
++        if (FontStyleConfig.CONDENSED.equals(key)) return R.string.font_style_condensed;
++        if (FontStyleConfig.SOURCE.equals(key)) return R.string.font_style_source;
++        if (FontStyleConfig.SERIF.equals(key)) return R.string.font_style_serif;
++        return R.string.font_style_default;
++    }
++}
+diff --git a/src/com/android/settings/display/FontStyleSettings.java b/src/com/android/settings/display/FontStyleSettings.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..bfd9b7872b2c7d874c35367be3f474bed0582a63
+--- /dev/null
++++ b/src/com/android/settings/display/FontStyleSettings.java
+@@ -0,0 +1,238 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import android.app.settings.SettingsEnums;
++import android.content.Context;
++import android.content.res.Resources;
++import android.database.ContentObserver;
++import android.graphics.Typeface;
++import android.graphics.drawable.Drawable;
++import android.os.Handler;
++import android.os.Looper;
++import android.provider.Settings;
++import android.util.Log;
++import android.widget.TextView;
++import android.widget.Toast;
++
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++import androidx.preference.PreferenceViewHolder;
++
++import com.android.settings.R;
++import com.android.settings.search.BaseSearchIndexProvider;
++import com.android.settings.widget.RadioButtonPickerFragment;
++import com.android.settingslib.search.SearchIndexable;
++import com.android.settingslib.widget.CandidateInfo;
++import com.android.settingslib.widget.SelectorWithWidgetPreference;
++
++import org.json.JSONException;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/** Previews and switches the platform's installed fonts through its existing theme service. */
++@SearchIndexable
++public class FontStyleSettings extends RadioButtonPickerFragment {
++    private final CustomFontImport mCustomImport = new CustomFontImport(this);
++    private boolean mCustomSelection;
++    private static final String TAG = "FontStyleSettings";
++    private final ContentObserver mThemeObserver = new ContentObserver(
++            new Handler(Looper.getMainLooper())) {
++        @Override
++        public void onChange(boolean selfChange) {
++            if (getPreferenceScreen() != null) updateCheckedState(getDefaultKey());
++        }
++    };
++
++    @Override
++    protected int getPreferenceScreenResId() { return R.xml.font_style_settings; }
++
++    @Override
++    public int getMetricsCategory() { return SettingsEnums.DISPLAY; }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        getContext().getContentResolver().registerContentObserver(
++                Settings.Secure.getUriFor(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES),
++                false, mThemeObserver, mUserId);
++        updateCheckedState(getDefaultKey());
++    }
++
++    @Override
++    public void onPause() {
++        getContext().getContentResolver().unregisterContentObserver(mThemeObserver);
++        super.onPause();
++    }
++
++    @Override
++    protected List<? extends CandidateInfo> getCandidates() {
++        List<FontCandidate> list = new ArrayList<>();
++        // System resources include the immutable product default (e.g. Google Sans on GMS),
++        // but not the mutable font choice, so this preview stays faithful after switching.
++        String defaultFamily = Resources.getSystem().getString(
++                com.android.internal.R.string.config_bodyFontFamily);
++        list.add(new FontCandidate(FontStyleConfig.DEFAULT,
++                defaultFamily.isEmpty() ? "sans-serif" : defaultFamily));
++        list.add(new FontCandidate(FontStyleConfig.CONDENSED, "sans-serif-condensed"));
++        list.add(new FontCandidate(FontStyleConfig.SOURCE, "source-sans-pro"));
++        list.add(new FontCandidate(FontStyleConfig.SERIF, "serif"));
++        android.os.Bundle imported = CustomFontImport.status();
++        if (imported != null && imported.getBoolean("available")) {
++            list.add(new FontCandidate(FontStyleConfig.CUSTOM, "diting-user-custom"));
++        }
++        return list;
++    }
++
++    @Override
++    protected String getDefaultKey() {
++        return FontStyleConfig.selectedKey(Settings.Secure.getStringForUser(
++                getContext().getContentResolver(), Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
++                mUserId));
++    }
++
++    @Override
++    protected boolean setDefaultKey(String key) {
++        if (!FontStyleConfig.isKnownKey(key)) return false;
++        mCustomSelection = FontStyleConfig.CUSTOM.equals(key);
++        if (mCustomSelection) {
++            android.os.Bundle imported = CustomFontImport.status();
++            if (imported == null || !imported.getBoolean("available")) return false;
++        }
++        if (!FontStyleConfig.DEFAULT.equals(key)
++                && !FontStylePreferenceController.hasPresets(getContext())) return false;
++        try {
++            String current = Settings.Secure.getStringForUser(getContext().getContentResolver(),
++                    Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
++            // SystemUI applies this category for the current user, system user and work profiles,
++            // and restores it at boot. Updating the shared JSON keeps wallpaper changes compatible.
++            return Settings.Secure.putStringForUser(getContext().getContentResolver(),
++                    Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
++                    FontStyleConfig.withFont(current, key), mUserId);
++        } catch (JSONException | IllegalArgumentException | SecurityException e) {
++            Log.w(TAG, "Could not change font style", e);
++            return false;
++        }
++    }
++
++    @Override
++    protected void onSelectionPerformed(boolean success) {
++        if (success && mCustomSelection) {
++            new android.app.AlertDialog.Builder(getContext()).setMessage(R.string.font_custom_restart_note)
++                    .setNegativeButton(R.string.font_custom_later, null)
++                    .setPositiveButton(R.string.font_custom_restart, (dialog, which) ->
++                            getContext().getSystemService(android.os.PowerManager.class).reboot(null)).show();
++        }
++        if (!success) Toast.makeText(getContext(), R.string.font_style_apply_error,
++                Toast.LENGTH_LONG).show();
++    }
++
++    @Override
++    protected void addStaticPreferences(PreferenceScreen screen) {
++        Preference restore = new Preference(getPrefContext());
++        restore.setKey("font_style_restore");
++        restore.setTitle(R.string.font_style_restore);
++        restore.setPersistent(false);
++        restore.setOnPreferenceClickListener(pref -> {
++            onRadioButtonConfirmed(FontStyleConfig.DEFAULT);
++            return true;
++        });
++        screen.addPreference(restore);
++        Preference note = new Preference(getPrefContext());
++        note.setKey("font_style_note");
++        note.setTitle(R.string.font_style_note);
++        note.setSelectable(false);
++        screen.addPreference(note);
++        android.os.Bundle imported = CustomFontImport.status();
++        if (imported != null && imported.getBoolean("supported")) {
++            Preference pick = new Preference(getPrefContext());
++            pick.setKey("font_custom_import");
++            pick.setTitle(R.string.font_custom_import);
++            pick.setSummary(R.string.font_custom_supported);
++            pick.setOnPreferenceClickListener(pref -> { mCustomImport.pick(); return true; });
++            screen.addPreference(pick);
++        }
++        if (imported != null && imported.getBoolean("available")) {
++            Preference remove = new Preference(getPrefContext());
++            remove.setKey("font_custom_remove");
++            remove.setTitle(R.string.font_custom_remove);
++            remove.setOnPreferenceClickListener(pref -> { mCustomImport.remove(); return true; });
++            screen.addPreference(remove);
++        }
++    }
++
++    @Override
++    protected SelectorWithWidgetPreference createPreference() {
++        return new FontPreviewPreference(getPrefContext());
++    }
++
++    @Override
++    public void bindPreferenceExtra(SelectorWithWidgetPreference preference, String key,
++            CandidateInfo info, String defaultKey, String systemDefaultKey) {
++        FontCandidate candidate = (FontCandidate) info;
++        ((FontPreviewPreference) preference).mFamily = candidate.family;
++        if (FontStyleConfig.CUSTOM.equals(key)) {
++            ((FontPreviewPreference) preference).mImportedTypeface = CustomFontImport.previewTypeface();
++        }
++        preference.setSingleLineTitle(false);
++        preference.setSummary(getString(R.string.font_style_preview)
++                + "\n" + getString(FontStyleConfig.SERIF.equals(key)
++                        ? R.string.font_style_serif_note : R.string.font_style_latin_note));
++        preference.setPersistent(false);
++    }
++
++    private final class FontCandidate extends CandidateInfo {
++        final String key;
++        final String family;
++        FontCandidate(String key, String family) {
++            super(true);
++            this.key = key;
++            this.family = family;
++        }
++        @Override
++        public CharSequence loadLabel() {
++            if (FontStyleConfig.CUSTOM.equals(key)) {
++                android.os.Bundle imported = CustomFontImport.status();
++                return getString(R.string.font_custom_named, imported == null ? "" : imported.getString("label", ""));
++            }
++            return getContext().getText(FontStylePreferenceController.titleFor(key));
++        }
++        @Override
++        public Drawable loadIcon() { return null; }
++        @Override
++        public String getKey() { return key; }
++    }
++
++    private static final class FontPreviewPreference extends SelectorWithWidgetPreference {
++        Typeface mImportedTypeface;
++        String mFamily = "sans-serif";
++        FontPreviewPreference(Context context) { super(context); }
++        @Override
++        public void onBindViewHolder(PreferenceViewHolder holder) {
++            super.onBindViewHolder(holder);
++            TextView title = (TextView) holder.findViewById(android.R.id.title);
++            TextView sample = (TextView) holder.findViewById(android.R.id.summary);
++            if (title != null) title.setTypeface(mImportedTypeface == null ? Typeface.create(mFamily, Typeface.BOLD) : Typeface.create(mImportedTypeface, Typeface.BOLD));
++            if (sample != null) {
++                sample.setTypeface(mImportedTypeface == null ? Typeface.create(mFamily, Typeface.NORMAL) : mImportedTypeface);
++                sample.setSingleLine(false);
++                sample.setMaxLines(Integer.MAX_VALUE);
++                sample.setEllipsize(null);
++            }
++        }
++    }
++
++    @Override public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
++        super.onActivityResult(requestCode, resultCode, data);
++        if (requestCode == CustomFontImport.REQUEST_FONT) mCustomImport.result(resultCode, data);
++    }
++
++    boolean restoreBeforeRemovingImport() {
++        return !FontStyleConfig.CUSTOM.equals(getDefaultKey()) || setDefaultKey(FontStyleConfig.DEFAULT);
++    }
++
++    public static final BaseSearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
++            new BaseSearchIndexProvider(R.xml.font_style_settings);
++}
+diff --git a/tests/robotests/src/com/android/settings/display/FontStyleConfigTest.java b/tests/robotests/src/com/android/settings/display/FontStyleConfigTest.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..230e66407f5a3bdf39fce5a7dd3b827a804e200e
+--- /dev/null
++++ b/tests/robotests/src/com/android/settings/display/FontStyleConfigTest.java
+@@ -0,0 +1,54 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.display;
++
++import static com.google.common.truth.Truth.assertThat;
++import static org.junit.Assert.assertThrows;
++
++import org.json.JSONException;
++import org.json.JSONObject;
++import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.robolectric.RobolectricTestRunner;
++
++@RunWith(RobolectricTestRunner.class)
++public class FontStyleConfigTest {
++    @Test
++    public void changeFont_keepsColoursIconsAndUnknownFields() throws Exception {
++        String existing = "{\"android.theme.customization.system_palette\":\"abcdef\","
++                + "\"android.theme.customization.adaptive_icon_shape\":\"shape.package\","
++                + "\"future\":{\"nested\":[1,true,\"value\"]}}";
++        JSONObject result = new JSONObject(FontStyleConfig.withFont(existing, FontStyleConfig.SERIF));
++        assertThat(result.getString("android.theme.customization.system_palette")).isEqualTo("abcdef");
++        assertThat(result.getString("android.theme.customization.adaptive_icon_shape")).isEqualTo("shape.package");
++        assertThat(result.getJSONObject("future").getJSONArray("nested").getBoolean(1)).isTrue();
++        assertThat(result.getString(FontStyleConfig.CATEGORY)).isEqualTo(FontStyleConfig.SERIF);
++    }
++
++    @Test
++    public void restoreDefault_removesOnlyFontChoice() throws Exception {
++        String existing = "{\"android.theme.customization.font\":\"other.font\",\"colour\":42}";
++        JSONObject result = new JSONObject(FontStyleConfig.withFont(existing, FontStyleConfig.DEFAULT));
++        assertThat(result.has(FontStyleConfig.CATEGORY)).isFalse();
++        assertThat(result.getInt("colour")).isEqualTo(42);
++    }
++
++    @Test
++    public void malformedTheme_isRejectedInsteadOfDiscardingSettings() {
++        assertThrows(JSONException.class, () -> FontStyleConfig.withFont("{invalid", FontStyleConfig.SOURCE));
++    }
++
++    @Test
++    public void unknownFont_isRejected() {
++        assertThrows(IllegalArgumentException.class, () -> FontStyleConfig.withFont("{}", "foreign.package"));
++    }
++
++    @Test
++    public void emptyThemeAndSavedSelection_areHandled() throws Exception {
++        assertThat(FontStyleConfig.selectedKey(null)).isEqualTo(FontStyleConfig.DEFAULT);
++        assertThat(FontStyleConfig.selectedKey("{invalid")).isEqualTo(FontStyleConfig.DEFAULT);
++        assertThat(FontStyleConfig.selectedKey(FontStyleConfig.withFont("", FontStyleConfig.CONDENSED)))
++                .isEqualTo(FontStyleConfig.CONDENSED);
++    }
++}

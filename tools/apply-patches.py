@@ -10,6 +10,7 @@ import subprocess
 PACKAGE = pathlib.Path(__file__).resolve().parents[1]
 
 def contained(root, relative):
+    root = root.resolve()
     result = (root / relative).resolve()
     if not result.is_relative_to(root) or result == root:
         raise RuntimeError(f'Path outside expected directory: {relative}')
@@ -54,6 +55,26 @@ def main():
             raise RuntimeError(f'Wrong upstream HEAD: {name}')
         if git(project, 'status', '--porcelain'):
             raise RuntimeError(f'Checkout is not clean: {name}')
+    # Ignored files do not appear in git status. Reject every external-file
+    # collision before staging any patches or creating the application marker.
+    via_project = contained(source, via['project'])
+    via_destination = contained(via_project, via['path'])
+    # The pinned upstream APK is intentionally replaced. An unrelated ignored
+    # file or a directory must never be overwritten as a side effect.
+    if via_destination.exists():
+        if not via_destination.is_file() or not git(via_project, 'ls-files', '--', via['path']):
+            raise RuntimeError('Unexpected existing Via input')
+    if not via_destination.parent.is_dir():
+        raise RuntimeError('Via destination parent is not a directory')
+    for item in media:
+        destination = contained(contained(source, item['project']), item['path'])
+        if destination.exists() or destination.is_symlink():
+            raise RuntimeError(f'Unexpected existing media input: {item["path"]}')
+        for parent in destination.parents:
+            if parent == source:
+                break
+            if parent.exists() and not parent.is_dir():
+                raise RuntimeError(f'Media destination parent is not a directory: {parent}')
     marker.write_text('Patches are applied in place. Inspect this marker after any interruption.\n')
     for index, item in enumerate(series['patches'], 1):
         project = contained(source, item['project'])
@@ -61,11 +82,12 @@ def main():
         print(f'[{index}/{len(series["patches"])}] {item["project"]}: {item["patch"]}', flush=True)
         subprocess.run(['git', '-C', str(project), 'apply', '--check', '--index', str(patch)], check=True)
         subprocess.run(['git', '-C', str(project), 'apply', '--index', str(patch)], check=True)
-    destination = contained(contained(source, via['project']), via['path'])
+    via_project = contained(source, via['project'])
+    destination = contained(via_project, via['path'])
     shutil.copyfile(args.via_apk, destination)
     if digest(destination) != via['sha256']:
         raise RuntimeError('Via copied artifact checksum mismatch.')
-    subprocess.run(['git', '-C', str(destination.parent), 'add', '--', destination.name], check=True)
+    subprocess.run(['git', '-C', str(via_project), 'add', '--', via['path']], check=True)
     for item in media:
         supplied = contained(inputs, item['project']+'/'+item['path'])
         project = contained(source, item['project'])

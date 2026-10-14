@@ -1,0 +1,76 @@
+From 84bdf4da3fadcd619422e65147b8733030eef3dd Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 14 Oct 2026 12:08:54 +0800
+Subject: [PATCH] Fix verified review defects without changing frozen releases
+
+---
+ .../development/DevelopmentSettingsDashboardFragment.java        | 1 -
+ .../BluetoothLHDCAudioLatencyDialogPreferenceController.java     | 1 +
+ .../BluetoothLHDCAudioLosslessDialogPreferenceController.java    | 1 +
+ .../BluetoothLHDCAudioLosslessRawDialogPreferenceController.java | 1 +
+ .../BluetoothLHDCQualityDialogPreferenceController.java          | 1 +
+ 5 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+index 9895b5c..6203842 100644
+--- a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
++++ b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+@@ -75,7 +75,6 @@ import com.android.settings.development.bluetooth.BluetoothQualityDialogPreferen
+ import com.android.settings.development.bluetooth.BluetoothLHDCQualityDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothLHDCAudioLatencyDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessDialogPreferenceController;
+-import com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessRawDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothSampleRateDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothStackLogPreferenceController;
+ import com.android.settings.development.desktopexperience.DesktopExperiencePreferenceController;
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+index 96438ee..ab4336f 100755
+--- a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+@@ -79,6 +79,7 @@ public class BluetoothLHDCAudioLatencyDialogPreferenceController extends
+     protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
+         if (config == null) {
+             Log.e(TAG, "Unable to get current config index. Config is null.");
++            return getDefaultIndex();
+         }
+         int index = 0;
+         long codecSpecific2Value = config.getCodecSpecific2();
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+index 49d0db7..15cca74 100755
+--- a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+@@ -93,6 +93,7 @@ public class BluetoothLHDCAudioLosslessDialogPreferenceController extends
+     protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
+         if (config == null) {
+             Log.e(TAG, "Unable to get current config index. Config is null.");
++            return getDefaultIndex();
+         }
+         int index = 0;
+         long codecSpecific3Value = config.getCodecSpecific3();
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+index bc96b6f..9a52744 100755
+--- a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+@@ -96,6 +96,7 @@ public class BluetoothLHDCAudioLosslessRawDialogPreferenceController extends
+     protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
+         if (config == null) {
+             Log.e(TAG, "Unable to get current config index. Config is null.");
++            return getDefaultIndex();
+         }
+         int index = 0;
+         long codecSpecific3Value = config.getCodecSpecific3();
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+index f23a358..693d97c 100755
+--- a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+@@ -131,6 +131,7 @@ public class BluetoothLHDCQualityDialogPreferenceController extends
+     protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
+         if (config == null) {
+             Log.e(TAG, "Unable to get current config index. Config is null.");
++            return getDefaultIndex();
+         }
+         int index = 0;
+         long codecSpecific1Value = config.getCodecSpecific1();
+-- 
+2.34.1
+

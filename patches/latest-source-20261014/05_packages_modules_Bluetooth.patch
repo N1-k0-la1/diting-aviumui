@@ -1,0 +1,77 @@
+diff --git a/framework/java/android/bluetooth/BluetoothCodecConfig.java b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+index c04269149aa700e18e17ec7ae20bce51d9f3cabb..2f266f8232f7e453fd198e24492033988fd943fe 100644
+--- a/framework/java/android/bluetooth/BluetoothCodecConfig.java
++++ b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+@@ -812,17 +812,11 @@ public final class BluetoothCodecConfig implements Parcelable {
+         if (mChannelMode == CHANNEL_MODE_NONE || channelMode == CHANNEL_MODE_NONE) {
+             channelMode = mChannelMode;
+         }
+-        return sameAudioFeedingParameters(
+-                new BluetoothCodecConfig(
+-                        mCodecType, /* priority */
+-                        CODEC_PRIORITY_DEFAULT,
+-                        sampleRate,
+-                        bitsPerSample,
+-                        channelMode,
+-                        /* specific1 */ 0, /* specific2 */
+-                        0, /* specific3 */
+-                        0,
+-                        /* specific4 */ 0));
++        // Codec-specific flags do not describe PCM feeding compatibility.
++        // Comparing a synthetic config with zero flags rejects LHDC/LDAC settings.
++        return sampleRate == mSampleRate
++                && bitsPerSample == mBitsPerSample
++                && channelMode == mChannelMode;
+     }
+ 
+     /**
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+index b8cfa387030400ca50193e581f147ee3236c8ae1..dd0759da073f24b6d0998a6200bdeba339a8df39 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+@@ -2396,7 +2396,7 @@ bool A2dpCodecConfigLhdcV3::setPeerCodecCapabilities(
+   }
+   /*
+     if (peer_info_cie.version > a2dp_lhdc_source_caps.version) {
+-        log::error( " : can't parse peer's capabilities: Missmatch version(%u:%u)",
++        log::error( " : can't parse peer's capabilities: Mismatched version({}:{})",
+                   a2dp_lhdc_source_caps.version, peer_info_cie.version);
+         goto fail;
+     }
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+index fb8239676a74005af5379643d28f25ad00d5c70d..4a48254cd66a7d5af8673590d13daf9842c94c01 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+@@ -504,6 +504,13 @@ bool a2dp_vendor_lhdcv3_decoder_decode_packet(BT_HDR* p_buf) {
+     return false;
+   }
+ 
++  // Reject an inconsistent decoder result before PCM conversion or delivery.
++  if (out_used > sizeof(a2dp_lhdcv3_decoder_cb.decode_buf[dec_buf_idx])
++      || a2dp_lhdcv3_decoder_cb.decode_callback == nullptr) {
++    log::error("Invalid decoded PCM size or missing callback");
++    return false;
++  }
++
+   if (a2dp_lhdcv3_decoder_cb.bits_per_sample == 24) {
+     ptr_src = a2dp_lhdcv3_decoder_cb.decode_buf[dec_buf_idx];
+     ptr_dst = a2dp_lhdcv3_decoder_cb.decode_buf[dec_buf_idx];
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+index f96d89f9ca0ec5f569a01dd0d524ceb4031ea7a3..65dbd8b1c49c3740776848e1091dd92fb268d95c 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+@@ -554,6 +554,14 @@ bool a2dp_vendor_lhdcv5_decoder_decode_packet(BT_HDR* p_buf) {
+     return false;
+   }
+ 
++  // Reject an inconsistent decoder result before PCM conversion or delivery.
++  if (out_used > sizeof(a2dp_lhdcv5_decoder_cb.decode_buf[dec_buf_idx])
++      || a2dp_lhdcv5_decoder_cb.decode_callback == nullptr) {
++    log::error("Invalid decoded PCM size or missing callback");
++    pthread_mutex_unlock(&(a2dp_lhdcv5_decoder_cb.mutex));
++    return false;
++  }
++
+   if (a2dp_lhdcv5_decoder_cb.bits_per_sample == 24) { //PCM_24_BIT_PACKCED
+     ptr_src = a2dp_lhdcv5_decoder_cb.decode_buf[dec_buf_idx];
+     ptr_dst = a2dp_lhdcv5_decoder_cb.decode_buf[dec_buf_idx];

@@ -1,0 +1,13 @@
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 92dcdd0131a4cc3d41ed917389acf7fc7feca611..e1ec25a328f5efa3785f4e9e86c8c7a1f99e1bff 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -909,6 +909,8 @@ on post-fs-data
+     mkdir /data/fonts/ 0771 root root encryption=Require
+     mkdir /data/fonts/files 0771 system system
+     mkdir /data/fonts/config 0770 system system
++    # Local imports are separate from the signed font updater cleanup tree.
++    mkdir /data/fonts/user-custom 0755 system system
+ 
+     # Create directories to push tests to for each linker namespace.
+     # Create the subdirectories in case the first test is run as root

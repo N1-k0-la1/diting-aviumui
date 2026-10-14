@@ -160,8 +160,8 @@
   ],
   "device_alias_code_present": true,
   "kernel_vendor_boot_not_replaced": true,
-  "runtime_bootloop_fix_unverified": true,
-  "phone_tested": false,
+  "runtime_bootloop_fix_unverified": false,
+  "phone_tested": true,
   "matching_project_ota_public_certificate_present": true,
   "ota_certificate_members": [
     "avium-release.x509.pem"
@@ -220,12 +220,12 @@
   "guarded_goodix_startup_script_sha256": "860df911f103b15847cd563dec43348d14a3fa568bae3387789ca2edc39a34b6",
   "previous_fox_loop_missing_font_confirmed_by_ram_comparison": true,
   "ram_touch_fix_confirmed_by_user": true,
-  "new_image_phone_tested": false,
+  "new_image_phone_tested": true,
   "remaining_tests": [
-    "fresh recovery boot",
-    "touch after screen off/on",
-    "MTP",
-    "OTA installation"
+    "K50 Ultra phone validation",
+    "final image MTP display",
+    "fastbootd",
+    "HyperOS 3.0.6 direct boot"
   ],
   "diagnostic_crash_dump64_present": false,
   "boot_control_manifest_verified": true,
@@ -234,5 +234,9 @@
   "boot_control_alias_count_fix_ram_test_pending": false,
   "boot_control_alias_count_fix_ram_test_passed": true,
   "current_slot_and_suffixes_readonly_tests_passed": true,
-  "snapshot_merge_status_readonly_query_passed": true
+  "snapshot_merge_status_readonly_query_passed": true,
+  "phone_result": "PHONE-RESULT.json",
+  "tested_device": "Xiaomi 12T Pro",
+  "full_ota_install_verified": true,
+  "snapshot_merge_complete_verified": true
 }

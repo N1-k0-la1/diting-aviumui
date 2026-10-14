@@ -1,0 +1,24 @@
+From 89ec8b4129042f97a7bc08125def5699f1bbaead Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 14 Oct 2026 12:08:55 +0800
+Subject: [PATCH] Fix verified review defects without changing frozen releases
+
+---
+ BoardConfig.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index e2797c1..3981a8d 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -16,6 +16,7 @@ include vendor/xiaomi/diting/BoardConfigVendor.mk
+ DEVICE_PATH := device/xiaomi/diting
+ 
+ # Match optional ADB root package selection to its client policy.
++TARGET_DISABLE_ADB_ROOT ?= true
+ BOARD_SEPOLICY_M4DEFS += target_disable_adb_root=$(TARGET_DISABLE_ADB_ROOT)
+ 
+ # Audio
+-- 
+2.34.1
+

@@ -1,0 +1,315 @@
+diff --git a/audio-policy-probe/Android.bp b/audio-policy-probe/Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..210bf650cd108b55adab3f0991a62e672dde33f5
+--- /dev/null
++++ b/audio-policy-probe/Android.bp
+@@ -0,0 +1,10 @@
++// Test-only executable: not listed in PRODUCT_PACKAGES.
++cc_binary {
++    name: "diting_lhdc_policy_probe",
++    srcs: ["policy_probe.cpp"],
++    defaults: ["latest_android_media_audio_common_types_cpp_shared"],
++    static_libs: ["libaudiopolicycomponents"],
++    shared_libs: ["libaudiofoundation", "libaudiopolicy", "libmedia", "libmedia_helper",
++                  "libutils", "liblog", "libbase", "libxml2"],
++    cflags: ["-Wall", "-Werror"],
++}
+diff --git a/audio-policy-probe/policy_probe.cpp b/audio-policy-probe/policy_probe.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..9b9e706de0585b212b341edaa34fe74defd87bd3
+--- /dev/null
++++ b/audio-policy-probe/policy_probe.cpp
+@@ -0,0 +1,47 @@
++#include <AudioPolicyConfig.h>
++#include <IOProfile.h>
++#include <cstdio>
++#include <cstring>
++
++int main(int argc, char** argv) {
++    if (argc != 3) return 2;
++    const auto result = android::AudioPolicyConfig::loadFromCustomXmlConfigForTests(argv[1]);
++    if (!result.ok()) { std::puts("PARSE_FAILED"); return 3; }
++    const auto& modules = result.value()->getHwModules();
++    std::printf("parsed_modules=%zu\n", modules.size());
++    audio_module_handle_t nextHandle = 1;
++    for (const auto& module : modules) {
++        module->setHandle(nextHandle++);
++        std::printf("parsed_module=%s profiles=%zu devices=%zu\n", module->getName(),
++            module->getOutputProfiles().size(), module->getDeclaredDevices().size());
++        for (const auto& profile : module->getOutputProfiles()) {
++            std::printf("profile=%s supported=%zu\n", profile->getName().c_str(),
++                profile->getSupportedDevices().size());
++        }
++    }
++    const audio_devices_t types[] = {AUDIO_DEVICE_OUT_BLUETOOTH_A2DP,
++        AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES, AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER};
++    const audio_format_t formats[] = {AUDIO_FORMAT_SBC, AUDIO_FORMAT_AAC, AUDIO_FORMAT_APTX,
++        AUDIO_FORMAT_APTX_HD, AUDIO_FORMAT_LDAC, AUDIO_FORMAT_LHDC};
++    int failures = 0;
++    for (const auto type : types) {
++        for (const auto format : formats) {
++            // Match AudioPolicyManager's connection entry: choose a declared device
++            // by encoded format, then attach it and establish its current encoding.
++            const auto descriptor = modules.getDeviceDescriptor(type, "", "policy-test", format, true);
++            const auto module = descriptor ? modules.getModuleFromHandle(descriptor->getModuleHandle()) : nullptr;
++            const char* actual = module ? module->getName() : "none";
++            const char* expected = format == AUDIO_FORMAT_LHDC ? argv[2] : "primary";
++            const bool ok = std::strcmp(actual, expected) == 0;
++            std::printf("device=%#x format=%#x module=%s expected=%s %s\n",
++                type, format, actual, expected, ok ? "PASS" : "FAIL");
++            failures += !ok;
++        }
++    }
++    const auto speakerDescriptor = modules.getDeviceDescriptor(AUDIO_DEVICE_OUT_SPEAKER, "", "speaker-test",
++        AUDIO_FORMAT_DEFAULT, true);
++    const auto speaker = speakerDescriptor ? modules.getModuleFromHandle(speakerDescriptor->getModuleHandle()) : nullptr;
++    if (!speaker || std::strcmp(speaker->getName(), "primary") != 0) ++failures;
++    std::printf("speaker_primary=%s\n", failures == 0 ? "PASS" : "FAIL");
++    return failures == 0 ? 0 : 1;
++}
+diff --git a/audio/bluetooth_lhdc_audio_policy_configuration.xml b/audio/bluetooth_lhdc_audio_policy_configuration.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..288d4f9a2b50d148ec2fc07cd6c6876c6dde87f9
+--- /dev/null
++++ b/audio/bluetooth_lhdc_audio_policy_configuration.xml
+@@ -0,0 +1,35 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!-- LHDC uses the existing AOSP Bluetooth software HAL, not Qualcomm DSP offload. -->
++<module name="bluetooth" halVersion="2.0">
++    <mixPorts>
++        <mixPort name="a2dp output" role="source"/>
++    </mixPorts>
++    <devicePorts>
++        <devicePort tagName="BT A2DP Out" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP"
++                    role="sink" encodedFormats="AUDIO_FORMAT_LHDC">
++            <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++            <profile name="" format="AUDIO_FORMAT_PCM_24_BIT_PACKED"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++        </devicePort>
++        <devicePort tagName="BT A2DP Headphones" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES"
++                    role="sink" encodedFormats="AUDIO_FORMAT_LHDC">
++            <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++            <profile name="" format="AUDIO_FORMAT_PCM_24_BIT_PACKED"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++        </devicePort>
++        <devicePort tagName="BT A2DP Speaker" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER"
++                    role="sink" encodedFormats="AUDIO_FORMAT_LHDC">
++            <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++            <profile name="" format="AUDIO_FORMAT_PCM_24_BIT_PACKED"
++                     samplingRates="44100 48000 96000 192000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
++        </devicePort>
++    </devicePorts>
++    <routes>
++        <route type="mix" sink="BT A2DP Out" sources="a2dp output"/>
++        <route type="mix" sink="BT A2DP Headphones" sources="a2dp output"/>
++        <route type="mix" sink="BT A2DP Speaker" sources="a2dp output"/>
++    </routes>
++</module>
+diff --git a/common.mk b/common.mk
+index 7b54dea2a6df5345e229092250af19c01db98aeb..1a0d4d541a249eccd37430725ef0efb702213c00 100644
+--- a/common.mk
++++ b/common.mk
+@@ -502,3 +502,10 @@ PRODUCT_PACKAGES += \
+ ifeq ($(TARGET_DITING_DOLBY_VISION),true)
+ $(call inherit-product, vendor/xiaomi/sm8450-common/dolby-vision/vision.mk)
+ endif
++
++# Optional system font presets; keep the stock font when no overlay is enabled.
++PRODUCT_PACKAGES += \
++    SystemFontCustomOverlay \
++    SystemFontCondensedOverlay \
++    SystemFontSourceSansProOverlay \
++    SystemFontNotoSerifOverlay
+diff --git a/font-overlays/Condensed/Android.bp b/font-overlays/Condensed/Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..b4bce44b1b3f6be6d73c9f4b0957276de2a56b06
+--- /dev/null
++++ b/font-overlays/Condensed/Android.bp
+@@ -0,0 +1,9 @@
++// Copyright (C) 2026 diting AviumUI contributors
++// SPDX-License-Identifier: Apache-2.0
++runtime_resource_overlay {
++    name: "SystemFontCondensedOverlay",
++    product_specific: true,
++    sdk_version: "current",
++    certificate: "platform",
++    theme: "SystemFontCondensed",
++}
+diff --git a/font-overlays/Condensed/AndroidManifest.xml b/font-overlays/Condensed/AndroidManifest.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..4bf662c4053d49edbb0a931eb7d6e0cd2869093c
+--- /dev/null
++++ b/font-overlays/Condensed/AndroidManifest.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.android.theme.font.condensed"
++    android:versionCode="1" android:versionName="1.0">
++    <overlay android:targetPackage="android"
++        android:category="android.theme.customization.font" android:priority="1" />
++    <application android:label="Condensed" android:hasCode="false">
++        <meta-data android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
++            android:value="sans-serif-condensed" />
++    </application>
++</manifest>
+diff --git a/font-overlays/Condensed/res/values/config.xml b/font-overlays/Condensed/res/values/config.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..f997024743754532d2801dfd3a2c21d2d59d1261
+--- /dev/null
++++ b/font-overlays/Condensed/res/values/config.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="config_bodyFontFamily" translatable="false">sans-serif-condensed</string>
++    <string name="config_bodyFontFamilyMedium" translatable="false">sans-serif-condensed-medium</string>
++    <string name="config_headlineFontFamily" translatable="false">sans-serif-condensed</string>
++    <string name="config_headlineFontFamilyMedium" translatable="false">sans-serif-condensed-medium</string>
++    <string name="config_clockFontFamily" translatable="false">sans-serif-condensed</string>
++</resources>
+diff --git a/font-overlays/Custom/Android.bp b/font-overlays/Custom/Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..50d0aecbe6147c5ac644e0177aa91db6c8f55b83
+--- /dev/null
++++ b/font-overlays/Custom/Android.bp
+@@ -0,0 +1,7 @@
++runtime_resource_overlay {
++    name: "SystemFontCustomOverlay",
++    product_specific: true,
++    sdk_version: "current",
++    certificate: "platform",
++    theme: "SystemFontCustom",
++}
+diff --git a/font-overlays/Custom/AndroidManifest.xml b/font-overlays/Custom/AndroidManifest.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..fb6650874102438e390accc00e631d1226465796
+--- /dev/null
++++ b/font-overlays/Custom/AndroidManifest.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.android.theme.font.custom"
++    android:versionCode="1" android:versionName="1.0">
++    <overlay android:targetPackage="android"
++        android:category="android.theme.customization.font" android:priority="1" />
++    <application android:label="SourceSansPro" android:hasCode="false">
++        <meta-data android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
++            android:value="source-sans-pro" />
++    </application>
++</manifest>
+diff --git a/font-overlays/Custom/res/values/config.xml b/font-overlays/Custom/res/values/config.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..8b256988b7b1e8b0967abebc96bc473486b45394
+--- /dev/null
++++ b/font-overlays/Custom/res/values/config.xml
+@@ -0,0 +1,8 @@
++<?xml version='1.0' encoding='utf-8'?>
++<resources>
++  <string name="config_bodyFontFamily" translatable="false">diting-user-custom</string>
++  <string name="config_bodyFontFamilyMedium" translatable="false">diting-user-custom</string>
++  <string name="config_headlineFontFamily" translatable="false">diting-user-custom</string>
++  <string name="config_headlineFontFamilyMedium" translatable="false">diting-user-custom</string>
++  <string name="config_clockFontFamily" translatable="false">diting-user-custom</string>
++</resources>
+\ No newline at end of file
+diff --git a/font-overlays/NotoSerif/Android.bp b/font-overlays/NotoSerif/Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d286a0c03fbac94a34bd73b6f5a0b28649922d3
+--- /dev/null
++++ b/font-overlays/NotoSerif/Android.bp
+@@ -0,0 +1,9 @@
++// Copyright (C) 2026 diting AviumUI contributors
++// SPDX-License-Identifier: Apache-2.0
++runtime_resource_overlay {
++    name: "SystemFontNotoSerifOverlay",
++    product_specific: true,
++    sdk_version: "current",
++    certificate: "platform",
++    theme: "SystemFontNotoSerif",
++}
+diff --git a/font-overlays/NotoSerif/AndroidManifest.xml b/font-overlays/NotoSerif/AndroidManifest.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..b263a3eee2f9417e409056afae48ea8e10ed86bf
+--- /dev/null
++++ b/font-overlays/NotoSerif/AndroidManifest.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.android.theme.font.notoserif"
++    android:versionCode="1" android:versionName="1.0">
++    <overlay android:targetPackage="android"
++        android:category="android.theme.customization.font" android:priority="1" />
++    <application android:label="NotoSerif" android:hasCode="false">
++        <meta-data android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
++            android:value="serif" />
++    </application>
++</manifest>
+diff --git a/font-overlays/NotoSerif/res/values/config.xml b/font-overlays/NotoSerif/res/values/config.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..b59548bd4e5365d5467209a713c432575929da55
+--- /dev/null
++++ b/font-overlays/NotoSerif/res/values/config.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="config_bodyFontFamily" translatable="false">serif</string>
++    <string name="config_bodyFontFamilyMedium" translatable="false">serif-bold</string>
++    <string name="config_headlineFontFamily" translatable="false">serif</string>
++    <string name="config_headlineFontFamilyMedium" translatable="false">serif-bold</string>
++    <string name="config_clockFontFamily" translatable="false">serif</string>
++</resources>
+diff --git a/font-overlays/SourceSansPro/Android.bp b/font-overlays/SourceSansPro/Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..3b69d17c755a48dc5e951bceafd62c52f37321a6
+--- /dev/null
++++ b/font-overlays/SourceSansPro/Android.bp
+@@ -0,0 +1,9 @@
++// Copyright (C) 2026 diting AviumUI contributors
++// SPDX-License-Identifier: Apache-2.0
++runtime_resource_overlay {
++    name: "SystemFontSourceSansProOverlay",
++    product_specific: true,
++    sdk_version: "current",
++    certificate: "platform",
++    theme: "SystemFontSourceSansPro",
++}
+diff --git a/font-overlays/SourceSansPro/AndroidManifest.xml b/font-overlays/SourceSansPro/AndroidManifest.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..4132f1e56769d3ee1ca0782d27d4efc8440818db
+--- /dev/null
++++ b/font-overlays/SourceSansPro/AndroidManifest.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.android.theme.font.sourcesanspro"
++    android:versionCode="1" android:versionName="1.0">
++    <overlay android:targetPackage="android"
++        android:category="android.theme.customization.font" android:priority="1" />
++    <application android:label="SourceSansPro" android:hasCode="false">
++        <meta-data android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
++            android:value="source-sans-pro" />
++    </application>
++</manifest>
+diff --git a/font-overlays/SourceSansPro/res/values/config.xml b/font-overlays/SourceSansPro/res/values/config.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..7137bcab8fed2001b6f3eeaa03a1779b98c45f72
+--- /dev/null
++++ b/font-overlays/SourceSansPro/res/values/config.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 diting AviumUI contributors; SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="config_bodyFontFamily" translatable="false">source-sans-pro</string>
++    <string name="config_bodyFontFamilyMedium" translatable="false">source-sans-pro-semi-bold</string>
++    <string name="config_headlineFontFamily" translatable="false">source-sans-pro</string>
++    <string name="config_headlineFontFamilyMedium" translatable="false">source-sans-pro-semi-bold</string>
++    <string name="config_clockFontFamily" translatable="false">source-sans-pro</string>
++</resources>

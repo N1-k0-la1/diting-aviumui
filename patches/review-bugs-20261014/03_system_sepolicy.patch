@@ -1,0 +1,30 @@
+From 8c1bfc2df4fdcb66fce4f1713a4cdf3877eae177 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 14 Oct 2026 12:08:54 +0800
+Subject: [PATCH] Fix verified review defects without changing frozen releases
+
+---
+ private/rom_configuration.te | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/private/rom_configuration.te b/private/rom_configuration.te
+index 546d784..439cb0c 100644
+--- a/private/rom_configuration.te
++++ b/private/rom_configuration.te
+@@ -6,11 +6,13 @@ allow {
+   appdomain coredomain
+   -ephemeral_app
+   -isolated_app
++  -isolated_app_all
+   -isolated_compute_app
+   -mediaprovider
+   -mediaprovider_app
+   -runas_app
+   -untrusted_app
++  -untrusted_app_all
+   -untrusted_app_25
+   -untrusted_app_27
+   -untrusted_app_29
+-- 
+2.34.1
+

@@ -1,0 +1,591 @@
+diff --git a/core/java/com/android/internal/graphics/fonts/CustomFontFileValidator.java b/core/java/com/android/internal/graphics/fonts/CustomFontFileValidator.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..71dc6ecd12600c6184f30c2d7dc7dece3cb27817
+--- /dev/null
++++ b/core/java/com/android/internal/graphics/fonts/CustomFontFileValidator.java
+@@ -0,0 +1,95 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.internal.graphics.fonts;
++
++import java.io.File;
++import java.io.IOException;
++import java.io.RandomAccessFile;
++import java.util.HashMap;
++import java.util.Map;
++
++/** Conservative validation for explicitly selected, single-face static SFNT files. @hide */
++public final class CustomFontFileValidator {
++    public static final long MAX_BYTES = 64L * 1024 * 1024;
++
++    public static final class Info {
++        public final int weight;
++        public final boolean italic;
++        Info(int weight, boolean italic) {
++            this.weight = weight;
++            this.italic = italic;
++        }
++    }
++
++    public static Info validate(File file) throws IOException {
++        try (RandomAccessFile input = new RandomAccessFile(file, "r")) {
++            long size = input.length();
++            if (size < 12 || size > MAX_BYTES) throw new IOException("Invalid font size");
++            int version = input.readInt();
++            if (version != 0x00010000 && version != 0x4f54544f) {
++                throw new IOException("Only single-face TTF or OTF is supported");
++            }
++            int count = input.readUnsignedShort();
++            long directoryEnd = 12L + count * 16L;
++            if (count == 0 || count > 256 || directoryEnd > size) {
++                throw new IOException("Invalid font table directory");
++            }
++            input.seek(12);
++            Map<Integer, long[]> tables = new HashMap<>();
++            for (int i = 0; i < count; i++) {
++                int tag = input.readInt();
++                input.readInt(); // Table checksum; renderability is also checked by the UI.
++                long offset = Integer.toUnsignedLong(input.readInt());
++                long length = Integer.toUnsignedLong(input.readInt());
++                if (offset < directoryEnd || offset > size || length > size - offset
++                        || (offset & 3) != 0 || tables.put(tag, new long[] {offset, length}) != null) {
++                    throw new IOException("Invalid or duplicate font table");
++                }
++            }
++            if (tables.containsKey(tag("fvar")) || tables.containsKey(tag("CFF2"))) {
++                throw new IOException("Variable fonts are not supported in this version");
++            }
++            long[] head = require(tables, "head", 54);
++            long[] maxp = require(tables, "maxp", 6);
++            require(tables, "cmap", 4);
++            require(tables, "name", 6);
++            require(tables, "hhea", 36);
++            require(tables, "hmtx", 2);
++            if (version == 0x00010000) {
++                require(tables, "glyf", 1);
++                require(tables, "loca", 2);
++            } else {
++                require(tables, "CFF ", 4);
++            }
++            input.seek(head[0] + 12);
++            if (input.readInt() != 0x5f0f3cf5) throw new IOException("Invalid font header");
++            input.seek(head[0] + 18);
++            int units = input.readUnsignedShort();
++            if (units < 16 || units > 16384) throw new IOException("Invalid font units");
++            input.seek(maxp[0] + 4);
++            if (input.readUnsignedShort() == 0) throw new IOException("Font has no glyphs");
++            long[] os2 = require(tables, "OS/2", 64);
++            input.seek(os2[0] + 4);
++            int weight = input.readUnsignedShort();
++            if (weight < 1 || weight > 1000) throw new IOException("Invalid font weight");
++            input.seek(os2[0] + 62);
++            int selection = input.readUnsignedShort();
++            return new Info(weight, (selection & 0x201) != 0);
++        }
++    }
++
++    private static long[] require(Map<Integer, long[]> tables, String name, long minimum)
++            throws IOException {
++        long[] table = tables.get(tag(name));
++        if (table == null || table[1] < minimum) throw new IOException("Missing font table " + name);
++        return table;
++    }
++
++    private static int tag(String name) {
++        return name.charAt(0) << 24 | name.charAt(1) << 16
++                | name.charAt(2) << 8 | name.charAt(3);
++    }
++
++    private CustomFontFileValidator() {}
++}
+diff --git a/core/java/com/android/internal/graphics/fonts/IFontManager.aidl b/core/java/com/android/internal/graphics/fonts/IFontManager.aidl
+index 512ace6145c6e37b94d27606e7592dfb957d532d..7dc0f4ffc66b9996dc5f76cdc6d1926e173d85ab 100644
+--- a/core/java/com/android/internal/graphics/fonts/IFontManager.aidl
++++ b/core/java/com/android/internal/graphics/fonts/IFontManager.aidl
+@@ -17,6 +17,7 @@
+ package com.android.internal.graphics.fonts;
+ 
+ import android.os.ParcelFileDescriptor;
++import android.os.Bundle;
+ import android.graphics.fonts.FontUpdateRequest;
+ import android.text.FontConfig;
+ 
+@@ -32,4 +33,13 @@ interface IFontManager {
+     FontConfig getFontConfig();
+ 
+     int updateFontFamily(in List<FontUpdateRequest> request, int baseVersion);
++
++    @EnforcePermission("UPDATE_FONTS")
++    Bundle getUserCustomFontStatus();
++    @EnforcePermission("UPDATE_FONTS")
++    void installUserCustomFont(in ParcelFileDescriptor font, String label);
++    @EnforcePermission("UPDATE_FONTS")
++    ParcelFileDescriptor openUserCustomFont();
++    @EnforcePermission("UPDATE_FONTS")
++    void removeUserCustomFont();
+ }
+diff --git a/data/etc/com.android.settings.xml b/data/etc/com.android.settings.xml
+index 1e0e221f786f62432b36042f6f5fe81c702958ab..cc7971d3b3b32f6b651d7fb17564beb26f78d4f3 100644
+--- a/data/etc/com.android.settings.xml
++++ b/data/etc/com.android.settings.xml
+@@ -53,6 +53,7 @@
+         <permission name="android.permission.STATUS_BAR"/>
+         <permission name="android.permission.SUGGEST_MANUAL_TIME_AND_ZONE"/>
+         <permission name="android.permission.TETHER_PRIVILEGED"/>
++        <permission name="android.permission.UPDATE_FONTS"/>
+         <permission name="android.permission.USE_RESERVED_DISK"/>
+         <permission name="android.permission.USER_ACTIVITY"/>
+         <permission name="android.permission.WRITE_APN_SETTINGS"/>
+diff --git a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+index 47f73f1b819a404cf42305e061d64b23d37ce7dc..44735e40675aec54529fd7c33f1b756fb0e1abf6 100644
+--- a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
++++ b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+@@ -101,6 +101,82 @@ public final class FontManagerService extends IFontManager.Stub {
+         }
+     }
+ 
++    private void enforcePrimaryUserFontCaller() {
++        if (android.os.UserHandle.getCallingUserId() != android.os.UserHandle.USER_SYSTEM) {
++            throw new SecurityException("Custom font imports are limited to the device owner user");
++        }
++    }
++
++    @android.annotation.EnforcePermission(android.Manifest.permission.UPDATE_FONTS)
++    @Override public android.os.Bundle getUserCustomFontStatus() {
++        super.getUserCustomFontStatus_enforcePermission();
++        enforcePrimaryUserFontCaller();
++        return mUserCustomFonts.status();
++    }
++
++    @android.annotation.EnforcePermission(android.Manifest.permission.UPDATE_FONTS)
++    @Override public void installUserCustomFont(ParcelFileDescriptor font, String label) {
++        super.installUserCustomFont_enforcePermission();
++        enforcePrimaryUserFontCaller();
++        final long identity = android.os.Binder.clearCallingIdentity();
++        // Keep snapshot, publication and rollback in one transaction.
++        synchronized (mUserCustomFonts) {
++            final org.json.JSONObject previousImport = mUserCustomFonts.snapshotImported();
++            try {
++                // Validate the shared theme JSON before staging any state. Keep all other fields.
++                String current = android.provider.Settings.Secure.getStringForUser(mContext.getContentResolver(),
++                        android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, 0);
++                org.json.JSONObject theme = current == null || current.isEmpty()
++                        ? new org.json.JSONObject() : new org.json.JSONObject(current);
++                theme.put("android.theme.customization.font", "com.android.theme.font.custom");
++                mUserCustomFonts.install(font, label);
++                if (!android.provider.Settings.Secure.putStringForUser(mContext.getContentResolver(),
++                        android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, theme.toString(), 0)) {
++                    throw new IOException("Could not save the font selection");
++                }
++            } catch (Exception e) {
++                Slog.w(TAG, "Could not import user custom font", e);
++                try { mUserCustomFonts.restoreImported(previousImport); }
++                catch (IOException rollbackError) { Slog.w(TAG, "Could not restore imported font metadata", rollbackError); }
++                throw new android.os.ServiceSpecificException(1, "Custom font could not be imported");
++            } finally {
++                android.os.Binder.restoreCallingIdentity(identity);
++                if (font != null) try { font.close(); } catch (IOException ignored) { }
++            }
++        }
++    }
++
++    @android.annotation.EnforcePermission(android.Manifest.permission.UPDATE_FONTS)
++    @Override public ParcelFileDescriptor openUserCustomFont() {
++        super.openUserCustomFont_enforcePermission();
++        enforcePrimaryUserFontCaller();
++        try { return mUserCustomFonts.openPreview(); }
++        catch (IOException e) { throw new android.os.ServiceSpecificException(1, "No custom font preview"); }
++    }
++
++    @android.annotation.EnforcePermission(android.Manifest.permission.UPDATE_FONTS)
++    @Override public void removeUserCustomFont() {
++        super.removeUserCustomFont_enforcePermission();
++        enforcePrimaryUserFontCaller();
++        mUserCustomFonts.remove();
++    }
++
++    private void onUserFontBootCompleted() {
++        mUserCustomFonts.onBootCompleted();
++        if (mUserCustomFonts.status().getBoolean("available")) return;
++        try {
++            String current = android.provider.Settings.Secure.getStringForUser(mContext.getContentResolver(),
++                    android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, 0);
++            if (current == null) return;
++            org.json.JSONObject theme = new org.json.JSONObject(current);
++            if ("com.android.theme.font.custom".equals(theme.optString("android.theme.customization.font"))) {
++                theme.remove("android.theme.customization.font");
++                android.provider.Settings.Secure.putStringForUser(mContext.getContentResolver(),
++                        android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, theme.toString(), 0);
++            }
++        } catch (Exception e) { Slog.w(TAG, "Could not restore the default font selection", e); }
++    }
++
+     private static void closeFileDescriptors(@Nullable List<FontUpdateRequest> requests) {
+         // Make sure we close every passed FD, even if 'requests' is constructed incorrectly and
+         // some fields are null.
+@@ -165,6 +241,7 @@ public final class FontManagerService extends IFontManager.Stub {
+ 
+         @Override
+         public void onBootPhase(int phase) {
++            if (phase == PHASE_BOOT_COMPLETED) mService.onUserFontBootCompleted();
+             final int latestFontLoadBootPhase =
+                     (Flags.completeFontLoadInSystemServicesReady())
+                             // Complete font load in the phase before PHASE_SYSTEM_SERVICES_READY
+@@ -220,6 +297,7 @@ public final class FontManagerService extends IFontManager.Stub {
+     private final Context mContext;
+ 
+     private final boolean mIsSafeMode;
++    private final UserCustomFontStore mUserCustomFonts;
+ 
+     private final Object mUpdatableFontDirLock = new Object();
+ 
+@@ -245,6 +323,7 @@ public final class FontManagerService extends IFontManager.Stub {
+         }
+         mContext = context;
+         mIsSafeMode = safeMode;
++        mUserCustomFonts = new UserCustomFontStore(safeMode);
+ 
+         if (Flags.useOptimizedBoottimeFontLoading()) {
+             Slog.i(TAG, "Using optimized boot-time font loading.");
+@@ -255,7 +334,7 @@ public final class FontManagerService extends IFontManager.Stub {
+                 // If there is no updatable font directory, `initialize` will have already loaded
+                 // the system font map, so there's no need to set the system font map again here.
+                 synchronized (mUpdatableFontDirLock) {
+-                    if  (mUpdatableFontDir != null) {
++                    if  (mUpdatableFontDir != null || mUserCustomFonts.hasLoadedFont()) {
+                         setSystemFontMap();
+                     }
+                 }
+@@ -310,7 +389,7 @@ public final class FontManagerService extends IFontManager.Stub {
+     private void initialize() {
+         synchronized (mUpdatableFontDirLock) {
+             mUpdatableFontDir = createUpdatableFontDir();
+-            if (mUpdatableFontDir == null) {
++            if (mUpdatableFontDir == null && !mUserCustomFonts.hasLoadedFont()) {
+                 if (Flags.useOptimizedBoottimeFontLoading()) {
+                     // If fs-verity is not supported, load preinstalled system font map and use it
+                     // for all apps.
+@@ -319,7 +398,7 @@ public final class FontManagerService extends IFontManager.Stub {
+                 setSerializedFontMap(serializeSystemServerFontMap());
+                 return;
+             }
+-            mUpdatableFontDir.loadFontFileMap();
++            if (mUpdatableFontDir != null) mUpdatableFontDir.loadFontFileMap();
+             updateSerializedFontMap();
+         }
+     }
+@@ -408,9 +487,9 @@ public final class FontManagerService extends IFontManager.Stub {
+     public @NonNull FontConfig getSystemFontConfig() {
+         synchronized (mUpdatableFontDirLock) {
+             if (mUpdatableFontDir == null) {
+-                return SystemFonts.getSystemPreinstalledFontConfig();
++                return mUserCustomFonts.decorate(SystemFonts.getSystemPreinstalledFontConfig());
+             }
+-            return mUpdatableFontDir.getSystemFontConfig();
++            return mUserCustomFonts.decorate(mUpdatableFontDir.getSystemFontConfig());
+         }
+     }
+ 
+@@ -419,6 +498,10 @@ public final class FontManagerService extends IFontManager.Stub {
+      */
+     private void updateSerializedFontMap() {
+         SharedMemory serializedFontMap = serializeFontMap(getSystemFontConfig());
++        if (serializedFontMap == null && mUserCustomFonts.hasLoadedFont()) {
++            mUserCustomFonts.rejectLoadedFont();
++            serializedFontMap = serializeFontMap(getSystemFontConfig());
++        }
+         if (serializedFontMap == null) {
+             // Fallback to the preloaded config.
+             serializedFontMap = serializeSystemServerFontMap();
+@@ -435,7 +518,7 @@ public final class FontManagerService extends IFontManager.Stub {
+             final Map<String, Typeface> typefaceMap =
+                     SystemFonts.buildSystemTypefaces(fontConfig, fallback);
+             return Typeface.serializeFontMap(typefaceMap);
+-        } catch (IOException | ErrnoException e) {
++        } catch (IOException | ErrnoException | RuntimeException e) {
+             Slog.w(TAG, "Failed to serialize updatable font map. "
+                     + "Retrying with system image fonts.", e);
+             return null;
+diff --git a/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..425e3549575d25bd598064b3dd979979ab295173
+--- /dev/null
++++ b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+@@ -0,0 +1,276 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.server.graphics.fonts;
++
++import android.content.res.Resources;
++import android.graphics.fonts.FontStyle;
++import android.os.Bundle;
++import android.os.LocaleList;
++import android.os.ParcelFileDescriptor;
++import android.system.Os;
++import android.system.OsConstants;
++import android.text.FontConfig;
++import android.util.AtomicFile;
++import android.util.Slog;
++
++import com.android.internal.graphics.fonts.CustomFontFileValidator;
++import com.android.internal.security.VerityUtils;
++
++import org.json.JSONObject;
++
++import java.io.File;
++import java.io.FileInputStream;
++import java.io.FileOutputStream;
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.security.MessageDigest;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.List;
++
++/** Separate manual-import slot; never changes the signed-provider font update trust rules. */
++final class UserCustomFontStore {
++    private static final String TAG = "UserCustomFontStore";
++    static final String FAMILY = "diting-user-custom";
++    // Keep manual imports outside UpdatableFontDir's exclusively managed tree.
++    private final File mDirectory = new File("/data/fonts/user-custom");
++    private final AtomicFile mMetadata = new AtomicFile(new File("/data/fonts/config/user-custom.json"));
++    private final AtomicFile mBootMarker = new AtomicFile(new File("/data/fonts/config/user-custom-boot.json"));
++    private JSONObject mImported;
++    private JSONObject mLoaded;
++    private boolean mRejectedAtBoot;
++    private final boolean mSafeMode;
++
++    UserCustomFontStore(boolean safeMode) {
++        mSafeMode = safeMode;
++        mImported = readMetadata();
++        if (safeMode || mImported == null) return;
++        // A previous incomplete boot must not retry a font that may have caused it.
++        // Conservatively quarantine on any incomplete boot, even a power interruption.
++        if (mBootMarker.getBaseFile().exists()) {
++            mRejectedAtBoot = true;
++            mImported = null;
++            mMetadata.delete();
++            mBootMarker.delete();
++            Slog.w(TAG, "Custom font skipped after an incomplete boot");
++            return;
++        }
++        try {
++            File font = fileFor(mImported);
++            if (!VerityUtils.hasFsverity(font.getAbsolutePath())
++                    || !digest(font).equals(mImported.getString("digest"))) {
++                throw new IOException("Custom font integrity mismatch");
++            }
++            CustomFontFileValidator.Info info = CustomFontFileValidator.validate(font);
++            if (info.weight != mImported.getInt("weight")
++                    || info.italic != mImported.getBoolean("italic")) {
++                throw new IOException("Font style metadata mismatch");
++            }
++            write(mBootMarker, mImported);
++            mLoaded = mImported;
++        } catch (Exception e) {
++            mRejectedAtBoot = true;
++            mImported = null;
++            mMetadata.delete();
++            Slog.w(TAG, "Custom font unavailable; using the system fallback", e);
++        }
++    }
++
++    synchronized Bundle status() {
++        Bundle status = new Bundle();
++        status.putBoolean("supported", !mSafeMode && VerityUtils.isFsVeritySupported());
++        status.putBoolean("available", mImported != null);
++        status.putBoolean("rejectedAtBoot", mRejectedAtBoot);
++        if (mImported != null) {
++            status.putString("label", mImported.optString("label"));
++            status.putBoolean("pendingReboot", mLoaded == null
++                    || !mImported.optString("digest").equals(mLoaded.optString("digest")));
++        }
++        return status;
++    }
++
++    synchronized void install(ParcelFileDescriptor descriptor, String label) throws IOException {
++        if (mSafeMode || !VerityUtils.isFsVeritySupported()) throw new IOException("Font import unavailable");
++        if (descriptor == null) throw new IOException("No font selected");
++        try {
++            android.system.StructStat stat = Os.fstat(descriptor.getFileDescriptor());
++            if (!OsConstants.S_ISREG(stat.st_mode) || stat.st_size <= 0
++                    || stat.st_size > CustomFontFileValidator.MAX_BYTES) {
++                throw new IOException("A bounded, staged font file is required");
++            }
++            Os.lseek(descriptor.getFileDescriptor(), 0, OsConstants.SEEK_SET);
++        } catch (android.system.ErrnoException e) { throw new IOException(e); }
++        if (!mDirectory.isDirectory() && !mDirectory.mkdirs()) throw new IOException("Cannot stage font");
++        File[] retained = mDirectory.listFiles((dir, name) -> name.matches("[0-9a-f]{64}\\.font"));
++        if (retained != null && retained.length >= 4) {
++            throw new IOException("Restart before importing more fonts");
++        }
++        File temporary = File.createTempFile("staged-", ".font", mDirectory);
++        try {
++            Os.chmod(mDirectory.getAbsolutePath(), 0755);
++            try (ParcelFileDescriptor inputFd = ParcelFileDescriptor.dup(descriptor.getFileDescriptor());
++                    FileInputStream input = new FileInputStream(inputFd.getFileDescriptor());
++                    FileOutputStream output = new FileOutputStream(temporary)) {
++                byte[] buffer = new byte[16384];
++                long size = 0;
++                int count;
++                while ((count = input.read(buffer)) != -1) {
++                    size += count;
++                    if (size > CustomFontFileValidator.MAX_BYTES) throw new IOException("Font exceeds 64 MiB");
++                    output.write(buffer, 0, count);
++                }
++                output.getFD().sync();
++            }
++            CustomFontFileValidator.Info info = CustomFontFileValidator.validate(temporary);
++            String hash = digest(temporary);
++            File destination = new File(mDirectory, hash + ".font");
++            if (!destination.exists()) {
++                // Publish an immutable file before publishing the metadata pointing to it.
++                // Enabling fs-verity requires owner write permission, with no open writers.
++                // Seal the content first, then publish its read-only mode and final name.
++                VerityUtils.setUpFsverity(temporary.getAbsolutePath());
++                Os.chmod(temporary.getAbsolutePath(), 0444);
++                if (!temporary.renameTo(destination)) throw new IOException("Cannot publish font");
++            }
++            if (!VerityUtils.hasFsverity(destination.getAbsolutePath())
++                    || !digest(destination).equals(hash)) throw new IOException("Font integrity check failed");
++            JSONObject metadata = new JSONObject();
++            metadata.put("digest", hash);
++            metadata.put("label", cleanLabel(label));
++            metadata.put("weight", info.weight);
++            metadata.put("italic", info.italic);
++            write(mMetadata, metadata);
++            mImported = metadata;
++            mRejectedAtBoot = false;
++            // Keep the running font map and every file it can reference until reboot.
++        } catch (IOException e) {
++            throw e;
++        } catch (Exception e) {
++            throw new IOException("Could not import font", e);
++        } finally {
++            temporary.delete();
++        }
++    }
++
++    synchronized ParcelFileDescriptor openPreview() throws IOException {
++        if (mImported == null) throw new IOException("No custom font");
++        try {
++            return ParcelFileDescriptor.open(fileFor(mImported), ParcelFileDescriptor.MODE_READ_ONLY);
++        } catch (Exception e) {
++            throw new IOException("Cannot open preview", e);
++        }
++    }
++
++    synchronized void remove() {
++        mMetadata.delete();
++        mImported = null;
++        // Do not unlink files mapped by existing processes.
++    }
++
++    synchronized JSONObject snapshotImported() { return mImported; }
++
++    synchronized void restoreImported(JSONObject previous) throws IOException {
++        if (previous == null) mMetadata.delete();
++        else write(mMetadata, previous);
++        mImported = previous;
++    }
++
++    synchronized void onBootCompleted() {
++        mBootMarker.delete();
++        // Previous boot's processes no longer exist; only remove our own unused slot files.
++        File keep = null;
++        try { if (mLoaded != null) keep = fileFor(mLoaded); } catch (Exception e) { return; }
++        File[] files = mDirectory.listFiles();
++        if (files == null) return;
++        for (File file : files) {
++            if (file.getName().matches("[0-9a-f]{64}\\.font") && !file.equals(keep)
++                    && (mImported == null || !file.getName().equals(mImported.optString("digest") + ".font"))) {
++                file.delete();
++            }
++        }
++    }
++
++    synchronized boolean hasLoadedFont() { return mLoaded != null; }
++
++    synchronized void rejectLoadedFont() {
++        mLoaded = null;
++        mImported = null;
++        mRejectedAtBoot = true;
++        mMetadata.delete();
++    }
++
++    synchronized FontConfig decorate(FontConfig base) {
++        List<FontConfig.NamedFamilyList> named = new ArrayList<>(base.getNamedFamilyLists());
++        List<FontConfig.Alias> aliases = new ArrayList<>(base.getAliases());
++        if (mLoaded != null) {
++            try {
++                FontConfig.Font font = new FontConfig.Font(fileFor(mLoaded), null, "DitingUserCustomFont",
++                        new FontStyle(mLoaded.getInt("weight"), mLoaded.getBoolean("italic")
++                                ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT),
++                        0, "", null, 0);
++                FontConfig.FontFamily family = new FontConfig.FontFamily(Collections.singletonList(font),
++                        LocaleList.getEmptyLocaleList(), 0);
++                // Retain the complete stock fallback chain, including CJK and emoji.
++                named.add(new FontConfig.NamedFamilyList(Collections.singletonList(family), FAMILY, null));
++            } catch (Exception e) {
++                Slog.w(TAG, "Cannot attach custom font", e);
++                addDefaultAlias(base, aliases);
++            }
++        } else {
++            addDefaultAlias(base, aliases);
++        }
++        return new FontConfig(base.getFontFamilies(), aliases, named,
++                base.getLocaleFallbackCustomizations(), base.getLastModifiedTimeMillis(), base.getConfigVersion());
++    }
++
++    private static void addDefaultAlias(FontConfig base, List<FontConfig.Alias> aliases) {
++        String defaultFamily = Resources.getSystem().getString(com.android.internal.R.string.config_bodyFontFamily);
++        boolean exists = base.getNamedFamilyLists().stream().anyMatch(family -> family.getName().equals(defaultFamily));
++        aliases.add(new FontConfig.Alias(FAMILY, exists ? defaultFamily : "sans-serif", 400));
++    }
++
++    private JSONObject readMetadata() {
++        try (FileInputStream input = mMetadata.openRead()) {
++            if (input.getChannel().size() > 4096) return null;
++            JSONObject metadata = new JSONObject(new String(input.readAllBytes(), StandardCharsets.UTF_8));
++            fileFor(metadata);
++            return metadata;
++        } catch (Exception e) { return null; }
++    }
++
++    private File fileFor(JSONObject metadata) throws Exception {
++        String digest = metadata.getString("digest");
++        if (!digest.matches("[0-9a-f]{64}")) throw new IOException("Invalid font identity");
++        return new File(mDirectory, digest + ".font");
++    }
++
++    private static String digest(File file) throws Exception {
++        MessageDigest digest = MessageDigest.getInstance("SHA-256");
++        try (FileInputStream input = new FileInputStream(file)) {
++            byte[] buffer = new byte[16384];
++            int size;
++            while ((size = input.read(buffer)) != -1) digest.update(buffer, 0, size);
++        }
++        StringBuilder result = new StringBuilder();
++        for (byte value : digest.digest()) result.append(String.format("%02x", value & 0xff));
++        return result.toString();
++    }
++
++    private static String cleanLabel(String label) {
++        String clean = label == null ? "Custom font" : label.replaceAll("[\\p{Cntrl}]", "").trim();
++        return clean.isEmpty() ? "Custom font" : clean.substring(0, Math.min(clean.length(), 80));
++    }
++
++    private static void write(AtomicFile file, JSONObject metadata) throws IOException {
++        FileOutputStream output = null;
++        try {
++            output = file.startWrite();
++            output.write(metadata.toString().getBytes(StandardCharsets.UTF_8));
++            file.finishWrite(output);
++        } catch (IOException e) {
++            if (output != null) file.failWrite(output);
++            throw e;
++        }
++    }
++}

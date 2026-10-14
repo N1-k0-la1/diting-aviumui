@@ -1,0 +1,190 @@
+From b3f9fa60b8a3799c9c1638b5f6cd9a42e4713200 Mon Sep 17 00:00:00 2001
+From: Local ROM Builder <rombuilder@localhost>
+Date: Wed, 14 Oct 2026 12:08:52 +0800
+Subject: [PATCH] Fix verified review defects without changing frozen releases
+
+---
+ .../bluetooth/BluetoothCodecConfig.java       |  4 ++--
+ system/btif/src/btif_a2dp_source.cc           | 23 ++++---------------
+ system/stack/a2dp/a2dp_vendor_lhdcv3.cc       | 14 +++++------
+ system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc   | 10 ++++----
+ system/stack/a2dp/a2dp_vendor_lhdcv5.cc       |  2 +-
+ 5 files changed, 19 insertions(+), 34 deletions(-)
+
+diff --git a/framework/java/android/bluetooth/BluetoothCodecConfig.java b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+index 897bd4f..c042691 100644
+--- a/framework/java/android/bluetooth/BluetoothCodecConfig.java
++++ b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+@@ -783,7 +783,7 @@ public final class BluetoothCodecConfig implements Parcelable {
+                 && other.mCodecSpecific1 == mCodecSpecific1
+                 && other.mCodecSpecific2 == mCodecSpecific2
+                 && other.mCodecSpecific3 == mCodecSpecific3
+-                && other.mCodecSpecific3 == mCodecSpecific4);
++                && other.mCodecSpecific4 == mCodecSpecific4);
+                 // Savitech LHDC -- END
+     }
+ 
+@@ -838,7 +838,7 @@ public final class BluetoothCodecConfig implements Parcelable {
+      */
+     @RequiresNoPermission
+     public boolean sameCodecSpecificParameters(BluetoothCodecConfig other) {
+-        if (other == null && !Objects.equals(mCodecType, other.mCodecType)) {
++        if (other == null || !Objects.equals(mCodecType, other.mCodecType)) {
+             return false;
+         }
+         switch (getCodecType()) {
+diff --git a/system/btif/src/btif_a2dp_source.cc b/system/btif/src/btif_a2dp_source.cc
+index 728dd3a..deb646f 100644
+--- a/system/btif/src/btif_a2dp_source.cc
++++ b/system/btif/src/btif_a2dp_source.cc
+@@ -954,28 +954,13 @@ static void btif_a2dp_source_audio_handle_timer(void) {
+ /// Callback invoked by the encoder for reading PCM audio data from the
+ /// Bluetooth Audio HAL. Runs on the source worker thread.
+ static uint32_t btif_a2dp_source_read_callback(uint8_t* p_buf, uint32_t len) {
+-  uint32_t bytes_read = 0;
+-  uint32_t bytes_offset = 0;
+-  uint32_t len_read = len;
+-  uint32_t timeout_cnt = 0;
+-
+-  if (!btif_a2dp_source_cb.sw_audio_is_encoding) {
++  if (!btif_a2dp_source_cb.sw_audio_is_encoding || p_buf == nullptr || len == 0) {
+     return 0;
+   }
+ 
+-  while (true) {
+-    bytes_read = bluetooth::audio::a2dp::read(p_buf + bytes_offset, len_read);
+-
+-    // Savitech LHDC -- Low Latency Mode
+-    bytes_offset += bytes_read;
+-    len_read -= bytes_read;
+-    timeout_cnt++;
+-    if (len_read <= 0 || timeout_cnt >= 5) {
+-        bytes_read = bytes_offset;
+-        break;
+-    }
+-    usleep(1000);
+-  }
++  // The Audio HAL already handles bounded partial reads and polling.
++  const size_t result = bluetooth::audio::a2dp::read(p_buf, len);
++  const uint32_t bytes_read = result <= len ? static_cast<uint32_t>(result) : len;
+   log::verbose("wanted={} read={}", len, bytes_read);
+ 
+   if (bytes_read < len) {
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+index 96e8597..b8cfa38 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+@@ -387,7 +387,7 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV3(uint8_t media_type,
+   //para = p_ie->supportedBitrate;
+   //*p_result++ = para;   //c
+ 
+-  log::info( ": Info build result = [0]:0x{:02x}, [1]:0x{:02x}, [2]:0x{:02x}, [3]:0x%{:02x}, "
++  log::info( ": Info build result = [0]:0x{:02x}, [1]:0x{:02x}, [2]:0x{:02x}, [3]:0x{:02x}, "
+     "[4]:0x{:02x}, [5]:0x{:02x}, [6]:0x{:02x}, [7]:0x{:02x}, [8]:0x{:02x}, [9]:0x{:02x}, [10]:0x{:02x}, [11]:0x{:02x}",
+     tmpInfo[0], tmpInfo[1], tmpInfo[2], tmpInfo[3],
+     tmpInfo[4], tmpInfo[5], tmpInfo[6], tmpInfo[7], tmpInfo[8], tmpInfo[9], tmpInfo[10], tmpInfo[11]);
+@@ -746,7 +746,7 @@ bool A2DP_VendorGetPacketTimestampLhdcV3(UNUSED_ATTR const uint8_t* p_codec_info
+                                          const uint8_t* p_data,
+                                          uint32_t* p_timestamp) {
+   // TODO: Is this function really codec-specific?
+-  *p_timestamp = *(const uint32_t*)p_data;
++  memcpy(p_timestamp, p_data, sizeof(*p_timestamp));
+   return true;
+ }
+ 
+@@ -789,7 +789,7 @@ bool A2DP_VendorGetLowLatencyStateLhdcV3(const uint8_t* p_codec_info){
+   if (a2dp_status != A2DP_SUCCESS) {
+     log::error( " : cannot decode codec information: {}",
+                a2dp_status);
+-    return -1;
++    return false;
+   }
+ 
+   log::info( ": isLLSupported ={}", lhdc_cie.isLLSupported);
+@@ -1810,7 +1810,7 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_i
+     codec_user_config_.codec_specific_1 &= ~(A2DP_LHDC_VENDOR_CMD_MASK | A2DP_LHDC_QUALITY_MASK);
+     codec_user_config_.codec_specific_1 |= (A2DP_LHDC_QUALITY_MAGIC_NUM | A2DP_LHDC_QUALITY_HIGH);
+     quality_mode = A2DP_LHDC_QUALITY_HIGH;
+-    log::info(" : reset non-supported quality_mode to  ",
++    log::info(" : reset non-supported quality_mode to {}",
+               lhdcV3_QualityModeBitRate_toString(quality_mode).c_str());
+   }
+ 
+@@ -2303,7 +2303,7 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_i
+     log::info(" : [V3 only]: SR(0x{:02x}) Qmode(0x{:02x})", result_config_cie.sampleRate, quality_mode);
+   }
+ 
+-  log::info(" : Final quality_mode = ({})  ",
++  log::info(" : Final quality_mode = ({}) {}",
+             quality_mode,
+             lhdcV3_QualityModeBitRate_toString(quality_mode).c_str());
+   log::info(" : Final peer max bitrate = 0x{:02x}", result_config_cie.maxTargetBitrate);
+@@ -2321,8 +2321,8 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_i
+     codec_config_.codec_specific_4 = codec_user_config_.codec_specific_4;
+ 
+   /* Setup final nego result codec config to peer */
+-  if (int ret = A2DP_BuildInfoLhdcV3(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
+-                                     p_result_codec_config) != A2DP_SUCCESS) {
++  if (tA2DP_STATUS ret = A2DP_BuildInfoLhdcV3(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
++                                     p_result_codec_config); ret != A2DP_SUCCESS) {
+     log::error(" : A2DP_BuildInfoLhdcV3 fail(0x{:02x})", ret);
+     goto fail;
+   }
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+index 4b0ea13..d18d063 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+@@ -996,7 +996,7 @@ bool A2DP_VendorGetPacketTimestampLhdcV3Sink(UNUSED_ATTR const uint8_t* p_codec_
+                                        const uint8_t* p_data,
+                                        uint32_t* p_timestamp) {
+   // TODO: Is this function really codec-specific?
+-  *p_timestamp = *(const uint32_t*)p_data;
++  memcpy(p_timestamp, p_data, sizeof(*p_timestamp));
+   return true;
+ }
+ /*
+@@ -1534,7 +1534,7 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_cod
+   if (quality_mode == A2DP_LHDC_QUALITY_HIGH1) {
+     codec_user_config_.codec_specific_1 = A2DP_LHDC_QUALITY_MAGIC_NUM | A2DP_LHDC_QUALITY_HIGH;
+     quality_mode = A2DP_LHDC_QUALITY_HIGH;
+-    log::info(": reset non-supported quality_mode to ",
++    log::info(": reset non-supported quality_mode to {}",
+         lhdcV3_QualityModeBitRate_toString(quality_mode).c_str());
+   }
+ 
+@@ -1920,7 +1920,7 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_cod
+   }
+   }
+ 
+-  log::info(": Final quality_mode = ({}) ",
++  log::info(": Final quality_mode = ({}) {}",
+       quality_mode,
+       lhdcV3_QualityModeBitRate_toString(quality_mode).c_str());
+ 
+@@ -1937,8 +1937,8 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_cod
+     codec_config_.codec_specific_4 = codec_user_config_.codec_specific_4;
+ 
+   /* Setup final nego result codec config to peer */
+-  if (int ret = A2DP_BuildInfoLhdcV3Sink(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
+-                         p_result_codec_config) != A2DP_SUCCESS) {
++  if (tA2DP_STATUS ret = A2DP_BuildInfoLhdcV3Sink(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
++                         p_result_codec_config); ret != A2DP_SUCCESS) {
+     log::error(": A2DP_BuildInfoLhdcV3Sink fail(0x{:02x})", ret);
+     goto fail;
+   }
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+index b20dc52..a1b2175 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+@@ -1132,7 +1132,7 @@ bool A2DP_VendorGetPacketTimestampLhdcV5(UNUSED_ATTR const uint8_t* p_codec_info
+   }
+ 
+   // TODO: Is this function really codec-specific?
+-  *p_timestamp = *(const uint32_t*)p_data;
++  memcpy(p_timestamp, p_data, sizeof(*p_timestamp));
+   return true;
+ }
+ 
+-- 
+2.34.1
+

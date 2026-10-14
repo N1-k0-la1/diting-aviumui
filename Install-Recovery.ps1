@@ -85,7 +85,6 @@ foreach ($imageRelease in $imagesRelease) {
     if ((Get-FileHash -LiteralPath $imagePathRelease -Algorithm SHA256).Hash.ToLowerInvariant() -cne $imageRelease.asset.sha256) { throw 'Image changed after verification' }
     Write-Output (Invoke-ReleaseFastboot @('flash',$imageRelease.partition,$imagePathRelease))
 }
-$null=Invoke-ReleaseFastboot @('reboot','bootloader')
 Assert-ReleaseTarget $slotRelease
 Write-Output (Invoke-ReleaseFastboot @('reboot','recovery'))
 Write-Output 'Wait for AviumUI Recovery. Follow INSTALL.md to clean install the matching full OTA before booting system.'

@@ -423,6 +423,76 @@
       "original_commit": "a0e375760e6c455f359c1c582ce3df90e923873a",
       "patch": "patches/diting-media-features-20261010/09_packages_modules_common.patch",
       "sha256": "f752795a1fab1f05e5449298a00a01f67de82d86005d2caff46d7e7cd486ff0f"
+    },
+    {
+      "project": "packages/modules/Bluetooth",
+      "base": "2a2f1c44e791266a4eabea28176ae99b7c5d64e8",
+      "original_commit": "b3f9fa60b8a3799c9c1638b5f6cd9a42e4713200",
+      "patch": "patches/review-bugs-20261014/01_packages_modules_Bluetooth.patch",
+      "sha256": "079da792c83ee3ae9c8e1a3ba98c4e2d0ff56d209e7915c1c7d24ea4b4164b78"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "1f2cf94b1bf5115f61276b96a4b7eb4470c5ccef",
+      "original_commit": "84bdf4da3fadcd619422e65147b8733030eef3dd",
+      "patch": "patches/review-bugs-20261014/02_packages_apps_Settings.patch",
+      "sha256": "7f67c10b7aff18c914a31d7829db0d804be7495591c130bbc7035fa82ccc9733"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "32241e027f1aab238b18e1f004767abe0854fd5e",
+      "original_commit": "8c1bfc2df4fdcb66fce4f1713a4cdf3877eae177",
+      "patch": "patches/review-bugs-20261014/03_system_sepolicy.patch",
+      "sha256": "b9c546927b80e74ea8e2f4ddf507b311f94a73098f32017c9883767edfcda792"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "611eb5a10c819307f6e54746442c1edc64ec1ad8",
+      "original_commit": "89ec8b4129042f97a7bc08125def5699f1bbaead",
+      "patch": "patches/review-bugs-20261014/04_device_xiaomi_diting.patch",
+      "sha256": "3e136e1b3ce71d476dc373d44fe627e0dcd3442fd61039a7062e8d4d4a2fcec1"
+    },
+    {
+      "project": "system/sepolicy",
+      "base": "8c1bfc2df4fdcb66fce4f1713a4cdf3877eae177",
+      "original_commit": "86616e951f1ff1087afb6950ad0521722a21f252",
+      "patch": "patches/latest-source-20261014/01_system_sepolicy.patch",
+      "sha256": "bfe66e5e9e412895c7011e54f905845e8966e977722864c20fc513aa9f7e65ba"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "ca922f7355df9a29df96cc62452a64a77b8c4729",
+      "original_commit": "38320625e1759eaa80f7bff90096c914fe93af44",
+      "patch": "patches/latest-source-20261014/02_frameworks_base.patch",
+      "sha256": "0ad66ddd667bbfb8864b3fe74fee8665663f5046f69ad7d122b346da1d709497"
+    },
+    {
+      "project": "device/xiaomi/sm8450-common",
+      "base": "2b40903013b066bcd29b97203e7815fee5245c78",
+      "original_commit": "cc3d14846fa22b8bec412684dc320c04534c70a9",
+      "patch": "patches/latest-source-20261014/03_device_xiaomi_sm8450-common.patch",
+      "sha256": "ea7616406552bb1f9cba4da9723fac46a17587c60423138fbad122591f71cb08"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "84bdf4da3fadcd619422e65147b8733030eef3dd",
+      "original_commit": "411b90febd44b1c164376de13b6cfc56c1ce9512",
+      "patch": "patches/latest-source-20261014/04_packages_apps_Settings.patch",
+      "sha256": "e5fb3b6468a15e59ca4a0654da2f88a5b031a41f06e3a526c42e2390077edc52"
+    },
+    {
+      "project": "packages/modules/Bluetooth",
+      "base": "b3f9fa60b8a3799c9c1638b5f6cd9a42e4713200",
+      "original_commit": "d8298bdb7bdad380b899e1586a486e520bf13e7d",
+      "patch": "patches/latest-source-20261014/05_packages_modules_Bluetooth.patch",
+      "sha256": "8efa4c6a08d13b3f5edd1155ceda48425cabd78ed231cbfa46a91f1601f852d0"
+    },
+    {
+      "project": "system/core",
+      "base": "202f54380091906fafe35681b0a68ec2fe3c1a4d",
+      "original_commit": "c7a14b12715554fe60944d4e2c375a9b8b8d67d3",
+      "patch": "patches/latest-source-20261014/06_system_core.patch",
+      "sha256": "db5d1be7c5205a398327c904f98e96e2c63870dc65e1740953286cd0ba36ba9b"
     }
   ],
   "upstream_bases": {
@@ -454,7 +524,8 @@
     "hardware/interfaces": "13d687a84c834af855bfb314b853b8372a7aa6d9",
     "bionic": "ff9fe01e7e1e81febaf32b15fa561aec480a112c",
     "vendor/xiaomi/sm8450-common": "9f5f2f5b631508e5120f1925afc766ca645fedaf",
-    "hardware/qcom-caf/sm8450/display": "aea8d60119598d755f29e2e15312b4ff491d1808"
+    "hardware/qcom-caf/sm8450/display": "aea8d60119598d755f29e2e15312b4ff491d1808",
+    "system/core": "202f54380091906fafe35681b0a68ec2fe3c1a4d"
   },
   "original_final_revisions": {
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
@@ -489,5 +560,50 @@
   },
   "optional_gms_projects": 3,
   "candidate": "gms-media20261010",
-  "source_projects_with_gms": 1190
+  "source_projects_with_gms": 1190,
+  "review_corrections": {
+    "date": "2026-10-14",
+    "report": "REVIEW-FIXES-20261014.md",
+    "patch_count": 4,
+    "released_artifacts_rebuilt": false,
+    "note": "original_final_revisions describes the historical published source snapshot; corrections append after its 60-patch series."
+  },
+  "current_public_revisions": {
+    "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
+    "packages/modules/common": "a0e375760e6c455f359c1c582ce3df90e923873a",
+    "prebuilts/openeuicc-deps": "5624506682f476fafab2e2a68ab00f4166609b41",
+    "device/xiaomi/diting": "3ac8bfc82e82bd94638fbfb4a60b1f674186d586",
+    "frameworks/native": "f81d10c6065f44dad5e9b18fc332d510177769a5",
+    "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
+    "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
+    "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
+    "frameworks/base": "38320625e1759eaa80f7bff90096c914fe93af44",
+    "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
+    "device/xiaomi/sm8450-common": "cc3d14846fa22b8bec412684dc320c04534c70a9",
+    "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
+    "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
+    "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
+    "packages/apps/Settings": "411b90febd44b1c164376de13b6cfc56c1ce9512",
+    "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
+    "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
+    "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
+    "hardware/xiaomi": "ed685d7d615cb991411d61135071ef985533d641",
+    "frameworks/av": "590c7ae662372afae401c1938adbcd60c6eb51b7",
+    "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
+    "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
+    "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
+    "packages/apps/Aperture": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
+    "packages/modules/Bluetooth": "d8298bdb7bdad380b899e1586a486e520bf13e7d",
+    "hardware/interfaces": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
+    "bionic": "407839baae0c3f009a8c611ddc69d987b34e3016",
+    "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
+    "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
+    "system/core": "c7a14b12715554fe60944d4e2c375a9b8b8d67d3"
+  },
+  "latest_source_update": {
+    "date": "2026-10-14",
+    "report": "FULL-REVIEW-20261014.md",
+    "patch_count": 6,
+    "released_artifacts_rebuilt": false
+  }
 }
