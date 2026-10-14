@@ -65,6 +65,9 @@
     "historical_rom_recovery_hashes_unchanged": true,
     "previous_73_patches_byte_identical": true,
     "released_rom_images_rebuilt": false,
-    "report": "ROUND3-REVIEW-20261014.md"
+    "report": "ROUND3-REVIEW-20261014.md",
+    "installed_audio_policy_native_checks_passed": 19,
+    "phone_runtime_audio_policy_modified": false,
+    "headset_playback_verified": false
   }
 }

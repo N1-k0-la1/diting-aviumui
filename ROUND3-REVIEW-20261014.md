@@ -34,7 +34,7 @@
 - Windows 安装器模拟：旧结构只读、六次写入后进入 Recovery、槽位变化停止、新候选 assets 结构和缺失文件五个场景通过。使用虚拟资产及模拟 fastboot，未刷入手机。
 - 从固定上游重放 75 份补丁并加入核对过的外部输入：30 个定制项目的文件树匹配选定的最新公开版本。原 73 份补丁逐字节保持不变；system/core 仍仅导出选定的公开版本。
 - 增量构建 `m com.android.bt Settings services.core selinux_policy diting_lhdc_policy_probe` 及五个 SKU 的音频 XML 安装目标通过，耗时 8 分 12 秒。
-- 本轮未改动音频策略。依赖手机的 installed-audio-policy 测试尝试重跑时手机未连接，未取得新的实机探针结果；上轮的 19 项路由验证仍属上轮记录。
+- 手机连接后补跑 installed-audio-policy：构建实际安装的五个 SKU 配置匹配源输入；将 cape 配置从实际安装文件展开后，在手机运行原生探针，18 项 A2DP 编码路由和扬声器检查全部通过。标准格式仍走 primary，LHDC 走 bluetooth；未改动手机运行中的音频策略，也未验证耳机播放。
 
 Linux 回归：
 
