@@ -493,6 +493,27 @@
       "original_commit": "c7a14b12715554fe60944d4e2c375a9b8b8d67d3",
       "patch": "patches/latest-source-20261014/06_system_core.patch",
       "sha256": "db5d1be7c5205a398327c904f98e96e2c63870dc65e1740953286cd0ba36ba9b"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "38320625e1759eaa80f7bff90096c914fe93af44",
+      "original_commit": "e96f0c080b2db39d05ef5577e450e682825f2cdd",
+      "patch": "patches/round2-20261014/01_frameworks_base.patch",
+      "sha256": "e92b01ee4dd343d1035dce6de2d33bcfce3558d98ad3afca8d7b5c684a6a22bb"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "411b90febd44b1c164376de13b6cfc56c1ce9512",
+      "original_commit": "088dbc75c5126ae2c17b8f6c0b8bdd0e1941d9ef",
+      "patch": "patches/round2-20261014/02_packages_apps_Settings.patch",
+      "sha256": "26c20dd8a3ade9f29859042baf94e5b8c1a5409840061d0ca5df14c28302b716"
+    },
+    {
+      "project": "device/xiaomi/sm8450-common",
+      "base": "cc3d14846fa22b8bec412684dc320c04534c70a9",
+      "original_commit": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
+      "patch": "patches/round2-20261014/03_device_xiaomi_sm8450-common.patch",
+      "sha256": "9bdc741d419cc3c5fdddd3f2f78b38b7a49fd690a94c079f8bcf1ef694a0efac"
     }
   ],
   "upstream_bases": {
@@ -577,13 +598,13 @@
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "38320625e1759eaa80f7bff90096c914fe93af44",
+    "frameworks/base": "e96f0c080b2db39d05ef5577e450e682825f2cdd",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
-    "device/xiaomi/sm8450-common": "cc3d14846fa22b8bec412684dc320c04534c70a9",
+    "device/xiaomi/sm8450-common": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
     "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
     "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
-    "packages/apps/Settings": "411b90febd44b1c164376de13b6cfc56c1ce9512",
+    "packages/apps/Settings": "088dbc75c5126ae2c17b8f6c0b8bdd0e1941d9ef",
     "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
     "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
     "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
@@ -604,6 +625,12 @@
     "date": "2026-10-14",
     "report": "FULL-REVIEW-20261014.md",
     "patch_count": 6,
+    "released_artifacts_rebuilt": false
+  },
+  "round2_corrections": {
+    "date": "2026-10-14",
+    "report": "ROUND2-REVIEW-20261014.md",
+    "patch_count": 3,
     "released_artifacts_rebuilt": false
   }
 }

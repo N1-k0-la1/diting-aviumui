@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 60,
+  "ordered_patches": 73,
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
@@ -38,5 +38,22 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 60 additionally reconstructed from local pinned Git objects"
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 73 reconstructed from local pinned Git objects across 30 customized projects",
+  "current_public_source_reconstruction": {
+    "ordered_patches": 73,
+    "customized_projects": 30,
+    "all_git_trees_match_safe_public_revisions": true,
+    "full_fresh_repo_sync_and_build_performed": false,
+    "report": "ROUND2-REVIEW-20261014.md"
+  },
+  "round2_20261014": {
+    "helper_regressions_passed": 15,
+    "production_regression_groups_passed": 4,
+    "font_lifecycle_regressions_passed": true,
+    "incremental_components_build_passed": true,
+    "installed_audio_policy_native_checks_passed": 19,
+    "all_five_sku_installed_copies_match": true,
+    "headset_playback_verified": false,
+    "released_rom_images_rebuilt": false
+  }
 }

@@ -1,0 +1,16 @@
+diff --git a/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+index 425e3549575d25bd598064b3dd979979ab295173..14da48802fb577015baeaec96ec30b5d9042fee1 100644
+--- a/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
++++ b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+@@ -184,6 +184,11 @@ final class UserCustomFontStore {
+         File[] files = mDirectory.listFiles();
+         if (files == null) return;
+         for (File file : files) {
++            // An interrupted install can leave a staging file before publication.
++            if (file.getName().startsWith("staged-") && file.getName().endsWith(".font")) {
++                file.delete();
++                continue;
++            }
+             if (file.getName().matches("[0-9a-f]{64}\\.font") && !file.equals(keep)
+                     && (mImported == null || !file.getName().equals(mImported.optString("digest") + ".font"))) {
+                 file.delete();

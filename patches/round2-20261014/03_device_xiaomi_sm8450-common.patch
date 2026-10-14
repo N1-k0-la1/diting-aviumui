@@ -1,0 +1,39 @@
+diff --git a/audio/audio_policy_configuration.xml b/audio/audio_policy_configuration.xml
+index 71cd41fbdf2dd900fac3767899a381a001238ad9..12edee2f2a1e04be4b8ea107c0861ffbd15f7a58 100644
+--- a/audio/audio_policy_configuration.xml
++++ b/audio/audio_policy_configuration.xml
+@@ -435,6 +435,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+             </routes>
+         </module>
+ 
++        <!-- LHDC only: standard codecs retain the primary offload routes. -->
++        <xi:include href="/vendor/etc/bluetooth_lhdc_audio_policy_configuration.xml"/>
++
+         <!-- Remote Submix Audio HAL -->
+         <xi:include href="/vendor/etc/r_submix_audio_policy_configuration.xml"/>
+ 
+diff --git a/common.mk b/common.mk
+index 1a0d4d541a249eccd37430725ef0efb702213c00..6c60cc122584a0591cf74b021067a354ea67e4db 100644
+--- a/common.mk
++++ b/common.mk
+@@ -96,6 +96,7 @@ PRODUCT_COPY_FILES += \
+     hardware/qcom-caf/sm8450/audio/primary-hal/configs/taro/microphone_characteristics.xml:$(TARGET_COPY_OUT_VENDOR)/etc/microphone_characteristics.xml
+ 
+ PRODUCT_COPY_FILES += \
++    $(LOCAL_PATH)/audio/bluetooth_lhdc_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_lhdc_audio_policy_configuration.xml \
+     frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
+     frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
+     frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
+diff --git a/font-overlays/Custom/AndroidManifest.xml b/font-overlays/Custom/AndroidManifest.xml
+index fb6650874102438e390accc00e631d1226465796..0c751d6e41b9ab6c5b43a167cca2f5fdd9e6a9c2 100644
+--- a/font-overlays/Custom/AndroidManifest.xml
++++ b/font-overlays/Custom/AndroidManifest.xml
+@@ -5,7 +5,7 @@
+     android:versionCode="1" android:versionName="1.0">
+     <overlay android:targetPackage="android"
+         android:category="android.theme.customization.font" android:priority="1" />
+-    <application android:label="SourceSansPro" android:hasCode="false">
++    <application android:label="Custom" android:hasCode="false">
+         <meta-data android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
+             android:value="source-sans-pro" />
+     </application>

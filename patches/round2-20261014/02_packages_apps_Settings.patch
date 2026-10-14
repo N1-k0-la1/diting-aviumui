@@ -1,0 +1,46 @@
+diff --git a/src/com/android/settings/display/CustomFontImport.java b/src/com/android/settings/display/CustomFontImport.java
+index 425652fc45a9d6de56f62bfe6c16da4e73de7abb..201178d776afe0f43cdabdf8fb097b896fc50e95 100644
+--- a/src/com/android/settings/display/CustomFontImport.java
++++ b/src/com/android/settings/display/CustomFontImport.java
+@@ -128,9 +128,11 @@ final class CustomFontImport {
+         final boolean[] finished = {false};
+         final boolean[] bound = {false};
+         final ServiceConnection[] connection = new ServiceConnection[1];
++        final Runnable[] timeout = new Runnable[1];
+         java.util.function.Consumer<Boolean> complete = valid -> {
+             if (finished[0]) return;
+             finished[0] = true;
++            handler.removeCallbacks(timeout[0]);
+             if (bound[0]) activity.unbindService(connection[0]);
+             mBusy = false;
+             if (!valid || !mFragment.isAdded() || activity.isFinishing()) {
+@@ -148,6 +150,7 @@ final class CustomFontImport {
+                 Toast.makeText(activity, R.string.font_custom_invalid, Toast.LENGTH_LONG).show();
+             }
+         };
++        timeout[0] = () -> complete.accept(false);
+         Messenger reply = new Messenger(new Handler(Looper.getMainLooper()) {
+             @Override public void handleMessage(Message message) { complete.accept(message.arg1 == 1); }
+         });
+@@ -185,7 +188,7 @@ final class CustomFontImport {
+             bound[0] = activity.bindService(new Intent(activity, FontImportValidationService.class),
+                     connection[0], Context.BIND_AUTO_CREATE);
+             if (!bound[0]) complete.accept(false);
+-            handler.postDelayed(() -> complete.accept(false), 20000);
++            if (!finished[0]) handler.postDelayed(timeout[0], 20000);
+         } catch (Exception e) { complete.accept(false); }
+     }
+ 
+diff --git a/src/com/android/settings/display/FontImportValidationService.java b/src/com/android/settings/display/FontImportValidationService.java
+index 524ef8eae5d9b84043e557337512e6ec7ea975cb..960594a4ae101f95693d4873ab81ab27e651e146 100644
+--- a/src/com/android/settings/display/FontImportValidationService.java
++++ b/src/com/android/settings/display/FontImportValidationService.java
+@@ -25,7 +25,7 @@ public final class FontImportValidationService extends Service {
+             boolean valid = false;
+             Bitmap bitmap = null;
+             try (SharedMemory memory = message.getData().getParcelable("font", SharedMemory.class)) {
+-                if (memory == null) return;
++                if (memory == null) throw new IllegalArgumentException("Missing font memory");
+                 // Ashmem descriptors can report st_size=0; use the region's actual bounds.
+                 // Font retains the mapped direct buffer; its cleaner owns the mapping lifetime.
+                 Font font = new Font.Builder(memory.mapReadOnly()).build();

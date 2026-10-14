@@ -1,9 +1,9 @@
 # 20261014 最新定制源码输入
 
-当前是 70 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复。
+当前是 73 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错。
 GMS / Vanilla 媒体包均已完成构建和电脑侧校验，实机验证范围见 MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json；Vanilla 实机测试仍待完成。
 媒体包启用 `TARGET_DITING_DOLBY_VISION=true`，杜比源码默认关闭。
-最新源码及回归检查详见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
+第二轮集成纠错及回归检查详见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)；此前审查见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
 软件 LHDC 已整合，不启用 RAW 或未经验证的 Qualcomm DSP offload。
 
 在应用补丁之前，另行取得精确 Via APK，以及两个固定版本的媒体 donor checkout。
@@ -22,7 +22,7 @@ python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor 
 额外 XML、init、策略、ABI 桥接源码、LHDC 头文件和 diting 原厂屏幕配置在有序文本补丁中。
 构建者需按自己的使用/分发范围确认外部专有组件许可；提供来源不代表转授其许可。
 
-English: The series now has 70 ordered patches. Supply exact donor ELF inputs separately;
+English: The series now has 73 ordered patches. Supply exact donor ELF inputs separately;
 the preparation tool verifies pinned commits and SHA256 before creating a new input directory.
 The GMS media candidate enables `TARGET_DITING_DOLBY_VISION=true`; the feature defaults off.
 Both GMS and Vanilla media artifacts have been built and host-qualified; Vanilla phone testing remains pending. Historical validation details follow.
