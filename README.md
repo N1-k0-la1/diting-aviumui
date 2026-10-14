@@ -61,5 +61,3 @@ The repository contains pinned upstream sources and ordered patches, not the ful
 Private signing keys, device logs, personal backups, and third-party root modules are excluded.
 
 第二轮反馈核实与修复见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)。
-
-第二轮反馈核实与修复见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)。
