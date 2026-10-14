@@ -1,0 +1,101 @@
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+index dd0759da073f24b6d0998a6200bdeba339a8df39..a3fbd700f61a653f45bc09467cb8f720ff78bb91 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+@@ -495,6 +495,8 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3(tA2DP_LHDC_CIE* p_ie,
+ 
+   if (A2DP_BitsSet(p_ie->sampleRate) != A2DP_SET_ONE_BIT)
+     return A2DP_INVALID_SAMPLING_FREQUENCY;
++  if (A2DP_BitsSet(p_ie->bits_per_sample) != A2DP_SET_ONE_BIT)
++    return A2DP_INVALID_BIT_RATE;
+ 
+   return A2DP_SUCCESS;
+ }
+@@ -633,6 +635,7 @@ bool A2DP_VendorCodecEqualsLhdcV3(const uint8_t* p_codec_info_a,
+ int A2DP_VendorGetBitRateLhdcV3(UNUSED_ATTR const uint8_t* p_codec_info) {
+ 
+   A2dpCodecConfig* current_codec = bta_av_get_a2dp_current_codec();
++  if (current_codec == nullptr) return -1;
+   btav_a2dp_codec_config_t codec_config_ = current_codec->getCodecConfig();
+   uint8_t bitRateIndex = 0;
+ 
+@@ -714,6 +717,7 @@ int A2DP_VendorGetTrackBitsPerSampleLhdcV3(const uint8_t* p_codec_info) {
+     case BTAV_A2DP_CODEC_BITS_PER_SAMPLE_NONE:
+       return -1;
+   }
++  return -1;
+ }
+ 
+ int A2DP_VendorGetTrackChannelCountLhdcV3(const uint8_t* p_codec_info) {
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+index d18d06327bedc68b1cdcee381cd0462f21c7cf02..3217dde12cecb8b9e579d3fd26bf1127a420ebe8 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+@@ -472,6 +472,8 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3Sink(tA2DP_LHDCV3_SINK_CIE* p_ie,
+ 
+   if (A2DP_BitsSet(p_ie->sampleRate) != A2DP_SET_ONE_BIT)
+     return A2DP_INVALID_SAMPLING_FREQUENCY;
++  if (A2DP_BitsSet(p_ie->bits_per_sample) != A2DP_SET_ONE_BIT)
++    return A2DP_INVALID_BIT_RATE;
+ 
+   save_codec_info (p_codec_Info_save);
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+index 4a48254cd66a7d5af8673590d13daf9842c94c01..88dead874431601a006a783de92498e430a0ead0 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+@@ -428,6 +428,11 @@ bool a2dp_vendor_lhdcv3_decoder_decode_packet(BT_HDR* p_buf) {
+     return false;
+   }
+ 
++  if (data_size < LHDCV3_DEC_PKT_HDR_BYTES) {
++    a2dp_lhdcv3_decoder_cb.dec_input_buf_bytes = 0;
++    return false;
++  }
++
+ #if defined(_DEC_REC_FILE_)
+   if (rawFile != NULL && data_size > 0) {
+     fwrite(data + LHDCV3_DEC_PKT_HDR_BYTES, sizeof(uint8_t), data_size - LHDCV3_DEC_PKT_HDR_BYTES, rawFile);
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+index 66adf1f95e2a241209d19b681ac6988e934168d2..e7f0c64551d416f37808f3a74cb70c439d7fe6fb 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+@@ -912,7 +912,7 @@ static void a2dp_lhdcV3_encode_frames(uint8_t nb_frame){
+     mcpsStat_enc_frm_per_sec_lhdcv3 = mcpsStat_all_enc_frm_lhdcv3;
+ #endif
+     log::info (": Current data rate about {} kbps, packet usage {}%%",
+-        (all_send_bytes * 8) / 1000, (mtu_usage * 100)/mtu_usage_cnt);
++        (all_send_bytes * 8) / 1000, (mtu_usage_cnt > 0 ? (mtu_usage * 100) / mtu_usage_cnt : 0.0f));
+       all_send_bytes = 0;
+       mtu_usage_cnt = 0;
+       mtu_usage = 0;
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+index a1b21751312a59fb436c113826bea2863c51d0db..d46ed89105f73631186aefe9cee3d8f1bb47f291 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+@@ -941,6 +941,7 @@ bool A2DP_VendorCodecEqualsLhdcV5(const uint8_t* p_codec_info_a,
+ int A2DP_VendorGetBitRateLhdcV5(UNUSED_ATTR const uint8_t* p_codec_info) {
+ 
+   A2dpCodecConfig* current_codec = bta_av_get_a2dp_current_codec();
++  if (current_codec == nullptr) return -1;
+   btav_a2dp_codec_config_t codec_config_ = current_codec->getCodecConfig();
+   uint8_t bitRateIndex = 0;
+ 
+@@ -1178,7 +1179,7 @@ void A2DP_VendorDumpCodecInfoLhdcV5(const uint8_t* p_codec_info) {
+     log::info( "\tsamp_freq: (96000)");
+   }
+   if (lhdc_cie.sampleRate & A2DP_LHDCV5_SAMPLING_FREQ_192000) {
+-    log::info( "\tsamp_freq: (19200)");
++    log::info( "\tsamp_freq: (192000)");
+   }
+ 
+   log::info( "\tbitsPerSample: 0x{} ", lhdc_cie.bitsPerSample);
+@@ -1245,7 +1246,7 @@ std::string A2DP_VendorCodecInfoStringLhdcV5(const uint8_t* p_codec_info) {
+   AppendField(&field, (lhdc_cie.bitsPerSample & A2DP_LHDCV5_BIT_FMT_24),
+       "24");
+   AppendField(&field, (lhdc_cie.bitsPerSample & A2DP_LHDCV5_BIT_FMT_32),
+-      "24");
++      "32");
+   res << "\tbits_depth: " << field << " bits (" << loghex((int)lhdc_cie.bitsPerSample)
+                                                                       << ")\n";
+ 

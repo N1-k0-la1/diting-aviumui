@@ -12,12 +12,16 @@ $manifestRelease = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'MANIFEST.j
 $candidatesRelease = @($manifestRelease.candidates | Where-Object flavour -CEQ $Flavour)
 if ($candidatesRelease.Count -ne 1) { throw 'Missing matching candidate' }
 $candidateRelease=$candidatesRelease[0]
-$assetRowsRelease=@($manifestRelease.assets | Where-Object flavour -CEQ $Flavour)
+$assetRowsRelease=if ($null -ne $candidateRelease.assets) { @($candidateRelease.assets) }
+    else { @($manifestRelease.assets | Where-Object flavour -CEQ $Flavour) }
 $assetNamesRelease=@($assetRowsRelease.path | Sort-Object)
 $expectedNamesRelease=@($candidateRelease.file) + @('boot','dtbo','vendor_boot','recovery','vbmeta','vbmeta_system' | ForEach-Object { "$Flavour/$_.img" })
 if (($assetNamesRelease -join '|') -cne (($expectedNamesRelease | Sort-Object) -join '|')) { throw 'Unexpected or incomplete asset set' }
 foreach ($assetRelease in $assetRowsRelease) {
     $pathRelease=Join-Path $PSScriptRoot $assetRelease.path
+    if (-not (Test-Path -LiteralPath $pathRelease -PathType Leaf)) {
+        throw "Missing required asset: $($assetRelease.path)"
+    }
     if ((Get-Item -LiteralPath $pathRelease).Length -ne $assetRelease.bytes -or
         (Get-FileHash -LiteralPath $pathRelease -Algorithm SHA256).Hash.ToLowerInvariant() -cne $assetRelease.sha256) {
         throw "Asset size/hash mismatch: $($assetRelease.path)"

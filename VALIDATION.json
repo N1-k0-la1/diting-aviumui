@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 73,
+  "ordered_patches": 75,
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
@@ -38,13 +38,13 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 73 reconstructed from local pinned Git objects across 30 customized projects",
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 75 reconstructed from local pinned Git objects across 30 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 73,
+    "ordered_patches": 75,
     "customized_projects": 30,
     "all_git_trees_match_safe_public_revisions": true,
     "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND2-REVIEW-20261014.md"
+    "report": "ROUND3-REVIEW-20261014.md"
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,
@@ -55,5 +55,16 @@
     "all_five_sku_installed_copies_match": true,
     "headset_playback_verified": false,
     "released_rom_images_rebuilt": false
+  },
+  "round3_20261014": {
+    "helper_regressions_passed": 24,
+    "production_regression_groups_passed": 8,
+    "font_lifecycle_and_overlay_regressions_passed": true,
+    "installer_mock_cases_passed": 5,
+    "incremental_components_build_passed": true,
+    "historical_rom_recovery_hashes_unchanged": true,
+    "previous_73_patches_byte_identical": true,
+    "released_rom_images_rebuilt": false,
+    "report": "ROUND3-REVIEW-20261014.md"
   }
 }

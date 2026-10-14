@@ -11,7 +11,15 @@ PACKAGE = pathlib.Path(__file__).resolve().parents[1]
 
 def contained(root, relative):
     root = root.resolve()
-    result = (root / relative).resolve()
+    relative = pathlib.Path(relative)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise RuntimeError(f"Path outside expected directory: {relative}")
+    candidate = root
+    for part in relative.parts:
+        candidate = candidate / part
+        if candidate.is_symlink():
+            raise RuntimeError(f"Symlink in input path: {relative}")
+    result = candidate.resolve()
     if not result.is_relative_to(root) or result == root:
         raise RuntimeError(f'Path outside expected directory: {relative}')
     return result

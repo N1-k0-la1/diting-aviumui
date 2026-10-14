@@ -1,6 +1,6 @@
 # 20261014 最新定制源码输入
 
-当前是 73 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错。
+当前是 75 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错、2 份第三轮蓝牙/字体边界处理。
 GMS / Vanilla 媒体包均已完成构建和电脑侧校验，实机验证范围见 MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json；Vanilla 实机测试仍待完成。
 媒体包启用 `TARGET_DITING_DOLBY_VISION=true`，杜比源码默认关闭。
 第二轮集成纠错及回归检查详见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)；此前审查见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
@@ -22,7 +22,7 @@ python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor 
 额外 XML、init、策略、ABI 桥接源码、LHDC 头文件和 diting 原厂屏幕配置在有序文本补丁中。
 构建者需按自己的使用/分发范围确认外部专有组件许可；提供来源不代表转授其许可。
 
-English: The series now has 73 ordered patches. Supply exact donor ELF inputs separately;
+English: The series now has 75 ordered patches. Supply exact donor ELF inputs separately;
 the preparation tool verifies pinned commits and SHA256 before creating a new input directory.
 The GMS media candidate enables `TARGET_DITING_DOLBY_VISION=true`; the feature defaults off.
 Both GMS and Vanilla media artifacts have been built and host-qualified; Vanilla phone testing remains pending. Historical validation details follow.
@@ -112,3 +112,5 @@ GMS proprietary inputs retain their upstream licenses; this source repository do
 内置 eUICC feature 限于 `ro.boot.hardware.sku=ditingp`，两个相关 overlay 限于 `ro.boot.hwc=GL`。
 这是源码范围限制，不代替 K50 至尊版的启动、108MP 相机和双实体 SIM 实测。
 原固件二进制保持；两机型兼容未完成验收前，不把共用代号当成已经验证的刷机承诺。
+
+第三轮反馈核实与修复见 [ROUND3-REVIEW-20261014.md](ROUND3-REVIEW-20261014.md)。

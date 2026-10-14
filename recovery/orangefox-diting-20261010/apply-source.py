@@ -18,6 +18,13 @@ def git(folder, *command):
 def sha(file):
     return hashlib.sha256(file.read_bytes()).hexdigest()
 
+def verify_file(file, item):
+    mode = item["git_mode"]
+    require(mode in ("100644", "100755"), "Unsupported Git file mode", file)
+    require(not file.is_symlink() and file.is_file(), "Not a regular source file", file)
+    require(bool(file.stat().st_mode & 0o111) == (mode == "100755"), "Executable mode mismatch", file)
+    require(sha(file) == item["sha256"], "Source hash mismatch", file)
+
 def require(condition, *message):
     if not condition:
         raise RuntimeError(" ".join(str(item) for item in message) or "verification failed")
@@ -45,7 +52,7 @@ for project in record['projects']:
                 require(entry[3:] in allowed, 'Unrelated change', project['path'], entry)
         for item in project['changed_files']:
             file = folder / item['path']
-            require((sha(file) if file.is_file() else None) == item['sha256'], project['path'], item['path'])
+            verify_file(file, item)
     else:
         require(head == project['upstream_commit'], project['path'], head)
         require(not git(folder, 'status', '--porcelain').strip(), project['path'])
@@ -57,5 +64,5 @@ if not args.verify_applied:
         git(folder, 'apply', str(BUNDLE / project['patch']))
         for item in project['changed_files']:
             file = folder / item['path']
-            require((sha(file) if file.is_file() else None) == item['sha256'], project['path'], item['path'])
+            verify_file(file, item)
 print('Pinned recovery source inputs verified.' if args.verify_applied else 'Both patches applied and exact changed-file hashes verified.')

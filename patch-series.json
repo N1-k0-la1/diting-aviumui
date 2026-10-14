@@ -514,6 +514,20 @@
       "original_commit": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
       "patch": "patches/round2-20261014/03_device_xiaomi_sm8450-common.patch",
       "sha256": "9bdc741d419cc3c5fdddd3f2f78b38b7a49fd690a94c079f8bcf1ef694a0efac"
+    },
+    {
+      "project": "packages/modules/Bluetooth",
+      "base": "d8298bdb7bdad380b899e1586a486e520bf13e7d",
+      "original_commit": "3fe447c1be16a3c0974918707e08f6794710ea9d",
+      "patch": "patches/round3-20261014/01_packages_modules_Bluetooth.patch",
+      "sha256": "40710620c589b0ecee9a68e0fa316d4d1d9a20bd96afb1bf29cd3399bebd6414"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "088dbc75c5126ae2c17b8f6c0b8bdd0e1941d9ef",
+      "original_commit": "2b6bc70a186356c59a0aef35fb9c65ab776936dc",
+      "patch": "patches/round3-20261014/02_packages_apps_Settings.patch",
+      "sha256": "479185de023a619c61a73dd29d4d3823e4c2506ba180e6bc3b5993154d556dee"
     }
   ],
   "upstream_bases": {
@@ -604,7 +618,7 @@
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
     "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
     "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
-    "packages/apps/Settings": "088dbc75c5126ae2c17b8f6c0b8bdd0e1941d9ef",
+    "packages/apps/Settings": "2b6bc70a186356c59a0aef35fb9c65ab776936dc",
     "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
     "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
     "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
@@ -614,7 +628,7 @@
     "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
     "kernel/xiaomi/sm8450": "930e6f73f237a02005667e9dc7c453d1d9313bc9",
     "packages/apps/Aperture": "f8c47580e8d6c9de1e7a1ef1fde7c5e519def5c8",
-    "packages/modules/Bluetooth": "d8298bdb7bdad380b899e1586a486e520bf13e7d",
+    "packages/modules/Bluetooth": "3fe447c1be16a3c0974918707e08f6794710ea9d",
     "hardware/interfaces": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
     "bionic": "407839baae0c3f009a8c611ddc69d987b34e3016",
     "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
@@ -631,6 +645,12 @@
     "date": "2026-10-14",
     "report": "ROUND2-REVIEW-20261014.md",
     "patch_count": 3,
+    "released_artifacts_rebuilt": false
+  },
+  "round3_corrections": {
+    "date": "2026-10-14",
+    "report": "ROUND3-REVIEW-20261014.md",
+    "patch_count": 2,
     "released_artifacts_rebuilt": false
   }
 }

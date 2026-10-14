@@ -37,14 +37,21 @@ files={
  'android/system/OsConstants.java':'package android.system; public class OsConstants {public static final int PROT_READ=1;}',
  'android/content/ComponentName.java':'package android.content; public class ComponentName {}',
  'android/content/Intent.java':'package android.content; public class Intent {public Intent(Object a,Class<?> b){} }',
- 'android/content/Context.java':'package android.content; public class Context {public static final int BIND_AUTO_CREATE=1;}',
+ 'android/content/Context.java':'''package android.content; public class Context {public static final int BIND_AUTO_CREATE=1;
+ public static android.content.om.OverlayManager manager=new android.content.om.OverlayManager();
+ public <T> T getSystemService(Class<T> c){return c.cast(manager);}public int getUserId(){return 0;} }''',
+ 'android/content/om/OverlayManager.java':'''package android.content.om; public class OverlayManager {
+ public static OverlayInfo info;public OverlayInfo getOverlayInfo(String key,android.os.UserHandle u){return info;} }''',
+ 'android/content/om/OverlayInfo.java':'''package android.content.om; public class OverlayInfo {
+ public String targetPackageName="android",category="font";public boolean isMutable=true; }''',
+ 'android/os/UserHandle.java':'package android.os; public class UserHandle {public static UserHandle of(int u){return new UserHandle();}}',
  'android/content/ServiceConnection.java':'''package android.content; public interface ServiceConnection {
  void onServiceConnected(ComponentName c,android.os.IBinder b);void onServiceDisconnected(ComponentName c);void onBindingDied(ComponentName c); }''',
  'android/app/Service.java':'package android.app; public class Service {public android.os.IBinder onBind(android.content.Intent i){return null;} }',
  'android/app/Activity.java':'''package android.app; public class Activity {
- public static boolean bindResult=true;public static android.content.ServiceConnection connection;public static int unbinds;
+ public static boolean bindResult=true,throwUnbind=false,destroyed=false;public static android.content.ServiceConnection connection;public static int unbinds;
  public boolean bindService(android.content.Intent i,android.content.ServiceConnection c,int f){connection=c;return bindResult;}
- public void unbindService(android.content.ServiceConnection c){unbinds++;} public boolean isFinishing(){return false;} }''',
+ public void unbindService(android.content.ServiceConnection c){unbinds++;if(throwUnbind)throw new IllegalArgumentException("Service not registered");} public boolean isFinishing(){return false;} public boolean isDestroyed(){return destroyed;} }''',
  'android/graphics/fonts/Font.java':'''package android.graphics.fonts; public class Font {
  public static class Builder {public Builder(Object o){} public Font build(){return new Font();}} }''',
  'android/graphics/fonts/FontFamily.java':'package android.graphics.fonts; public class FontFamily {public static class Builder {public Builder(Font f){} public FontFamily build(){return new FontFamily();}}}',
@@ -63,7 +70,7 @@ import android.app.Activity;import android.content.*;import android.os.*;import 
 import android.graphics.fonts.*;import android.widget.Toast;import java.io.*;
 class R {static class string {static int font_custom_invalid=1;}}
 class ThreadUtils {static void postOnBackgroundThread(Runnable r){r.run();}}
-class Fragment {Activity getActivity(){return new Activity();}boolean isAdded(){return true;}}
+class Fragment {static boolean gone;Activity getActivity(){return gone?null:new Activity();}boolean isAdded(){return !gone;}}
 public class Completion {Fragment mFragment=new Fragment();boolean mBusy;int previews;
 void showPreview(File f,String label,Typeface t){previews++;}
 '''+method(importer,'validateIsolated')+'''
@@ -87,6 +94,19 @@ public static void main(String[] args)throws Exception {
  Message response=Message.obtain();response.arg1=1;Messenger.lastMessage.replyTo.send(response);
  if(!Handler.queue.isEmpty()||ok.mBusy||ok.previews!=1||!accepted.exists())throw new AssertionError("success completion retained timeout");
  accepted.delete();
+ Activity.throwUnbind=true;
+ Completion detached=new Completion();detached.mBusy=true;File orphan=File.createTempFile("font-test-",".ttf");
+ detached.validateIsolated(orphan,"test");Activity.connection.onServiceDisconnected(null);
+ if(orphan.exists()||detached.mBusy||!Handler.queue.isEmpty())throw new AssertionError("unbind failure skipped cleanup");
+ Activity.throwUnbind=false;Activity.destroyed=true;
+ Completion destroyed=new Completion();destroyed.mBusy=true;File abandoned=File.createTempFile("font-test-",".ttf");
+ destroyed.validateIsolated(abandoned,"test");
+ if(abandoned.exists()||destroyed.mBusy||!Handler.queue.isEmpty())throw new AssertionError("destroyed activity retained import");
+ Activity.destroyed=false;
+ Fragment.gone=true;
+ Completion missing=new Completion();missing.mBusy=true;File lost=File.createTempFile("font-test-",".ttf");
+ missing.validateIsolated(lost,"test");if(lost.exists()||missing.mBusy)throw new AssertionError("absent activity retained import");
+ Fragment.gone=false;
  android.os.Messenger.replies=0;
  FontImportValidationService service=new FontImportValidationService();
  java.lang.reflect.Field field=FontImportValidationService.class.getDeclaredField("mMessenger");field.setAccessible(true);
@@ -97,6 +117,33 @@ public static void main(String[] args)throws Exception {
  endpoint.handler.handleMessage(valid);
  if(Messenger.replies!=2||Messenger.last!=1)throw new AssertionError("normal validation changed");
  }
+}'''
+controller=(source/'packages/apps/Settings/src/com/android/settings/display/FontStylePreferenceController.java').read_text()
+preview=method(importer,'showPreview').split('        LinearLayout preview')[0]
+files['com/android/settings/display/OverlayGuard.java']='''package com.android.settings.display;
+import android.content.*;import android.content.om.*;import android.os.*;import android.app.*;
+import java.io.*;import android.graphics.Typeface;
+class FontStyleConfig {static final String CATEGORY="font";}
+public class OverlayGuard {
+Fragment mFragment=new Fragment();boolean previewCreated;
+'''+method(controller,'hasOverlay')+'\n'+preview+'''        previewCreated=true;
+}
+public static void main(String[] args)throws Exception {
+ Context c=new Context();OverlayManager.info=null;if(hasOverlay(c,"custom"))throw new AssertionError("missing overlay accepted");
+ OverlayInfo info=new OverlayInfo();OverlayManager.info=info;
+ if(!hasOverlay(c,"custom"))throw new AssertionError("valid overlay rejected");
+ info.targetPackageName="other";if(hasOverlay(c,"custom"))throw new AssertionError("target mismatch accepted");info.targetPackageName="android";
+ info.category="other";if(hasOverlay(c,"custom"))throw new AssertionError("category mismatch accepted");info.category="font";
+ info.isMutable=false;if(hasOverlay(c,"custom"))throw new AssertionError("immutable overlay accepted");
+ Context.manager=null;if(hasOverlay(c,"custom"))throw new AssertionError("missing manager accepted");
+ for(int state=0;state<3;state++){
+  Fragment.gone=state==0;Activity.destroyed=state==1;
+  OverlayGuard guard=new OverlayGuard();File f=File.createTempFile("preview-test-",".font");
+  guard.showPreview(f,"test",null);
+  if(state<2&&(f.exists()||guard.previewCreated))throw new AssertionError("dead preview activity used");
+  if(state==2&&!guard.previewCreated)throw new AssertionError("normal preview blocked");f.delete();
+ }
+}
 }'''
 store=(source/'frameworks/base/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java').read_text()
 files['BootCleanup.java']='''import java.io.*;import org.json.JSONObject;
@@ -119,6 +166,6 @@ with tempfile.TemporaryDirectory(prefix='font-lifecycle-') as tmp:
  d=pathlib.Path(tmp)
  for n,t in files.items():p=d/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(t)
  subprocess.run([str(java/'javac'),'-d',str(d),*[str(d/n) for n in files]],check=True)
- for cls in ('com.android.settings.display.Completion','BootCleanup'):
+ for cls in ('com.android.settings.display.Completion','BootCleanup','com.android.settings.display.OverlayGuard'):
   subprocess.run([str(java/'java'),'-cp',str(d),cls],check=True)
-print('PASS: absent/valid IPC reply, completion/bind-failure/timeout callback removal, boot orphan cleanup')
+print('PASS: IPC reply, callback removal, unbind exception cleanup, absent/destroyed Activity, preview guard, custom overlay validation, boot orphan cleanup')

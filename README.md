@@ -14,7 +14,7 @@ GMS 已在 12T Pro 刷入开机，维护者反馈手动验收除 LHDC 外正常�
 - [修正版 OrangeFox / Tested Recovery](OFRP-INSTALL.md)：12T Pro 在本 ROM 上完成启动、触摸/唤醒、完整 ZIP 安装、系统开机及快照合并；K50 至尊版与从 HyperOS 3.0.6 直接启动尚未验证。
 - [对应 Recovery 源码 / Corresponding source](recovery/orangefox-diting-20261010-bootctrl/README.md)。首版失败候选作为历史记录保留。
 
-源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 73 份有序补丁。
+源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 75 份有序补丁。
 20261014 最新源码、字体功能和审查修复见 [完整审查报告](FULL-REVIEW-20261014.md)；以上历史发布镜像保持原 SHA256，不含后续源码更新。
 Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。
 本仓库未托管 ROM 二进制；网盘发布由维护者提供。
@@ -61,3 +61,5 @@ The repository contains pinned upstream sources and ordered patches, not the ful
 Private signing keys, device logs, personal backups, and third-party root modules are excluded.
 
 第二轮反馈核实与修复见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)。
+
+第三轮反馈核实与修复见 [ROUND3-REVIEW-20261014.md](ROUND3-REVIEW-20261014.md)。

@@ -1,0 +1,124 @@
+diff --git a/src/com/android/settings/display/CustomFontImport.java b/src/com/android/settings/display/CustomFontImport.java
+index 201178d776afe0f43cdabdf8fb097b896fc50e95..5a4bdabb434b8ed1b03a31516d876569cef555d8 100644
+--- a/src/com/android/settings/display/CustomFontImport.java
++++ b/src/com/android/settings/display/CustomFontImport.java
+@@ -65,7 +65,8 @@ final class CustomFontImport {
+     }
+ 
+     void pick() {
+-        if (mBusy) return;
++        if (mBusy || !FontStylePreferenceController.hasOverlay(
++                mFragment.getContext(), FontStyleConfig.CUSTOM)) return;
+         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+         intent.addCategory(Intent.CATEGORY_OPENABLE);
+         intent.setType("*/*");
+@@ -124,6 +125,11 @@ final class CustomFontImport {
+ 
+     private void validateIsolated(File file, String label) {
+         Activity activity = mFragment.getActivity();
++        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
++            mBusy = false;
++            file.delete();
++            return;
++        }
+         Handler handler = new Handler(Looper.getMainLooper());
+         final boolean[] finished = {false};
+         final boolean[] bound = {false};
+@@ -133,9 +139,13 @@ final class CustomFontImport {
+             if (finished[0]) return;
+             finished[0] = true;
+             handler.removeCallbacks(timeout[0]);
+-            if (bound[0]) activity.unbindService(connection[0]);
++            if (bound[0]) {
++                bound[0] = false;
++                try { activity.unbindService(connection[0]); }
++                catch (IllegalArgumentException ignored) { /* Activity already unbound. */ }
++            }
+             mBusy = false;
+-            if (!valid || !mFragment.isAdded() || activity.isFinishing()) {
++            if (!valid || !mFragment.isAdded() || activity.isFinishing() || activity.isDestroyed()) {
+                 file.delete();
+                 if (mFragment.isAdded()) Toast.makeText(activity, R.string.font_custom_invalid, Toast.LENGTH_LONG).show();
+                 return;
+@@ -194,6 +204,10 @@ final class CustomFontImport {
+ 
+     private void showPreview(File file, String label, Typeface typeface) {
+         Activity activity = mFragment.getActivity();
++        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
++            file.delete();
++            return;
++        }
+         LinearLayout preview = new LinearLayout(activity);
+         preview.setOrientation(LinearLayout.VERTICAL);
+         int padding = Math.round(24 * activity.getResources().getDisplayMetrics().density);
+@@ -222,6 +236,9 @@ final class CustomFontImport {
+         ThreadUtils.postOnBackgroundThread(() -> {
+             boolean success = false;
+             try (ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)) {
++                if (!FontStylePreferenceController.hasOverlay(activity, FontStyleConfig.CUSTOM)) {
++                    throw new IllegalStateException("Custom font overlay unavailable");
++                }
+                 manager().installUserCustomFont(descriptor, label);
+                 success = true;
+             } catch (Exception | LinkageError e) { /* Keep the previous theme selection on failure. */ }
+diff --git a/src/com/android/settings/display/FontStylePreferenceController.java b/src/com/android/settings/display/FontStylePreferenceController.java
+index 3c9ff1ed623d718c5da080d725ceef687eae38a9..90f811c9ef1d81d085feda452674190c94358d04 100644
+--- a/src/com/android/settings/display/FontStylePreferenceController.java
++++ b/src/com/android/settings/display/FontStylePreferenceController.java
+@@ -31,14 +31,19 @@ public class FontStylePreferenceController extends BasePreferenceController {
+         if (manager == null) return false;
+         for (String key : new String[] {
+                 FontStyleConfig.CONDENSED, FontStyleConfig.SOURCE, FontStyleConfig.SERIF}) {
+-            OverlayInfo info = manager.getOverlayInfo(key, UserHandle.of(context.getUserId()));
+-            if (info == null || !"android".equals(info.targetPackageName)
+-                    || !FontStyleConfig.CATEGORY.equals(info.category)
+-                    || !info.isMutable) return false;
++            if (!hasOverlay(context, key)) return false;
+         }
+         return true;
+     }
+ 
++    static boolean hasOverlay(Context context, String key) {
++        OverlayManager manager = context.getSystemService(OverlayManager.class);
++        if (manager == null) return false;
++        OverlayInfo info = manager.getOverlayInfo(key, UserHandle.of(context.getUserId()));
++        return info != null && "android".equals(info.targetPackageName)
++                && FontStyleConfig.CATEGORY.equals(info.category) && info.isMutable;
++    }
++
+     @Override
+     public CharSequence getSummary() {
+         String key = FontStyleConfig.selectedKey(Settings.Secure.getStringForUser(
+diff --git a/src/com/android/settings/display/FontStyleSettings.java b/src/com/android/settings/display/FontStyleSettings.java
+index bfd9b7872b2c7d874c35367be3f474bed0582a63..261f3f347ae7ef826086fb11f5fb5915fa5353b0 100644
+--- a/src/com/android/settings/display/FontStyleSettings.java
++++ b/src/com/android/settings/display/FontStyleSettings.java
+@@ -80,7 +80,8 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         list.add(new FontCandidate(FontStyleConfig.SOURCE, "source-sans-pro"));
+         list.add(new FontCandidate(FontStyleConfig.SERIF, "serif"));
+         android.os.Bundle imported = CustomFontImport.status();
+-        if (imported != null && imported.getBoolean("available")) {
++        if (imported != null && imported.getBoolean("available")
++                && FontStylePreferenceController.hasOverlay(getContext(), FontStyleConfig.CUSTOM)) {
+             list.add(new FontCandidate(FontStyleConfig.CUSTOM, "diting-user-custom"));
+         }
+         return list;
+@@ -102,7 +103,7 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+             if (imported == null || !imported.getBoolean("available")) return false;
+         }
+         if (!FontStyleConfig.DEFAULT.equals(key)
+-                && !FontStylePreferenceController.hasPresets(getContext())) return false;
++                && !FontStylePreferenceController.hasOverlay(getContext(), key)) return false;
+         try {
+             String current = Settings.Secure.getStringForUser(getContext().getContentResolver(),
+                     Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
+@@ -146,7 +147,8 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         note.setSelectable(false);
+         screen.addPreference(note);
+         android.os.Bundle imported = CustomFontImport.status();
+-        if (imported != null && imported.getBoolean("supported")) {
++        if (imported != null && imported.getBoolean("supported")
++                && FontStylePreferenceController.hasOverlay(getContext(), FontStyleConfig.CUSTOM)) {
+             Preference pick = new Preference(getPrefContext());
+             pick.setKey("font_custom_import");
+             pick.setTitle(R.string.font_custom_import);

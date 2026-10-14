@@ -1,5 +1,5 @@
 """Regression checks using real helper scripts and extracted production functions."""
-import hashlib, importlib.util, json, os, pathlib, re, shutil, subprocess, sys, tempfile
+import hashlib, importlib.util, json, os, pathlib, shutil, subprocess, sys, tempfile
 from unittest.mock import patch
 
 PUBLIC = pathlib.Path(__file__).resolve().parents[1]
@@ -19,14 +19,6 @@ def repo(p):
     p.mkdir(parents=True); run('git','init','-q',str(p)); (p/'.gitignore').write_text('lib\n')
     run('git','-C',str(p),'add','.gitignore'); run('git','-C',str(p),'-c','user.name=Fixture','-c','user.email=fixture@localhost','commit','-qm','fixture')
     return run('git','-C',str(p),'rev-parse','HEAD')
-def function(text,name):
-    match=re.search(r'^[^\n]*\b'+re.escape(name)+r'\([^;{]*\)\s*\{',text,re.M)
-    if not match: raise RuntimeError('Missing definition '+name)
-    start=match.start(); opening=match.end()-1; depth=1; pos=opening+1
-    while depth:
-        depth += (text[pos]=='{')-(text[pos]=='}'); pos+=1
-    return text[start:pos]
-
 with tempfile.TemporaryDirectory(prefix='review-regression-') as directory:
     d=pathlib.Path(directory); source=d/'src'; head=repo(source/'project'); inputs=d/'inputs'; inputs.mkdir()
     m=load(PUBLIC/'tools/apply-patches.py'); package=d/'package'; package.mkdir(); m.PACKAGE=package
@@ -48,6 +40,18 @@ with tempfile.TemporaryDirectory(prefix='review-regression-') as directory:
     with patch.object(sys,'argv',argv): expect_error(m.main,'not a directory')
     assert not (source/'.patch-application-in-progress').exists()
     checks.append('collision preflight left source and marker unchanged')
+    collision.parent.unlink(); collision.parent.mkdir()
+    target=collision.parent/'inside'; target.write_bytes(b'do not overwrite')
+    for dest in (target,collision.parent/'missing'):
+        collision.symlink_to(dest)
+        with patch.object(sys,'argv',argv): expect_error(m.main,'Symlink in input path')
+        assert not (source/'.patch-application-in-progress').exists()
+        assert target.read_bytes()==b'do not overwrite' and not (collision.parent/'missing').exists()
+        collision.unlink()
+    target.unlink();collision.parent.rmdir();collision.parent.write_bytes(b'not a directory')
+    parent_link=source/'project/internal-link';parent_link.symlink_to(inputs,target_is_directory=True)
+    expect_error(lambda:m.contained(source,'project/internal-link/nested'),'Symlink in input path')
+    parent_link.unlink()
 
     prep=load(PUBLIC/'tools/prepare-media-inputs.py'); prep.PACKAGE=package
     donor=d/'donor'; donor.mkdir(); (donor/'a').write_bytes(b'a'); (donor/'b').write_bytes(b'b')
@@ -75,6 +79,24 @@ with tempfile.TemporaryDirectory(prefix='review-regression-') as directory:
         record['projects'][0]['patch_sha256']=sha(b/'p.patch'); (b/'SOURCE.json').write_text(json.dumps(record)); (source/'project/dirty').write_text('dirty')
         result=subprocess.run([sys.executable,'-O',str(b/'apply-source.py'),str(source)],capture_output=True,text=True); assert result.returncode and "RuntimeError: project" in result.stderr
         (source/'project/dirty').unlink(); checks.append(bundle+': bad patch and dirty tree rejected optimized')
+        executable=source/'project/run.sh';executable.write_bytes(b'#!/bin/sh\n')
+        record['projects'][0].update(local_build_commit=head,changed_files=[{'path':'run.sh','sha256':sha(executable),'git_mode':'100755'}])
+        (b/'SOURCE.json').write_text(json.dumps(record))
+        for optimize in (False,True):
+            executable.chmod(0o644)
+            command=[sys.executable]+(['-O'] if optimize else [])+[str(b/'apply-source.py'),str(source),'--verify-applied']
+            result=subprocess.run(command,capture_output=True,text=True)
+            assert result.returncode and 'Executable mode mismatch' in result.stderr,result.stderr
+            executable.chmod(0o755)
+            result=subprocess.run(command,capture_output=True,text=True)
+            assert result.returncode==0,result.stderr
+            checks.append(bundle+': executable mode rejected and restored '+('optimized' if optimize else 'normal'))
+        executable.unlink()
+        linked=b/'mode-target';linked.write_bytes(b'#!/bin/sh\n');linked.chmod(0o755)
+        executable.symlink_to(linked)
+        result=subprocess.run(command,capture_output=True,text=True)
+        assert result.returncode and 'Not a regular source file' in result.stderr,result.stderr
+        executable.unlink();checks.append(bundle+': matching-content executable symlink rejected')
 
 
     # Via replaces a tracked upstream APK, but must reject an ignored collision.
