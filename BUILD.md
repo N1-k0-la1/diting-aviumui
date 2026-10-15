@@ -1,6 +1,6 @@
 # 20261015 最新定制源码输入
 
-当前是 79 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错、2 份第三轮蓝牙/字体边界处理、4 份全局字体/防误触/指纹/文件夹模糊修复。
+当前是 85 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错、2 份第三轮蓝牙/字体边界处理、4 份全局字体/防误触/指纹/文件夹模糊修复、6 份第五轮生命周期及边界修复。
 GMS / Vanilla 媒体包均已完成构建和电脑侧校验，实机验证范围见 MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json；Vanilla 实机测试仍待完成。
 媒体包启用 `TARGET_DITING_DOLBY_VISION=true`，杜比源码默认关闭。
 第二轮集成纠错及回归检查详见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)；此前审查见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
@@ -22,7 +22,7 @@ python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor 
 额外 XML、init、策略、ABI 桥接源码、LHDC 头文件和 diting 原厂屏幕配置在有序文本补丁中。
 构建者需按自己的使用/分发范围确认外部专有组件许可；提供来源不代表转授其许可。
 
-English: The series now has 79 ordered patches. Supply exact donor ELF inputs separately;
+English: The series now has 85 ordered patches. Supply exact donor ELF inputs separately;
 the preparation tool verifies pinned commits and SHA256 before creating a new input directory.
 The GMS media candidate enables `TARGET_DITING_DOLBY_VISION=true`; the feature defaults off.
 Both GMS and Vanilla media artifacts have been built and host-qualified; Vanilla phone testing remains pending. Historical validation details follow.
@@ -126,3 +126,7 @@ python3 tests/global-font-device-regressions.py /path/to/patched/android --adb /
 ```
 
 设备字体测试需要已构建的 framework.jar、SDK/JDK 21、Android 16 和 su；仅运行临时进程，不安装字体、不改系统配置、不重启。请使用与原字体明显不同的已有字体文件。
+
+第五轮核实、修复与未成立的审查项见 [ROUND5-REVIEW-20261015.md](ROUND5-REVIEW-20261015.md)。已交付测试包不含本轮追加补丁。
+
+单独运行指纹生命周期/guest guard 主机回归：`python3 tests/session-lifecycle-regressions.py /path/to/patched/android`；该套件也由 fingerprint-mistouch-regressions.py 调用。

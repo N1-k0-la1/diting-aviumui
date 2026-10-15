@@ -1,0 +1,27 @@
+diff --git a/quickstep/src/com/android/quickstep/util/BaseDepthController.java b/quickstep/src/com/android/quickstep/util/BaseDepthController.java
+index cc3b5c3077fb3f608349e06999ed263e3d77bf37..4e223ea1c250d33b48b52793720b4c6d9211611b 100644
+--- a/quickstep/src/com/android/quickstep/util/BaseDepthController.java
++++ b/quickstep/src/com/android/quickstep/util/BaseDepthController.java
+@@ -249,6 +249,8 @@ public class BaseDepthController {
+                 && blurAmount != 1f) {
+             Log.d(TAG, "Skipping small blur delta. newBlur: " + newBlur + " previousBlur: "
+                     + previousBlur + " delta: " + delta + " surface: " + blurSurface);
++            // Icon RenderEffects also depend on folderDepth and the current state policy.
++            blurWorkspaceDepthTargets();
+             return;
+         }
+         mCurrentBlur = newBlur;
+@@ -377,6 +379,13 @@ public class BaseDepthController {
+             depthF = depthI / 256f;
+         }
+         if (Float.compare(mDepth, depthF) == 0) {
++            // The max aggregate can stay unchanged while the folder or state policy changes.
++            if (BlurUtils.supportsBlursOnWindows() && mBaseSurface != null
++                    && mBaseSurface.isValid()) {
++                blurWorkspaceDepthTargets();
++            } else {
++                clearWorkspaceDepthTargets();
++            }
+             return;
+         }
+         mDepth = depthF;

@@ -30,9 +30,15 @@ class Codec {
  int mCodecType=1,mSampleRate=48000,mBitsPerSample=24,mChannelMode=2;
  long mCodecSpecific1=0x8000,mCodecSpecific2=0x8000,mCodecSpecific3=0x4c000000,mCodecSpecific4=4;
  static final int SAMPLE_RATE_NONE=0,BITS_PER_SAMPLE_NONE=0,CHANNEL_MODE_NONE=0;
-''' + method(bt, 'similarCodecFeedingParameters').replace('BluetoothCodecConfig', 'Codec') + '''
+''' + method(bt, 'similarCodecFeedingParameters').replace('BluetoothCodecConfig', 'Codec') + '\n' + method(bt, 'sameAudioFeedingParameters').replace('BluetoothCodecConfig', 'Codec') + '''
  public static void main(String[] args) {
   Codec a=new Codec(),b=new Codec();
+  b.mCodecSpecific1=1;b.mCodecSpecific2=2;b.mCodecSpecific3=3;b.mCodecSpecific4=0;
+  if(!a.sameAudioFeedingParameters(b)||!b.sameAudioFeedingParameters(a))throw new AssertionError("vendor flags affect PCM equality");
+  if(a.sameAudioFeedingParameters(null))throw new AssertionError("null PCM config");
+  b.mSampleRate=96000;if(a.sameAudioFeedingParameters(b))throw new AssertionError("PCM rate");b.mSampleRate=48000;
+  b.mBitsPerSample=16;if(a.sameAudioFeedingParameters(b))throw new AssertionError("PCM bits");b.mBitsPerSample=24;
+  b.mChannelMode=1;if(a.sameAudioFeedingParameters(b))throw new AssertionError("PCM channels");b.mChannelMode=2;
   if(!a.similarCodecFeedingParameters(b))throw new AssertionError("nonzero flags");
   b.mSampleRate=0;b.mBitsPerSample=0;b.mChannelMode=0;
   if(!a.similarCodecFeedingParameters(b)||!b.similarCodecFeedingParameters(a))throw new AssertionError("wildcards");

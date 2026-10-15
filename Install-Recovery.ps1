@@ -4,11 +4,14 @@ param(
     [Parameter(Mandatory=$true)][string]$Serial,
     [ValidateSet('gms','vanilla')][string]$Flavour='gms',
     [string]$FastbootPath='fastboot.exe',
+    [string]$ManifestPath='MANIFEST.json',
     [switch]$FlashRecovery
 )
 $ErrorActionPreference='Stop'
 if ($Serial -notmatch '^[A-Za-z0-9._:-]+$') { throw 'Invalid target serial' }
-$manifestRelease = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'MANIFEST.json') -Raw | ConvertFrom-Json
+$manifestPathRelease=if ([IO.Path]::IsPathRooted($ManifestPath)) { $ManifestPath }
+    else { Join-Path $PSScriptRoot $ManifestPath }
+$manifestRelease = Get-Content -LiteralPath $manifestPathRelease -Raw | ConvertFrom-Json
 $candidatesRelease = @($manifestRelease.candidates | Where-Object flavour -CEQ $Flavour)
 if ($candidatesRelease.Count -ne 1) { throw 'Missing matching candidate' }
 $candidateRelease=$candidatesRelease[0]
@@ -40,19 +43,26 @@ function Invoke-ReleaseFastboot([string[]]$Arguments) {
     $infoRelease.RedirectStandardOutput=$true
     $infoRelease.RedirectStandardError=$true
     $processRelease=[Diagnostics.Process]::Start($infoRelease)
-    $stdoutRelease=$processRelease.StandardOutput.ReadToEndAsync()
-    $stderrRelease=$processRelease.StandardError.ReadToEndAsync()
-    if (-not $processRelease.WaitForExit(60000)) {
-        $processRelease.Kill()
-        throw 'Fastboot timed out. Preserve the current phone mode and stop further writes.'
+    try {
+        $stdoutRelease=$processRelease.StandardOutput.ReadToEndAsync()
+        $stderrRelease=$processRelease.StandardError.ReadToEndAsync()
+        if (-not $processRelease.WaitForExit(60000)) {
+            $processRelease.Kill()
+            throw 'Fastboot timed out. Preserve the current phone mode and stop further writes.'
+        }
+        if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($stdoutRelease,$stderrRelease),5000)) {
+            throw 'Fastboot output timed out. Stop further writes.'
+        }
+        $outputRelease=$stdoutRelease.Result+"`n"+$stderrRelease.Result
+        if ($processRelease.ExitCode -ne 0) { throw "Fastboot failed: $($Arguments -join ' ')`n$outputRelease" }
+        return $outputRelease
+    } finally {
+        $processRelease.Dispose()
     }
-    $outputRelease=$stdoutRelease.Result+"`n"+$stderrRelease.Result
-    if ($processRelease.ExitCode -ne 0) { throw "Fastboot failed: $($Arguments -join ' ')`n$outputRelease" }
-    return $outputRelease
 }
 function Read-ReleaseVariable([string]$Name) {
     $outputRelease=Invoke-ReleaseFastboot @('getvar',$Name)
-    $matchRelease=[regex]::Match($outputRelease,'(?m)^(?:\(bootloader\)\s*)?' + [regex]::Escape($Name) + ':\s*(\S+)')
+    $matchRelease=[regex]::Match($outputRelease,'(?m)^(?:\(bootloader\)[ \t]*)?' + [regex]::Escape($Name) + ':[ \t]*(\S+)')
     if (-not $matchRelease.Success) { throw "Cannot parse Fastboot variable: $Name" }
     return $matchRelease.Groups[1].Value
 }

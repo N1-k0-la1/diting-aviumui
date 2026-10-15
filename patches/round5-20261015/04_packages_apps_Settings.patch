@@ -1,0 +1,176 @@
+diff --git a/res/layout/bluetooth_lhdc_audio_latency_dialog.xml b/res/layout/bluetooth_lhdc_audio_latency_dialog.xml
+old mode 100755
+new mode 100644
+diff --git a/res/layout/bluetooth_lhdc_audio_lossless_dialog.xml b/res/layout/bluetooth_lhdc_audio_lossless_dialog.xml
+old mode 100755
+new mode 100644
+diff --git a/res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml b/res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml
+old mode 100755
+new mode 100644
+diff --git a/res/layout/bluetooth_lhdc_audio_quality_dialog.xml b/res/layout/bluetooth_lhdc_audio_quality_dialog.xml
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+old mode 100755
+new mode 100644
+diff --git a/src/com/android/settings/display/CustomFontImport.java b/src/com/android/settings/display/CustomFontImport.java
+index 5a4bdabb434b8ed1b03a31516d876569cef555d8..db5db89a8af2aae31c1dff7e8b8cade026881cab 100644
+--- a/src/com/android/settings/display/CustomFontImport.java
++++ b/src/com/android/settings/display/CustomFontImport.java
+@@ -42,6 +42,8 @@ final class CustomFontImport {
+     static final int REQUEST_FONT = 6401;
+     private final FontStyleSettings mFragment;
+     private boolean mBusy;
++    private String mPreviewDigest;
++    private Typeface mPreviewTypeface;
+ 
+     CustomFontImport(FontStyleSettings fragment) { mFragment = fragment; }
+ 
+@@ -56,11 +58,24 @@ final class CustomFontImport {
+         } catch (Exception | LinkageError e) { return null; }
+     }
+ 
+-    static Typeface previewTypeface() {
++    Typeface previewTypeface(Bundle imported) {
++        String digest = imported == null || !imported.getBoolean("available")
++                ? null : imported.getString("digest");
++        if (digest == null) {
++            mPreviewDigest = null;
++            mPreviewTypeface = null;
++            return Typeface.DEFAULT;
++        }
++        if (digest.equals(mPreviewDigest) && mPreviewTypeface != null) return mPreviewTypeface;
++        mPreviewDigest = null;
++        mPreviewTypeface = null;
+         try (ParcelFileDescriptor descriptor = manager().openUserCustomFont()) {
+             Font font = new Font.Builder(descriptor).build();
+-            return new Typeface.CustomFallbackBuilder(new FontFamily.Builder(font).build())
++            Typeface preview = new Typeface.CustomFallbackBuilder(new FontFamily.Builder(font).build())
+                     .setSystemFallback("sans-serif").build();
++            mPreviewDigest = digest;
++            mPreviewTypeface = preview;
++            return preview;
+         } catch (Exception | LinkageError e) { return Typeface.DEFAULT; }
+     }
+ 
+@@ -260,9 +275,14 @@ final class CustomFontImport {
+                 .setNegativeButton(android.R.string.cancel, null)
+                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                     try {
++                        Bundle imported = status();
++                        boolean restartRequired = mFragment.isCustomFontSelected()
++                                || (imported != null && imported.getBoolean("activeAtBoot"));
+                         if (!mFragment.restoreBeforeRemovingImport()) throw new IllegalStateException();
+                         manager().removeUserCustomFont();
+-                        activity.recreate();
++                        mPreviewDigest = null;
++                        mPreviewTypeface = null;
++                        mFragment.onCustomFontRemoved(restartRequired);
+                     } catch (Exception | LinkageError e) {
+                         Toast.makeText(activity, R.string.font_custom_apply_error, Toast.LENGTH_LONG).show();
+                     }
+diff --git a/src/com/android/settings/display/FontStyleSettings.java b/src/com/android/settings/display/FontStyleSettings.java
+index 61809ab9b431cb515167b652051b8adedefe61fc..99f30aa5608973d2fd0a72686132c6d63ac68b11 100644
+--- a/src/com/android/settings/display/FontStyleSettings.java
++++ b/src/com/android/settings/display/FontStyleSettings.java
+@@ -37,6 +37,7 @@ import java.util.List;
+ public class FontStyleSettings extends RadioButtonPickerFragment {
+     private final CustomFontImport mCustomImport = new CustomFontImport(this);
+     private boolean mCustomSelection;
++    private android.os.Bundle mImportedStatus;
+     private static final String TAG = "FontStyleSettings";
+     private final ContentObserver mThemeObserver = new ContentObserver(
+             new Handler(Looper.getMainLooper())) {
+@@ -55,6 +56,7 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+     @Override
+     public void onResume() {
+         super.onResume();
++        updateCandidates();
+         getContext().getContentResolver().registerContentObserver(
+                 Settings.Secure.getUriFor(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES),
+                 false, mThemeObserver, mUserId);
+@@ -79,7 +81,7 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         list.add(new FontCandidate(FontStyleConfig.CONDENSED, "sans-serif-condensed"));
+         list.add(new FontCandidate(FontStyleConfig.SOURCE, "source-sans-pro"));
+         list.add(new FontCandidate(FontStyleConfig.SERIF, "serif"));
+-        android.os.Bundle imported = CustomFontImport.status();
++        android.os.Bundle imported = mImportedStatus = CustomFontImport.status();
+         if (imported != null && imported.getBoolean("available")
+                 && FontStylePreferenceController.hasOverlay(getContext(), FontStyleConfig.CUSTOM)) {
+             list.add(new FontCandidate(FontStyleConfig.CUSTOM, "diting-user-custom"));
+@@ -121,10 +123,7 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+     @Override
+     protected void onSelectionPerformed(boolean success) {
+         if (success) {
+-            new android.app.AlertDialog.Builder(getContext()).setMessage(R.string.font_style_restart_note)
+-                    .setNegativeButton(R.string.font_custom_later, null)
+-                    .setPositiveButton(R.string.font_custom_restart, (dialog, which) ->
+-                            getContext().getSystemService(android.os.PowerManager.class).reboot(null)).show();
++            showRestartDialog();
+         }
+         if (!success) Toast.makeText(getContext(), R.string.font_style_apply_error,
+                 Toast.LENGTH_LONG).show();
+@@ -178,7 +177,9 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         ((FontPreviewPreference) preference).mFamily = android.graphics.Typeface.getSystemFontMap().containsKey(stockPreview)
+                 ? stockPreview : candidate.family;
+         if (FontStyleConfig.CUSTOM.equals(key)) {
+-            ((FontPreviewPreference) preference).mImportedTypeface = CustomFontImport.previewTypeface();
++            ((FontPreviewPreference) preference).mImportedTypeface = mCustomImport.previewTypeface(mImportedStatus);
++        } else {
++            ((FontPreviewPreference) preference).mImportedTypeface = null;
+         }
+         preference.setSingleLineTitle(false);
+         preference.setSummary(getString(R.string.font_style_preview)
+@@ -198,7 +199,7 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         @Override
+         public CharSequence loadLabel() {
+             if (FontStyleConfig.CUSTOM.equals(key)) {
+-                android.os.Bundle imported = CustomFontImport.status();
++                android.os.Bundle imported = mImportedStatus;
+                 return getString(R.string.font_custom_named, imported == null ? "" : imported.getString("label", ""));
+             }
+             return getContext().getText(FontStylePreferenceController.titleFor(key));
+@@ -233,6 +234,22 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+         if (requestCode == CustomFontImport.REQUEST_FONT) mCustomImport.result(resultCode, data);
+     }
+ 
++    private void showRestartDialog() {
++        new android.app.AlertDialog.Builder(getContext()).setMessage(R.string.font_style_restart_note)
++                .setNegativeButton(R.string.font_custom_later, null)
++                .setPositiveButton(R.string.font_custom_restart, (dialog, which) ->
++                        getContext().getSystemService(android.os.PowerManager.class).reboot(null)).show();
++    }
++
++    boolean isCustomFontSelected() {
++        return FontStyleConfig.CUSTOM.equals(getDefaultKey());
++    }
++
++    void onCustomFontRemoved(boolean restartRequired) {
++        updateCandidates();
++        if (restartRequired) showRestartDialog();
++    }
++
+     boolean restoreBeforeRemovingImport() {
+         return !FontStyleConfig.CUSTOM.equals(getDefaultKey()) || setDefaultKey(FontStyleConfig.DEFAULT);
+     }

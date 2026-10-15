@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 79,
+  "ordered_patches": 85,
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
@@ -38,13 +38,13 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 79 reconstructed from local pinned Git objects across 31 customized projects",
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 85 reconstructed from local pinned Git objects across 31 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 79,
+    "ordered_patches": 85,
     "customized_projects": 31,
     "all_git_trees_match_safe_public_revisions": true,
     "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND4-REVIEW-20261015.md"
+    "report": "ROUND5-REVIEW-20261015.md"
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,
@@ -97,5 +97,39 @@
     "reported_launcher_screenshot_reproduced": false,
     "released_rom_images_rebuilt": false,
     "report": "ROUND4-REVIEW-20261015.md"
+  },
+  "round5_20261015": {
+    "helper_regressions_passed": 24,
+    "production_regression_groups_passed": 8,
+    "font_lifecycle_preview_cache_removal_and_orphan_repair_passed": true,
+    "full_mistouch_controller_selected_user_and_window_failures_passed": true,
+    "session_lifecycle_concurrency_and_authentication_lockout_asan_ubsan_passed": true,
+    "folder_actual_depth_dispatch_and_three_negative_controls_passed": true,
+    "guest_guard_checked_iterator_substitute_and_negative_control_passed": true,
+    "actual_protobuf_crash_reproduced": false,
+    "occlusion_and_volume_callback_claims_not_confirmed": true,
+    "idmap_cache_miss_claim_not_confirmed": true,
+    "installer_mock_cases_passed": 8,
+    "normalized_custom_source_modes": 28,
+    "final_android_component_build_passed": true,
+    "built_components": [
+      "services",
+      "SystemUI",
+      "Settings",
+      "Launcher3QuickStep",
+      "framework-bluetooth",
+      "android.hardware.biometrics.fingerprint-service.xiaomi",
+      "idmap2d",
+      "libdebuggerd"
+    ],
+    "previous_79_patches_byte_identical": true,
+    "historical_rom_recovery_hashes_unchanged": true,
+    "public_git_tree_replay_projects": 31,
+    "private_system_core_delta_exported": false,
+    "k50_ultra_enrollment_hardware_acceptance_pending": true,
+    "full_device_cts_run": false,
+    "delivered_reviewfix20261015_binaries_contain_this_round": false,
+    "released_rom_images_rebuilt": false,
+    "report": "ROUND5-REVIEW-20261015.md"
   }
 }

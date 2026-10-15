@@ -4,7 +4,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('source',type=pathlib.Path)
 source=parser.parse_args().source.resolve(strict=True)
 def method(text,name):
- match=re.search(r'^.*\b'+name+r'\([^;{]*\)\s*\{',text,re.M)
+ match=re.search(r'^.*\b'+name+r'\([^;{]*\)\s*(?:throws\s+[^\{]+)?\{',text,re.M)
  pos=match.end();depth=1
  while depth:
   depth+=(text[pos]=='{')-(text[pos]=='}');pos+=1
@@ -21,6 +21,9 @@ files={
  public void removeCallbacks(Runnable r){queue.remove(r);}
  }''',
  'android/os/Bundle.java':'''package android.os; public class Bundle {Object value;
+ java.util.Map<String,Object> values=new java.util.HashMap<>();
+ public boolean getBoolean(String k){return Boolean.TRUE.equals(values.get(k));}public void putBoolean(String k,boolean v){values.put(k,v);}
+ public String getString(String k){return (String)values.get(k);}public void putString(String k,String v){values.put(k,v);}
  public <T> T getParcelable(String k,Class<T> c){return c.cast(value);} public void putParcelable(String k,Object v){value=v;} }''',
  'android/os/Message.java':'''package android.os; public class Message {public int arg1; public Messenger replyTo; Bundle data=new Bundle();
  public static Message obtain(){return new Message();} public Bundle getData(){return data;} public void setData(Bundle b){data=b;} }''',
@@ -55,7 +58,7 @@ files={
  'android/graphics/fonts/Font.java':'''package android.graphics.fonts; public class Font {
  public static class Builder {public Builder(Object o){} public Font build(){return new Font();}} }''',
  'android/graphics/fonts/FontFamily.java':'package android.graphics.fonts; public class FontFamily {public static class Builder {public Builder(Font f){} public FontFamily build(){return new FontFamily();}}}',
- 'android/graphics/Typeface.java':'package android.graphics; public class Typeface {public static class CustomFallbackBuilder {public CustomFallbackBuilder(android.graphics.fonts.FontFamily f){} public CustomFallbackBuilder setSystemFallback(String s){return this;} public Typeface build(){return new Typeface();}}}',
+ 'android/graphics/Typeface.java':'package android.graphics; public class Typeface {public static final Typeface DEFAULT=new Typeface();public static class CustomFallbackBuilder {public CustomFallbackBuilder(android.graphics.fonts.FontFamily f){} public CustomFallbackBuilder setSystemFallback(String s){return this;} public Typeface build(){return new Typeface();}}}',
  'android/graphics/Bitmap.java':'package android.graphics; public class Bitmap {public enum Config {ARGB_8888} public static Bitmap createBitmap(int a,int b,Config c){return new Bitmap();} public void recycle(){} }',
  'android/graphics/Paint.java':'package android.graphics; public class Paint {public void setTypeface(Typeface f){} public void setTextSize(int s){} }',
  'android/graphics/Canvas.java':'package android.graphics; public class Canvas {public Canvas(Bitmap b){} public void drawText(String s,int a,int b,Paint p){} }',
@@ -162,10 +165,62 @@ public static void main(String[] args)throws Exception {
  for(File f:s.mDirectory.listFiles())f.delete();s.mDirectory.delete();
  }
 }'''
+files['android/os/ParcelFileDescriptor.java']='''package android.os;public class ParcelFileDescriptor implements AutoCloseable {public void close(){}}'''
+files['PreviewCache.java']='''import android.os.*;import android.graphics.Typeface;import android.graphics.fonts.*;
+class PreviewCache {String mPreviewDigest;Typeface mPreviewTypeface;static int opens;static boolean fail;
+static PreviewCache manager(){return new PreviewCache();}ParcelFileDescriptor openUserCustomFont()throws Exception{opens++;if(fail)throw new Exception();return new ParcelFileDescriptor();}
+'''+method(importer,'previewTypeface')+'''
+public static void main(String[] args){PreviewCache p=new PreviewCache();Bundle b=new Bundle();b.putBoolean("available",true);b.putString("digest","A");
+Typeface a=p.previewTypeface(b);if(opens!=1||a==Typeface.DEFAULT)throw new AssertionError();
+for(int i=0;i<20;i++)if(p.previewTypeface(b)!=a)throw new AssertionError();if(opens!=1)throw new AssertionError("repeated preview IPC");
+b.putString("digest","B");if(p.previewTypeface(b)==a||opens!=2)throw new AssertionError("stale replacement preview");
+b.putBoolean("available",false);if(p.previewTypeface(b)!=Typeface.DEFAULT||p.mPreviewTypeface!=null)throw new AssertionError("removed preview retained");
+b.putBoolean("available",true);fail=true;if(p.previewTypeface(b)!=Typeface.DEFAULT)throw new AssertionError();fail=false;
+if(p.previewTypeface(b)==Typeface.DEFAULT||opens!=4)throw new AssertionError("failure cached permanently");
+}}
+'''
+files['DestinationRepair.java']='''import java.io.*;import org.json.JSONObject;
+class VerityUtils {static boolean sealed;static boolean hasFsverity(String p){return sealed;}}
+class DestinationRepair {JSONObject mLoaded;
+'''+method(store,'prepareDestination')+'''
+public static void main(String[] args)throws Exception {DestinationRepair s=new DestinationRepair();File f=File.createTempFile("unsealed-",".font");
+s.prepareDestination(f,"a");if(f.exists())throw new AssertionError("unsealed orphan not removed");
+f.createNewFile();VerityUtils.sealed=true;s.prepareDestination(f,"a");if(!f.exists())throw new AssertionError("sealed inode removed");
+VerityUtils.sealed=false;s.mLoaded=new JSONObject("a");try{s.prepareDestination(f,"a");throw new AssertionError("loaded inode replaced");}catch(IOException expected){}
+if(!f.exists())throw new AssertionError("loaded inode lost");s.mLoaded=new JSONObject("b");s.prepareDestination(f,"a");if(f.exists())throw new AssertionError();
+}}
+'''
+settings=(source/'packages/apps/Settings/src/com/android/settings/display/FontStyleSettings.java').read_text()
+files['android/R.java']='package android;public class R {public static class string{public static int cancel=1,ok=2;}}'
+files['android/content/DialogInterface.java']='package android.content;public interface DialogInterface{interface OnClickListener{void onClick(DialogInterface d,int which);}}'
+files['android/app/AlertDialog.java']='''package android.app;public class AlertDialog {public static class Builder {
+android.content.DialogInterface.OnClickListener positive;public Builder(Activity a){}public Builder setTitle(int r){return this;}public Builder setMessage(int r){return this;}
+public Builder setNegativeButton(int r,android.content.DialogInterface.OnClickListener l){return this;}
+public Builder setPositiveButton(int r,android.content.DialogInterface.OnClickListener l){positive=l;return this;}public void show(){positive.onClick(null,0);}}}'''
+files['Removal.java']='''import android.app.*;import android.os.*;import android.widget.Toast;
+class R {static class string{static int font_custom_remove=1,font_custom_remove_note=2,font_custom_apply_error=3;}}
+class FontStyleConfig{static final String CUSTOM="custom",DEFAULT="default";}
+class RemovalFragment {boolean selected,restore=true;int updates,prompts;
+Activity getActivity(){return new Activity();}String getDefaultKey(){return selected?"custom":"default";}
+boolean setDefaultKey(String key){if(!restore)return false;selected=false;return true;}
+void updateCandidates(){updates++;}void showRestartDialog(){prompts++;}
+'''+method(settings,'isCustomFontSelected')+method(settings,'restoreBeforeRemovingImport')+method(settings,'onCustomFontRemoved')+'''
+}
+class Removal {RemovalFragment mFragment=new RemovalFragment();String mPreviewDigest="old";Object mPreviewTypeface=new Object();static Bundle imported;static int removes;
+static Bundle status(){return imported;}static Removal manager(){return new Removal();}void removeUserCustomFont(){removes++;}
+'''+method(importer,'remove')+'''
+public static void main(String[] args){for(boolean selected:new boolean[]{false,true})for(boolean boot:new boolean[]{false,true}){
+Removal p=new Removal();p.mFragment.selected=selected;imported=new Bundle();imported.putBoolean("activeAtBoot",boot);removes=0;p.remove();
+if(removes!=1||p.mFragment.updates!=1||p.mFragment.prompts!=((selected||boot)?1:0)||p.mFragment.selected||p.mPreviewTypeface!=null)throw new AssertionError("removal state/restart prompt");}
+Removal bad=new Removal();bad.mFragment.selected=true;bad.mFragment.restore=false;removes=0;bad.remove();if(removes!=0||bad.mFragment.updates!=0)throw new AssertionError("failed restore still removed font");
+}}
+'''
+assert 'mImportedTypeface = null;' in settings
+assert 'VerityUtils.setUpFsverity' in store and 'mBootMarker' in store
 with tempfile.TemporaryDirectory(prefix='font-lifecycle-') as tmp:
  d=pathlib.Path(tmp)
  for n,t in files.items():p=d/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(t)
  subprocess.run([str(java/'javac'),'-d',str(d),*[str(d/n) for n in files]],check=True)
- for cls in ('com.android.settings.display.Completion','BootCleanup','com.android.settings.display.OverlayGuard'):
+ for cls in ('com.android.settings.display.Completion','BootCleanup','com.android.settings.display.OverlayGuard','PreviewCache','DestinationRepair','Removal'):
   subprocess.run([str(java/'java'),'-cp',str(d),cls],check=True)
-print('PASS: IPC reply, callback removal, unbind exception cleanup, absent/destroyed Activity, preview guard, custom overlay validation, boot orphan cleanup')
+print('PASS: IPC completion/lifecycle, overlay checks, boot cleanup, digest preview cache/invalidation/retry, active/boot font removal restart prompt, unsealed orphan repair without replacing loaded/sealed inodes')

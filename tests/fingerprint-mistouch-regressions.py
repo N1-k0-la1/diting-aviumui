@@ -124,22 +124,23 @@ object SystemClock { var now=10000L; @JvmStatic fun elapsedRealtime()=now }
 ''',
         'Settings.kt': '''package android.provider
 object Settings { object Secure {
- var enabled=1; @JvmStatic fun getIntForUser(resolver:Any,key:String,default:Int,user:Int)=enabled
+ var enabled=1;val perUser=mutableMapOf<Int,Int>()
+ @JvmStatic fun getIntForUser(resolver:Any,key:String,default:Int,user:Int)=perUser[user]?:enabled
 }}
 ''',
         'View.kt': '''package android.view
-open class View { var visibility=INVISIBLE; fun setVisibility(v:Int){visibility=v}; fun requestFocus(){}
+open class View { var parent:Any?=null;var visibility=INVISIBLE; fun setVisibility(v:Int){visibility=v}; fun requestFocus(){}
  companion object { const val INVISIBLE=4;const val VISIBLE=0 }
 }
 class WindowManager {
- var current:View?=null;var added=0;var removed=0
+ var current:View?=null;var added=0;var removed=0;var failAdd=false;var failRemove=false
  class LayoutParams(w:Int,h:Int,t:Int,f:Int,p:Int) {
   var privateFlags=0;var layoutInDisplayCutoutMode=0;var fitInsetsTypes=0
   fun setTitle(s:String){}
   companion object {const val MATCH_PARENT=-1}
  }
- fun addView(v:View,p:LayoutParams){check(current==null);current=v;added++}
- fun removeView(v:View){check(current===v);current=null;removed++}
+ fun addView(v:View,p:LayoutParams){if(failAdd)throw IllegalArgumentException("add failed");check(current==null);current=v;v.parent=this;added++}
+ fun removeViewImmediate(v:View){if(failRemove)throw IllegalArgumentException("remove failed");check(current===v);v.parent=null;current=null;removed++}
 }
 ''',
         'Keyguard.kt': '''package com.android.keyguard
@@ -154,6 +155,9 @@ class KeyguardUpdateMonitor {var callback:KeyguardUpdateMonitorCallback?=null
 ''',
         'Core.kt': '''package com.android.systemui
 interface CoreStartable {fun start()}
+''',
+        'Log.kt': '''package android.util
+object Log {fun w(tag:String,text:String,error:Throwable){}}
 ''',
         'Scope.kt': '''package com.android.systemui.dagger
 annotation class SysUISingleton
@@ -260,6 +264,16 @@ fun main() {
  // The lockscreen policy belongs to the selected user, not always user zero.
  val user=Fixture();user.lock.disabledUsers.add(10);user.users.user=10;user.state.isShowing=true;user.start()
  check(user.windows.current==null)
+ // Secure settings and lockscreen policy must use the same selected user.
+ val settingUser=Fixture();settingUser.users.user=10;settingUser.state.isShowing=true
+ Settings.Secure.perUser[10]=0;settingUser.start();check(settingUser.windows.current==null)
+ Settings.Secure.perUser.clear()
+ val brokenAdd=Fixture();brokenAdd.windows.failAdd=true;brokenAdd.state.isShowing=true;brokenAdd.start()
+ check(brokenAdd.windows.current==null);check(brokenAdd.sensors.active.isEmpty())
+ brokenAdd.windows.failAdd=false;brokenAdd.state.change(true);brokenAdd.sensors.send(brokenAdd.sensors.prox,0f);check(brokenAdd.visible())
+ brokenAdd.windows.failRemove=true;brokenAdd.state.change(true,true)
+ check(!brokenAdd.visible());check(brokenAdd.sensors.active.isEmpty())
+ brokenAdd.windows.failRemove=false;brokenAdd.state.change(false);check(brokenAdd.windows.current==null)
 }
 ''',
     }
@@ -295,8 +309,11 @@ fun main() {
     run([source / 'external/kotlinc/bin/kotlinc', *negative_paths, '-include-runtime', '-d', jar], env=env)
     negative = subprocess.run([str(pathlib.Path(env['JAVA_HOME']) / 'bin/java'), '-jar', str(jar)], text=True, capture_output=True)
     assert negative.returncode != 0 and 'Check failed' in negative.stderr
+run(['python3',pathlib.Path(__file__).with_name('session-lifecycle-regressions.py'),source])
 print(json.dumps({'passed': True, 'token_version_zero_and_endianness': True,
     'invalid_mac_lengths_rejected_under_asan_ubsan': [0, 1, 31, 33, 256],
     'full_production_mistouch_controller_host_fixtures_passed': True,
+    'window_failures_and_selected_user_secure_settings_passed': True,
+    'session_lifetime_concurrent_close_timers_and_enumeration_passed': True,
     'removed_fixes_negative_controls_failed_as_expected': 3,
     'real_k50_ultra_enrollment_and_pocket_hardware_tested': False}, indent=2))

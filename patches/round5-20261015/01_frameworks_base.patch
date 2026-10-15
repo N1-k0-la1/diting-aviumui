@@ -1,0 +1,417 @@
+diff --git a/packages/SettingsLib/res/values-zh-rHK/arrays.xml b/packages/SettingsLib/res/values-zh-rHK/arrays.xml
+index 7fbd377d61623967e49f7fe11b049b279c2ae244..c1b5bcb0d0cacb0888df12750ef1a99d8804bb24 100644
+--- a/packages/SettingsLib/res/values-zh-rHK/arrays.xml
++++ b/packages/SettingsLib/res/values-zh-rHK/arrays.xml
+@@ -309,16 +309,16 @@
+   <!-- Savitech Patch - START -->
+   <!-- Titles for Bluetooth Audio Codec LHDC Playback Quality selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_a2dp_codec_lhdc_playback_quality_titles">
+-      <item>连接稳定为主 (64kbps)</item>
+-      <item>连接稳定为主 (128(V3)/160(V5)kbps)</item>
+-      <item>连接稳定为主 (192kbps)</item>
+-      <item>连接稳定为主 (256kbps)</item>
+-      <item>连接稳定为主 (320kbps)</item>
+-      <item>连接稳定为主 (400kbps)</item>
+-      <item>平衡音质与连接质量 (500kbps)</item>
+-      <item>高音质 (900kbps)</item>
+-      <item>高音质 (1000kbps)</item>
+-      <item>自适应最佳 (Auto Bit Rate)</item>
++      <item>連線穩定為主 (64kbps)</item>
++      <item>連線穩定為主 (128(V3)/160(V5)kbps)</item>
++      <item>連線穩定為主 (192kbps)</item>
++      <item>連線穩定為主 (256kbps)</item>
++      <item>連線穩定為主 (320kbps)</item>
++      <item>連線穩定為主 (400kbps)</item>
++      <item>平衡音質與連線品質 (500kbps)</item>
++      <item>高音質 (900kbps)</item>
++      <item>高音質 (1000kbps)</item>
++      <item>自適應最佳 (Auto Bit Rate)</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Playback Quality selection preference. [CHAR LIMIT=70]-->
+@@ -332,43 +332,43 @@
+       <item>500 kbps</item>
+       <item>900 kbps</item>
+       <item>1000 kbps</item>
+-      <item>自适应最佳</item>
++      <item>自適應最佳</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Low Latency selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_latency_titles">
+-      <item>低延迟模式 - 关闭</item>
+-      <item>低延迟模式 - 开启</item>
++      <item>低延遲模式 - 關閉</item>
++      <item>低延遲模式 - 開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Latency selection preference. [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Lossless selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_titles">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Lossless selection preference [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Lossless Raw mode selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_titles" >
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Lossless Raw mode selection preference [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+   <!-- Savitech Patch - END -->
+ </resources>
+diff --git a/packages/SettingsLib/res/values-zh-rHK/strings.xml b/packages/SettingsLib/res/values-zh-rHK/strings.xml
+index 23a83642a5ea0c97a0dc10719fd8448f88421032..c398b7a5069b2c5d09001a23633a6296ac4f667a 100644
+--- a/packages/SettingsLib/res/values-zh-rHK/strings.xml
++++ b/packages/SettingsLib/res/values-zh-rHK/strings.xml
+@@ -776,31 +776,31 @@
+     <string name="system_update_settings_list_item_title" msgid="6618098383615432484">"系統更新"</string>
+     <!-- Savitech LHDC - START -->
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Playback Quality -->
+-    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality">蓝牙音频 LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality">藍牙音訊 LHDC 編解碼器：播放品質</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Playback Quality -->
+-    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality_dialog_title">选择蓝牙音频 LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality_dialog_title">選擇藍牙音訊 LHDC 編解碼器：播放品質</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_playback_quality_summaries">LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_playback_quality_summaries">LHDC 編解碼器：播放品質</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Low Latency -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency">蓝牙音频 LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency">藍牙音訊 LHDC 編解碼器：低延遲</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_dialog_titles">选择蓝牙音频 LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：低延遲</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">LHDC 編解碼器：低延遲</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless">启用 LHDC-V 无损</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless">啟用 LHDC-V 無損</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless: LHDC Lossless Audio -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_dialog_titles">选择蓝牙音频 LHDC 编解码器：无损音频</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：無損音訊</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Lossless Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">LHDC 编解码器：无损音频</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">LHDC 編解碼器：無損音訊</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless Raw Mode -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw">启用 LHDC-V 无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw">啟用 LHDC-V 無損 Raw 模式</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless Raw Mode: LHDC Lossless Audio -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_dialog_titles">选择蓝牙音频 LHDC 编解码器：无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：無損 Raw 模式</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Lossless Raw Mode Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">LHDC 编解码器：无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">LHDC 編解碼器：無損 Raw 模式</string>
+     <!-- Savitech LHDC - END -->
+ </resources>
+diff --git a/packages/SettingsLib/res/values-zh-rTW/arrays.xml b/packages/SettingsLib/res/values-zh-rTW/arrays.xml
+index 4e49e624e59762f89d89180053c307ab60d01515..6c421fb4c9beb4c8b4542c0523082f62eb1128e0 100644
+--- a/packages/SettingsLib/res/values-zh-rTW/arrays.xml
++++ b/packages/SettingsLib/res/values-zh-rTW/arrays.xml
+@@ -309,16 +309,16 @@
+   <!-- Savitech Patch - START -->
+   <!-- Titles for Bluetooth Audio Codec LHDC Playback Quality selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_a2dp_codec_lhdc_playback_quality_titles">
+-      <item>连接稳定为主 (64kbps)</item>
+-      <item>连接稳定为主 (128(V3)/160(V5)kbps)</item>
+-      <item>连接稳定为主 (192kbps)</item>
+-      <item>连接稳定为主 (256kbps)</item>
+-      <item>连接稳定为主 (320kbps)</item>
+-      <item>连接稳定为主 (400kbps)</item>
+-      <item>平衡音质与连接质量 (500kbps)</item>
+-      <item>高音质 (900kbps)</item>
+-      <item>高音质 (1000kbps)</item>
+-      <item>自适应最佳 (Auto Bit Rate)</item>
++      <item>連線穩定為主 (64kbps)</item>
++      <item>連線穩定為主 (128(V3)/160(V5)kbps)</item>
++      <item>連線穩定為主 (192kbps)</item>
++      <item>連線穩定為主 (256kbps)</item>
++      <item>連線穩定為主 (320kbps)</item>
++      <item>連線穩定為主 (400kbps)</item>
++      <item>平衡音質與連線品質 (500kbps)</item>
++      <item>高音質 (900kbps)</item>
++      <item>高音質 (1000kbps)</item>
++      <item>自適應最佳 (Auto Bit Rate)</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Playback Quality selection preference. [CHAR LIMIT=70]-->
+@@ -332,43 +332,43 @@
+       <item>500 kbps</item>
+       <item>900 kbps</item>
+       <item>1000 kbps</item>
+-      <item>自适应最佳</item>
++      <item>自適應最佳</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Low Latency selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_latency_titles">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>低延遲模式 - 關閉</item>
++      <item>低延遲模式 - 開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Latency selection preference. [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Lossless selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_titles">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Lossless selection preference [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Titles for Bluetooth Audio Codec LHDC Lossless Raw mode selection preference. [CHAR LIMIT=70] -->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_titles" >
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+ 
+   <!-- Summaries for Bluetooth Audio Codec LHDC Lossless Raw mode selection preference [CHAR LIMIT=70]-->
+   <string-array name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">
+-      <item>关闭</item>
+-      <item>开启</item>
++      <item>關閉</item>
++      <item>開啟</item>
+   </string-array>
+   <!-- Savitech Patch - END -->
+ </resources>
+diff --git a/packages/SettingsLib/res/values-zh-rTW/strings.xml b/packages/SettingsLib/res/values-zh-rTW/strings.xml
+index fd2e19489f954ea57df5c3c4699dc8037f86a865..32516580c3cfc49c0e97681f8080b36cae406d31 100644
+--- a/packages/SettingsLib/res/values-zh-rTW/strings.xml
++++ b/packages/SettingsLib/res/values-zh-rTW/strings.xml
+@@ -776,31 +776,31 @@
+     <string name="system_update_settings_list_item_title" msgid="6618098383615432484">"系統更新"</string>
+     <!-- Savitech LHDC - START -->
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Playback Quality -->
+-    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality">蓝牙音频 LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality">藍牙音訊 LHDC 編解碼器：播放品質</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Playback Quality -->
+-    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality_dialog_title">选择蓝牙音频 LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_select_a2dp_codec_lhdc_playback_quality_dialog_title">選擇藍牙音訊 LHDC 編解碼器：播放品質</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_playback_quality_summaries">LHDC 编解码器：播放质量</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_playback_quality_summaries">LHDC 編解碼器：播放品質</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Low Latency -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency">蓝牙音频 LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency">藍牙音訊 LHDC 編解碼器：低延遲</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_dialog_titles">选择蓝牙音频 LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：低延遲</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Low Latency Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">LHDC 编解码器：低延迟</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_latency_summaries">LHDC 編解碼器：低延遲</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless">启用 LHDC-V 无损</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless">啟用 LHDC-V 無損</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless: LHDC Lossless Audio -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_dialog_titles">选择蓝牙音频 LHDC 编解码器：无损音频</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：無損音訊</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Lossless Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">LHDC 编解码器：无损音频</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_summaries">LHDC 編解碼器：無損音訊</string>
+ 
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless Raw Mode -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw">启用 LHDC-V 无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw">啟用 LHDC-V 無損 Raw 模式</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Lossless Raw Mode: LHDC Lossless Audio -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_dialog_titles">选择蓝牙音频 LHDC 编解码器：无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_dialog_titles">選擇藍牙音訊 LHDC 編解碼器：無損 Raw 模式</string>
+     <!-- UI debug setting: Select Bluetooth Audio LHDC Codec: LHDC Lossless Raw Mode Summary -->
+-    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">LHDC 编解码器：无损 Raw 模式</string>
++    <string name="bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries">LHDC 編解碼器：無損 Raw 模式</string>
+     <!-- Savitech LHDC - END -->
+ </resources>
+diff --git a/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt b/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
+index 2697baec83a85d92dc3897866cf0dd03cd2f4326..d182f99630b7172941955b869bad39ad995b68aa 100644
+--- a/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
++++ b/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
+@@ -22,7 +22,7 @@ import android.hardware.SensorEvent
+ import android.hardware.SensorEventListener
+ import android.hardware.SensorManager
+ import android.os.SystemClock
+-import android.os.UserHandle
++import android.util.Log
+ import android.provider.Settings
+ import android.view.View
+ import android.view.WindowManager
+@@ -80,7 +80,7 @@ class MistouchPreventionWindowController @Inject constructor(
+     private val mistouchPreventionEnabled: Boolean
+         get() = Settings.Secure.getIntForUser(
+             context.contentResolver,
+-            KEY_MISTOUCH_PREVENTION, 1, UserHandle.USER_CURRENT
++            KEY_MISTOUCH_PREVENTION, 1, selectedUserInteractor.getSelectedUserId()
+         ) == 1
+ 
+     private val keyguardShowing: Boolean
+@@ -225,7 +225,7 @@ class MistouchPreventionWindowController @Inject constructor(
+ 
+         isProxNear = false
+         isAccelInPocket = false
+-        addViewToWindow()
++        if (!addViewToWindow()) return
+         val proximityRegistered = proximitySensor?.let {
+             sensorManager?.registerListener(sensorListener, it, SENSOR_DELAY) == true
+         } ?: false
+@@ -248,10 +248,9 @@ class MistouchPreventionWindowController @Inject constructor(
+         if (wasRegistered) sensorManager?.unregisterListener(sensorListener)
+     }
+ 
+-    private fun addViewToWindow() {
+-        if (windowAdded) {
+-            return
+-        }
++    private fun addViewToWindow(): Boolean {
++        if (windowAdded) return true
++        val manager = windowManager ?: return false
+ 
+         preventionView.visibility = View.INVISIBLE
+ 
+@@ -269,15 +268,25 @@ class MistouchPreventionWindowController @Inject constructor(
+             setTitle("MistouchPreve")
+         }
+ 
+-        windowManager?.addView(preventionView, layoutParams)
+-        windowAdded = true
++        try {
++            manager.addView(preventionView, layoutParams)
++        } catch (e: RuntimeException) {
++            Log.w(TAG, "Cannot add mistouch window", e)
++        }
++        windowAdded = preventionView.parent != null
++        return windowAdded
+     }
+ 
+     private fun removeViewFromWindow() {
+         if (windowAdded) {
+-            windowManager?.removeView(preventionView)
+-            windowAdded = false
+-            notifyMistouchVisibilityChanged(false)
++            try {
++                windowManager?.removeViewImmediate(preventionView)
++            } catch (e: RuntimeException) {
++                Log.w(TAG, "Cannot remove mistouch window", e)
++            } finally {
++                windowAdded = preventionView.parent != null
++                notifyMistouchVisibilityChanged(false)
++            }
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+index 37a33b59da9cf0c6b8d7b458f2d8462c203a174e..26d03bfa2b86fbe2b7c658458546bfb51e38f1ef 100644
+--- a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
++++ b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+@@ -124,7 +124,10 @@ public final class FontManagerService extends IFontManager.Stub {
+     @Override public android.os.Bundle getUserCustomFontStatus() {
+         super.getUserCustomFontStatus_enforcePermission();
+         enforcePrimaryUserFontCaller();
+-        return mUserCustomFonts.status();
++        android.os.Bundle status = mUserCustomFonts.status();
++        status.putBoolean("activeAtBoot", UserCustomFontStore.FAMILY.equals(mBootFontFamily)
++                && mUserCustomFonts.hasLoadedFont());
++        return status;
+     }
+ 
+     @android.annotation.EnforcePermission(android.Manifest.permission.UPDATE_FONTS)
+diff --git a/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+index 14da48802fb577015baeaec96ec30b5d9042fee1..d2d498018de04d888b1181817407f16902e4118e 100644
+--- a/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
++++ b/services/core/java/com/android/server/graphics/fonts/UserCustomFontStore.java
+@@ -84,6 +84,7 @@ final class UserCustomFontStore {
+         status.putBoolean("rejectedAtBoot", mRejectedAtBoot);
+         if (mImported != null) {
+             status.putString("label", mImported.optString("label"));
++            status.putString("digest", mImported.optString("digest"));
+             status.putBoolean("pendingReboot", mLoaded == null
+                     || !mImported.optString("digest").equals(mLoaded.optString("digest")));
+         }
+@@ -102,10 +103,6 @@ final class UserCustomFontStore {
+             Os.lseek(descriptor.getFileDescriptor(), 0, OsConstants.SEEK_SET);
+         } catch (android.system.ErrnoException e) { throw new IOException(e); }
+         if (!mDirectory.isDirectory() && !mDirectory.mkdirs()) throw new IOException("Cannot stage font");
+-        File[] retained = mDirectory.listFiles((dir, name) -> name.matches("[0-9a-f]{64}\\.font"));
+-        if (retained != null && retained.length >= 4) {
+-            throw new IOException("Restart before importing more fonts");
+-        }
+         File temporary = File.createTempFile("staged-", ".font", mDirectory);
+         try {
+             Os.chmod(mDirectory.getAbsolutePath(), 0755);
+@@ -125,7 +122,12 @@ final class UserCustomFontStore {
+             CustomFontFileValidator.Info info = CustomFontFileValidator.validate(temporary);
+             String hash = digest(temporary);
+             File destination = new File(mDirectory, hash + ".font");
++            prepareDestination(destination, hash);
+             if (!destination.exists()) {
++                File[] retained = mDirectory.listFiles((dir, name) -> name.matches("[0-9a-f]{64}\\.font"));
++                if (retained != null && retained.length >= 4) {
++                    throw new IOException("Restart before importing more fonts");
++                }
+                 // Publish an immutable file before publishing the metadata pointing to it.
+                 // Enabling fs-verity requires owner write permission, with no open writers.
+                 // Seal the content first, then publish its read-only mode and final name.
+@@ -153,6 +155,16 @@ final class UserCustomFontStore {
+         }
+     }
+ 
++    private void prepareDestination(File destination, String hash) throws IOException {
++        if (destination.exists() && !VerityUtils.hasFsverity(destination.getAbsolutePath())) {
++            // Never replace an inode the running font map may still reference.
++            if (mLoaded != null && hash.equals(mLoaded.optString("digest"))) {
++                throw new IOException("Loaded font lost integrity; restart before replacing it");
++            }
++            if (!destination.delete()) throw new IOException("Cannot replace unsealed font");
++        }
++    }
++
+     synchronized ParcelFileDescriptor openPreview() throws IOException {
+         if (mImported == null) throw new IOException("No custom font");
+         try {

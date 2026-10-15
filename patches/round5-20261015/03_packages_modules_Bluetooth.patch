@@ -1,0 +1,66 @@
+diff --git a/framework/java/android/bluetooth/BluetoothCodecConfig.java b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+index 2f266f8232f7e453fd198e24492033988fd943fe..6cf8073da64875aeffd6dacde4b46a81d6e1d8c9 100644
+--- a/framework/java/android/bluetooth/BluetoothCodecConfig.java
++++ b/framework/java/android/bluetooth/BluetoothCodecConfig.java
+@@ -779,12 +779,7 @@ public final class BluetoothCodecConfig implements Parcelable {
+         return (other != null
+                 && other.mSampleRate == mSampleRate
+                 && other.mBitsPerSample == mBitsPerSample
+-                && other.mChannelMode == mChannelMode
+-                && other.mCodecSpecific1 == mCodecSpecific1
+-                && other.mCodecSpecific2 == mCodecSpecific2
+-                && other.mCodecSpecific3 == mCodecSpecific3
+-                && other.mCodecSpecific4 == mCodecSpecific4);
+-                // Savitech LHDC -- END
++                && other.mChannelMode == mChannelMode);
+     }
+ 
+     /**
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdc_constants.h b/system/stack/include/a2dp_vendor_lhdc_constants.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3.h b/system/stack/include/a2dp_vendor_lhdcv3.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3_dec.h b/system/stack/include/a2dp_vendor_lhdcv3_dec.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3_decoder.h b/system/stack/include/a2dp_vendor_lhdcv3_decoder.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3_encoder.h b/system/stack/include/a2dp_vendor_lhdcv3_encoder.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5.h b/system/stack/include/a2dp_vendor_lhdcv5.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5_constants.h b/system/stack/include/a2dp_vendor_lhdcv5_constants.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5_decoder.h b/system/stack/include/a2dp_vendor_lhdcv5_decoder.h
+old mode 100755
+new mode 100644
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5_encoder.h b/system/stack/include/a2dp_vendor_lhdcv5_encoder.h
+old mode 100755
+new mode 100644

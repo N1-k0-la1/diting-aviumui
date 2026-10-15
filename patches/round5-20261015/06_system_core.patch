@@ -1,0 +1,13 @@
+diff --git a/debuggerd/libdebuggerd/tombstone_proto_to_text.cpp b/debuggerd/libdebuggerd/tombstone_proto_to_text.cpp
+index 438fb9f4a7ec23350d80ac87cb616f0edfc5f6fd..0b4f65ffdc1c225c02daf66ecfd4b55f30c26f00 100644
+--- a/debuggerd/libdebuggerd/tombstone_proto_to_text.cpp
++++ b/debuggerd/libdebuggerd/tombstone_proto_to_text.cpp
+@@ -668,7 +668,7 @@ bool tombstone_proto_to_text(const Tombstone& tombstone, CallbackType callback,
+ 
+   const auto& guest_threads = tombstone.guest_threads();
+   auto main_guest_thread_it = guest_threads.find(tombstone.tid());
+-  if (main_guest_thread_it != threads.end()) {
++  if (main_guest_thread_it != guest_threads.end()) {
+     print_guest_thread(callback, symbolize, tombstone, main_guest_thread_it->second,
+                        tombstone.tid(), true);
+   }

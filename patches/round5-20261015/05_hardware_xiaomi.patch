@@ -1,0 +1,355 @@
+diff --git a/aidl/fingerprint/CancellationSignal.cpp b/aidl/fingerprint/CancellationSignal.cpp
+index 50f19521990968bad0adedf53d0490973b950f0c..9b7b67194303feb98dbbd79204343d06089724f1 100644
+--- a/aidl/fingerprint/CancellationSignal.cpp
++++ b/aidl/fingerprint/CancellationSignal.cpp
+@@ -8,10 +8,11 @@
+ 
+ namespace aidl::android::hardware::biometrics::fingerprint {
+ 
+-CancellationSignal::CancellationSignal(Session* session) : mSession(session) {}
++CancellationSignal::CancellationSignal(std::weak_ptr<Session> session) : mSession(session) {}
+ 
+ ndk::ScopedAStatus CancellationSignal::cancel() {
+-    return mSession->cancel();
++    if (auto session = mSession.lock()) return session->cancel();
++    return ndk::ScopedAStatus::ok();
+ }
+ 
+ }  // namespace aidl::android::hardware::biometrics::fingerprint
+diff --git a/aidl/fingerprint/CancellationSignal.h b/aidl/fingerprint/CancellationSignal.h
+index d1d99983816c13fe6156b4b548bc5863b72da130..d807e3daea8a38624f8d90be1c54da51ea24d2fa 100644
+--- a/aidl/fingerprint/CancellationSignal.h
++++ b/aidl/fingerprint/CancellationSignal.h
+@@ -15,11 +15,11 @@ namespace aidl::android::hardware::biometrics::fingerprint {
+ class CancellationSignal
+     : public ::aidl::android::hardware::biometrics::common::BnCancellationSignal {
+   public:
+-    CancellationSignal(Session* session);
++    CancellationSignal(std::weak_ptr<Session> session);
+     ndk::ScopedAStatus cancel() override;
+ 
+   private:
+-    Session* mSession;
++    std::weak_ptr<Session> mSession;
+ };
+ 
+ }  // namespace aidl::android::hardware::biometrics::fingerprint
+diff --git a/aidl/fingerprint/LockoutTracker.h b/aidl/fingerprint/LockoutTracker.h
+index 06e6c010f20e4b251a88d42d021a71eb4602a5bc..73f11f76142c01b78739d3901975423fb9bbbb53 100644
+--- a/aidl/fingerprint/LockoutTracker.h
++++ b/aidl/fingerprint/LockoutTracker.h
+@@ -39,8 +39,8 @@ class LockoutTracker {
+ 
+   private:
+     int32_t mFailedCount;
+-    int64_t mLockoutTimedStart;
+-    LockoutMode mCurrentMode;
++    int64_t mLockoutTimedStart = 0;
++    LockoutMode mCurrentMode = LockoutMode::kNone;
+ };
+ 
+ }  // namespace aidl::android::hardware::biometrics::fingerprint
+diff --git a/aidl/fingerprint/Session.cpp b/aidl/fingerprint/Session.cpp
+index 5570578b9981c3691000c142b01e89987e37549f..3ae8a3f773a701d639193c6ecd968dffc1ade30c 100644
+--- a/aidl/fingerprint/Session.cpp
++++ b/aidl/fingerprint/Session.cpp
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <thread>
++#include <utility>
+ 
+ #include "Legacy2Aidl.h"
+ #include "Session.h"
+@@ -15,10 +16,8 @@ namespace aidl::android::hardware::biometrics::fingerprint {
+ 
+ void onClientDeath(void* cookie) {
+     ALOGI("FingerprintService has died");
+-    Session* session = static_cast<Session*>(cookie);
+-    if (session && !session->isClosed()) {
+-        session->close();
+-    }
++    auto& weakSession = *static_cast<std::weak_ptr<Session>*>(cookie);
++    if (auto session = weakSession.lock()) session->close();
+ }
+ 
+ Session::Session(fingerprint_device_t* device, UdfpsHandler* udfpsHandler, int userId,
+@@ -29,11 +28,26 @@ Session::Session(fingerprint_device_t* device, UdfpsHandler* udfpsHandler, int u
+       mCb(cb),
+       mUdfpsHandler(udfpsHandler) {
+     mDeathRecipient = AIBinder_DeathRecipient_new(onClientDeath);
++    // Deleting/unlinking the recipient need not wait for in-flight death callbacks.
++    AIBinder_DeathRecipient_setOnUnlinked(mDeathRecipient, [](void* cookie) {
++        delete static_cast<std::weak_ptr<Session>*>(cookie);
++    });
+ 
+     auto path = std::format("/data/vendor_de/{}/fpdata/", userId);
+     mDevice->set_active_group(mDevice, mUserId, path.c_str());
+ }
+ 
++Session::~Session() {
++    unlinkDeathRecipient();
++}
++
++void Session::unlinkDeathRecipient() {
++    std::lock_guard lock(mDeathMutex);
++    if (auto recipient = std::exchange(mDeathRecipient, nullptr)) {
++        AIBinder_DeathRecipient_delete(recipient);
++    }
++}
++
+ ndk::ScopedAStatus Session::generateChallenge() {
+ #ifndef IMPL_V2
+     uint64_t challenge = mDevice->pre_enroll(mDevice);
+@@ -76,13 +90,16 @@ ndk::ScopedAStatus Session::enroll(const HardwareAuthToken& hat,
+         mCb->onError(Error::UNABLE_TO_PROCESS, error);
+     }
+ 
+-    *out = SharedRefBase::make<CancellationSignal>(this);
++    *out = SharedRefBase::make<CancellationSignal>(ref<Session>());
+     return ndk::ScopedAStatus::ok();
+ }
+ 
+ ndk::ScopedAStatus Session::authenticate(int64_t operationId,
+                                          std::shared_ptr<ICancellationSignal>* out) {
+-    checkSensorLockout();
++    if (checkSensorLockout()) {
++        *out = SharedRefBase::make<CancellationSignal>(ref<Session>());
++        return ndk::ScopedAStatus::ok();
++    }
+ #ifndef IMPL_V2
+     int error = mDevice->authenticate(mDevice, operationId, mUserId);
+ #else
+@@ -93,7 +110,7 @@ ndk::ScopedAStatus Session::authenticate(int64_t operationId,
+         mCb->onError(Error::UNABLE_TO_PROCESS, error);
+     }
+ 
+-    *out = SharedRefBase::make<CancellationSignal>(this);
++    *out = SharedRefBase::make<CancellationSignal>(ref<Session>());
+     return ndk::ScopedAStatus::ok();
+ }
+ 
+@@ -101,11 +118,16 @@ ndk::ScopedAStatus Session::detectInteraction(std::shared_ptr<ICancellationSigna
+     ALOGD("Detect interaction is not supported");
+     mCb->onError(Error::UNABLE_TO_PROCESS, 0 /* vendorCode */);
+ 
+-    *out = SharedRefBase::make<CancellationSignal>(this);
++    *out = SharedRefBase::make<CancellationSignal>(ref<Session>());
+     return ndk::ScopedAStatus::ok();
+ }
+ 
+ ndk::ScopedAStatus Session::enumerateEnrollments() {
++    {
++        std::lock_guard lock(mEnrollmentsMutex);
++        if (mClosed) return ndk::ScopedAStatus::ok();
++        mEnumeratedEnrollments.clear();
++    }
+     int error = mDevice->enumerate(mDevice);
+     if (error) {
+         ALOGE("enumerate failed: %d", error);
+@@ -169,7 +191,6 @@ ndk::ScopedAStatus Session::resetLockout(const HardwareAuthToken& hat) {
+ #endif
+ 
+     clearLockout(true);
+-    if (mIsLockoutTimerStarted) mIsLockoutTimerAborted = true;
+ 
+     return ndk::ScopedAStatus::ok();
+ }
+@@ -235,6 +256,7 @@ ndk::ScopedAStatus Session::setIgnoreDisplayTouches(bool /*shouldIgnore*/) {
+ }
+ 
+ ndk::ScopedAStatus Session::cancel() {
++    if (mClosed) return ndk::ScopedAStatus::ok();
+     if (mUdfpsHandler) {
+         mUdfpsHandler->cancel();
+     }
+@@ -250,14 +272,27 @@ ndk::ScopedAStatus Session::cancel() {
+ }
+ 
+ ndk::ScopedAStatus Session::close() {
+-    mClosed = true;
++    {
++        std::lock_guard lock(mLockoutMutex);
++        if (mClosed.exchange(true)) return ndk::ScopedAStatus::ok();
++        ++mLockoutTimerGeneration;
++        mIsLockoutTimerStarted = false;
++    }
++    {
++        std::lock_guard lock(mEnrollmentsMutex);
++        mEnumeratedEnrollments.clear();
++    }
++    unlinkDeathRecipient();
+     mCb->onSessionClosed();
+-    AIBinder_DeathRecipient_delete(mDeathRecipient);
+     return ndk::ScopedAStatus::ok();
+ }
+ 
+ binder_status_t Session::linkToDeath(AIBinder* binder) {
+-    return AIBinder_linkToDeath(binder, mDeathRecipient, this);
++    std::lock_guard lock(mDeathMutex);
++    if (mClosed || mDeathRecipient == nullptr) return STATUS_DEAD_OBJECT;
++    // The onUnlinked callback owns this cookie, including when linkToDeath fails.
++    auto cookie = new std::weak_ptr<Session>(ref<Session>());
++    return AIBinder_linkToDeath(binder, mDeathRecipient, cookie);
+ }
+ 
+ bool Session::isClosed() {
+@@ -327,11 +362,14 @@ AcquiredInfo Session::VendorAcquiredFilter(int32_t info, int32_t* vendorCode) {
+ }
+ 
+ bool Session::checkSensorLockout() {
++    std::lock_guard lock(mLockoutMutex);
++    if (mClosed) return true;
+     LockoutTracker::LockoutMode lockoutMode = mLockoutTracker.getMode();
+     if (lockoutMode == LockoutTracker::LockoutMode::kPermanent) {
+         ALOGE("Fail: lockout permanent");
+         mCb->onLockoutPermanent();
+-        mIsLockoutTimerAborted = true;
++        ++mLockoutTimerGeneration;
++        mIsLockoutTimerStarted = false;
+         return true;
+     }
+     if (lockoutMode == LockoutTracker::LockoutMode::kTimed) {
+@@ -345,28 +383,34 @@ bool Session::checkSensorLockout() {
+ }
+ 
+ void Session::clearLockout(bool clearAttemptCounter) {
++    std::lock_guard lock(mLockoutMutex);
++    if (mClosed) return;
++    ++mLockoutTimerGeneration;
++    mIsLockoutTimerStarted = false;
+     mLockoutTracker.reset(clearAttemptCounter);
+     mCb->onLockoutCleared();
+ }
+ 
+ void Session::startLockoutTimer(int64_t timeout) {
+-    std::function<void()> action = std::bind(&Session::lockoutTimerExpired, this);
+-    std::thread([timeout, action]() {
++    std::lock_guard lock(mLockoutMutex);
++    if (mClosed || mIsLockoutTimerStarted) return;
++    mIsLockoutTimerStarted = true;
++    const uint64_t generation = ++mLockoutTimerGeneration;
++    std::weak_ptr<Session> weakSelf = ref<Session>();
++    std::thread([timeout, generation, weakSelf]() {
+         std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
+-        action();
++        if (auto self = weakSelf.lock()) self->lockoutTimerExpired(generation);
+     }).detach();
+-
+-    mIsLockoutTimerStarted = true;
+ }
+ 
+-void Session::lockoutTimerExpired() {
+-    if (!mIsLockoutTimerAborted) clearLockout(false);
+-
+-    mIsLockoutTimerStarted = false;
+-    mIsLockoutTimerAborted = false;
++void Session::lockoutTimerExpired(uint64_t generation) {
++    std::lock_guard lock(mLockoutMutex);
++    if (mClosed || generation != mLockoutTimerGeneration) return;
++    clearLockout(false);
+ }
+ 
+ void Session::notify(const fingerprint_msg_t* msg) {
++    if (mClosed) return;
+     // const uint64_t devId = reinterpret_cast<uint64_t>(mDevice);
+     switch (msg->type) {
+         case FINGERPRINT_ERROR: {
+@@ -437,12 +481,14 @@ void Session::notify(const fingerprint_msg_t* msg) {
+                     mUdfpsHandler->onAuthenticationSucceeded();
+                 }
+                 mCb->onAuthenticationSucceeded(msg->data.authenticated.finger.fid, authToken);
++                std::lock_guard lock(mLockoutMutex);
+                 mLockoutTracker.reset(true);
+             } else {
+                 if (mUdfpsHandler) {
+                     mUdfpsHandler->onAuthenticationFailed();
+                 }
+                 mCb->onAuthenticationFailed();
++                std::lock_guard lock(mLockoutMutex);
+                 mLockoutTracker.addFailedAttempt();
+                 checkSensorLockout();
+             }
+@@ -451,12 +497,18 @@ void Session::notify(const fingerprint_msg_t* msg) {
+ #ifndef IMPL_V2
+             ALOGD("onEnumerate(fid=%d, gid=%d, rem=%d)", msg->data.enumerated.finger.fid,
+                   msg->data.enumerated.finger.gid, msg->data.enumerated.remaining_templates);
+-            static std::vector<int> enrollments;
+-            enrollments.push_back(msg->data.enumerated.finger.fid);
+-            if (msg->data.enumerated.remaining_templates == 0) {
+-                mCb->onEnrollmentsEnumerated(enrollments);
+-                enrollments.clear();
++            std::vector<int32_t> completed;
++            {
++                std::lock_guard lock(mEnrollmentsMutex);
++                if (mClosed) break;
++                // A legacy empty enumeration is reported with fid == 0.
++                if (msg->data.enumerated.finger.fid != 0) {
++                    mEnumeratedEnrollments.push_back(msg->data.enumerated.finger.fid);
++                }
++                if (msg->data.enumerated.remaining_templates != 0) break;
++                completed.swap(mEnumeratedEnrollments);
+             }
++            mCb->onEnrollmentsEnumerated(completed);
+ #else
+             std::vector<int32_t> enrollments;
+             enrollments.reserve(NUM_FINGERS);
+diff --git a/aidl/fingerprint/Session.h b/aidl/fingerprint/Session.h
+index 025abe67b521b20ec8ab4db1400f18f8791cc378..f50cf2d490ae64ac18e06b608431a14dc06ace62 100644
+--- a/aidl/fingerprint/Session.h
++++ b/aidl/fingerprint/Session.h
+@@ -10,6 +10,9 @@
+ #include <aidl/android/hardware/biometrics/fingerprint/BnSession.h>
+ #include <aidl/android/hardware/biometrics/fingerprint/ISessionCallback.h>
+ #include <android/log.h>
++#include <atomic>
++#include <memory>
++#include <mutex>
+ #include <hardware/hardware.h>
+ #include <log/log.h>
+ #ifndef IMPL_V2
+@@ -34,6 +37,7 @@ class Session : public BnSession {
+   public:
+     Session(fingerprint_device_t* device, UdfpsHandler* udfpsHandler, int userId,
+             std::shared_ptr<ISessionCallback> cb, LockoutTracker lockoutTracker);
++    ~Session() override;
+     ndk::ScopedAStatus generateChallenge() override;
+     ndk::ScopedAStatus revokeChallenge(int64_t challenge) override;
+     ndk::ScopedAStatus enroll(const HardwareAuthToken& hat,
+@@ -72,7 +76,12 @@ class Session : public BnSession {
+   private:
+     fingerprint_device_t* mDevice;
+     LockoutTracker mLockoutTracker;
+-    bool mClosed = false;
++    std::atomic<bool> mClosed{false};
++    std::mutex mDeathMutex;
++    std::recursive_mutex mLockoutMutex;
++    std::mutex mEnrollmentsMutex;
++    std::vector<int32_t> mEnumeratedEnrollments;
++    void unlinkDeathRecipient();
+ 
+     // static ndk::ScopedAStatus ErrorFilter(int32_t error);
+     static Error VendorErrorFilter(int32_t error, int32_t* vendorCode);
+@@ -81,11 +90,11 @@ class Session : public BnSession {
+     bool checkSensorLockout();
+     void clearLockout(bool clearAttemptCounter);
+     void startLockoutTimer(int64_t timeout);
+-    void lockoutTimerExpired();
++    void lockoutTimerExpired(uint64_t generation);
+ 
+     // lockout timer
+     bool mIsLockoutTimerStarted = false;
+-    bool mIsLockoutTimerAborted = false;
++    uint64_t mLockoutTimerGeneration = 0;
+ 
+     // The user ID for which this session was created.
+     int32_t mUserId;
+@@ -96,7 +105,7 @@ class Session : public BnSession {
+     std::shared_ptr<ISessionCallback> mCb;
+ 
+     // Binder death handler.
+-    AIBinder_DeathRecipient* mDeathRecipient;
++    AIBinder_DeathRecipient* mDeathRecipient = nullptr;
+ 
+     UdfpsHandler* mUdfpsHandler;
+ };

@@ -17,13 +17,15 @@
 
 示例文件位置如下；若使用其他目录，请修改命令中的路径：
 
+从本仓库取当前的 [Install-Recovery.ps1](Install-Recovery.ps1) 和 [CANDIDATES.json](CANDIDATES.json) 放到 `C:\ROM`。旧工具包内的脚本可能没有 `-ManifestPath` 参数；请使用当前脚本，镜像仍取所选版本的同批工具包，不修改旧工具包 ZIP。
+
 ```text
 C:\platform-tools\adb.exe
 C:\platform-tools\fastboot.exe
 C:\ROM\AviumUI-16.2.2-diting-gms-user-media20261010.zip
 C:\ROM\OrangeFox-diting-ditingp-20261010-bootctrl.img
 C:\ROM\Install-Recovery.ps1
-C:\ROM\MANIFEST.json
+C:\ROM\CANDIDATES.json
 C:\ROM\gms\boot.img
 C:\ROM\gms\dtbo.img
 C:\ROM\gms\vendor_boot.img
@@ -84,10 +86,10 @@ set "ROM_FLAVOUR=vanilla"
 
 ### 2. 只读核对工具包、完整 ROM 和 OFRP
 
-将完整 ROM ZIP 放在 `C:\ROM`，与解压后的脚本和 MANIFEST.json 同级，运行：
+将完整 ROM ZIP 放在 `C:\ROM`，与解压后的脚本和 CANDIDATES.json 同级，运行：
 
 ```bat
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\ROM\Install-Recovery.ps1" -Serial YOUR_SERIAL -Flavour %ROM_FLAVOUR% -FastbootPath "C:\platform-tools\fastboot.exe"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\ROM\Install-Recovery.ps1" -Serial YOUR_SERIAL -Flavour %ROM_FLAVOUR% -ManifestPath CANDIDATES.json -FastbootPath "C:\platform-tools\fastboot.exe"
 ```
 
 必须看到 `Verified ... No flash, erase or reboot performed.`。这一步校验所选 ROM、工具包六镜像、解锁状态、Bootloader 模式和当前槽位分区；**此处不加 `-FlashRecovery`**，该旧开关会安装工具包里的 Avium Recovery。
@@ -166,3 +168,5 @@ For updates on the existing project ROM, use section A. For migration from anoth
 Once OrangeFox boots with working touch, Format Data (type yes; this erases internal storage), reboot recovery, then install the full ROM ZIP through Files using MTP/OTG, or use ADB Sideload and the command above. Do not erase persist/modemst, manually wipe system/vendor, disable encryption/verity, or force slots. Preserve eSIM profiles. Require an explicit installation success on the phone. Boot Android and complete snapshot merging before another install, restoring OFRP or root. The ROM may replace OFRP; restore it only after that first boot and merge. Use this flavour's matching boot image for root.
 
 Full OTA installation, Android boot and snapshot merge passed on the project GMS ROM / 12T Pro. New Vanilla passed host audits but is not phone-tested; K50 Ultra, retained-data flavour switching and direct HyperOS 3.0.6 migration remain unverified. OFRP has no standalone kernel: flashing it alone on arbitrary stock boot/vendor_boot is not a qualified migration. Stop before formatting if recovery is unusable. Save /tmp/recovery.log before reboot when reporting an error. Avium Recovery in the kit remains a fallback described in OFRP-INSTALL.md.
+
+安装脚本默认使用历史 `MANIFEST.json`；本页 media20261010 资产请按上方命令显式选择 `CANDIDATES.json`，避免混用不同批次镜像。所有资产均在写入前核对大小及 SHA256。
