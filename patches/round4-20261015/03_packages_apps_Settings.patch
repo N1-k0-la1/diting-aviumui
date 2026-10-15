@@ -1,0 +1,46 @@
+diff --git a/res/values-zh-rCN/strings.xml b/res/values-zh-rCN/strings.xml
+index 10cd2d919253a1e1604a2f71aa7943fd8f734945..57bf1c37134912d0f95b3b35ca22eba4eec84f45 100644
+--- a/res/values-zh-rCN/strings.xml
++++ b/res/values-zh-rCN/strings.xml
+@@ -6117,4 +6117,5 @@
+     <string name="data_usage_tethering_usage_loading">正在计算\u2026</string>
+     <string name="data_usage_tethering_historical_clients">历史连接设备</string>
+     <string name="data_usage_tethering_no_active_clients">没有活动的共享设备</string>
++    <string name="font_style_restart_note">重启后，字体将应用于系统界面和使用系统字体的应用。</string>
+ </resources>
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 7c19b76e1b9b206861ea66b40c661bc735c525be..9bef2524c32325b0457f918d3d424dce84850dcd 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -15190,4 +15190,5 @@
+     <string name="safety_center_device_finder_search_terms"></string>
+     <!-- Safety Center system component update search terms [CHAR LIMIT=NONE] -->
+     <string name="safety_center_system_component_update_search_terms"></string>
++    <string name="font_style_restart_note">Restart to apply this font to system interfaces and apps using system fonts.</string>
+ </resources>
+diff --git a/src/com/android/settings/display/FontStyleSettings.java b/src/com/android/settings/display/FontStyleSettings.java
+index 261f3f347ae7ef826086fb11f5fb5915fa5353b0..61809ab9b431cb515167b652051b8adedefe61fc 100644
+--- a/src/com/android/settings/display/FontStyleSettings.java
++++ b/src/com/android/settings/display/FontStyleSettings.java
+@@ -120,8 +120,8 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+ 
+     @Override
+     protected void onSelectionPerformed(boolean success) {
+-        if (success && mCustomSelection) {
+-            new android.app.AlertDialog.Builder(getContext()).setMessage(R.string.font_custom_restart_note)
++        if (success) {
++            new android.app.AlertDialog.Builder(getContext()).setMessage(R.string.font_style_restart_note)
+                     .setNegativeButton(R.string.font_custom_later, null)
+                     .setPositiveButton(R.string.font_custom_restart, (dialog, which) ->
+                             getContext().getSystemService(android.os.PowerManager.class).reboot(null)).show();
+@@ -174,7 +174,9 @@ public class FontStyleSettings extends RadioButtonPickerFragment {
+     public void bindPreferenceExtra(SelectorWithWidgetPreference preference, String key,
+             CandidateInfo info, String defaultKey, String systemDefaultKey) {
+         FontCandidate candidate = (FontCandidate) info;
+-        ((FontPreviewPreference) preference).mFamily = candidate.family;
++        String stockPreview = "diting-stock-" + candidate.family;
++        ((FontPreviewPreference) preference).mFamily = android.graphics.Typeface.getSystemFontMap().containsKey(stockPreview)
++                ? stockPreview : candidate.family;
+         if (FontStyleConfig.CUSTOM.equals(key)) {
+             ((FontPreviewPreference) preference).mImportedTypeface = CustomFontImport.previewTypeface();
+         }

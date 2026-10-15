@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 75,
+  "ordered_patches": 79,
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,
@@ -38,13 +38,13 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 75 reconstructed from local pinned Git objects across 30 customized projects",
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 79 reconstructed from local pinned Git objects across 31 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 75,
-    "customized_projects": 30,
+    "ordered_patches": 79,
+    "customized_projects": 31,
     "all_git_trees_match_safe_public_revisions": true,
     "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND3-REVIEW-20261014.md"
+    "report": "ROUND4-REVIEW-20261015.md"
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,
@@ -69,5 +69,33 @@
     "installed_audio_policy_native_checks_passed": 19,
     "phone_runtime_audio_policy_modified": false,
     "headset_playback_verified": false
+  },
+  "round4_20261015": {
+    "helper_regressions_passed": 24,
+    "production_regression_groups_passed": 8,
+    "font_lifecycle_regressions_passed": true,
+    "fingerprint_and_full_mistouch_controller_host_fixtures_passed": true,
+    "mistouch_disabled_lockscreen_and_selected_user_cases_passed": true,
+    "removed_guards_negative_controls_failed_as_expected": 3,
+    "global_font_actual_device_native_render_shared_memory_and_aliases_passed": true,
+    "global_font_emoji_cjk_fallback_monospace_presets_and_stock_preview_passed": true,
+    "global_font_probe_did_not_modify_system_state": true,
+    "folder_blur_transition_orderings_and_negative_control_passed": true,
+    "installer_mock_cases_passed": 5,
+    "final_android_component_build_passed": true,
+    "built_components": [
+      "framework-minus-apex",
+      "services",
+      "SystemUI",
+      "Settings",
+      "Launcher3QuickStep",
+      "android.hardware.biometrics.fingerprint-service.xiaomi"
+    ],
+    "historical_75_patches_and_binary_hashes_unchanged": true,
+    "full_rom_flash_and_disabled_lockscreen_hardware_acceptance_pending": true,
+    "k50_ultra_enrollment_hardware_acceptance_pending": true,
+    "reported_launcher_screenshot_reproduced": false,
+    "released_rom_images_rebuilt": false,
+    "report": "ROUND4-REVIEW-20261015.md"
   }
 }

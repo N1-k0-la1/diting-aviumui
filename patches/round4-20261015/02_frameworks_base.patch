@@ -1,0 +1,378 @@
+diff --git a/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt b/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
+index 3c7adf8afaeb72503c99f1370e7ddfba75b78635..2697baec83a85d92dc3897866cf0dd03cd2f4326 100644
+--- a/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
++++ b/packages/SystemUI/src/org/avium/systemui/mistouch/MistouchPreventionWindowController.kt
+@@ -21,10 +21,13 @@ import android.hardware.Sensor
+ import android.hardware.SensorEvent
+ import android.hardware.SensorEventListener
+ import android.hardware.SensorManager
++import android.os.SystemClock
+ import android.os.UserHandle
+ import android.provider.Settings
+ import android.view.View
+ import android.view.WindowManager
++import com.android.internal.widget.LockPatternUtils
++import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+ import com.android.keyguard.KeyguardUpdateMonitor
+ import com.android.keyguard.KeyguardUpdateMonitorCallback
+ import com.android.systemui.CoreStartable
+@@ -38,6 +41,8 @@ import javax.inject.Inject
+ @SysUISingleton
+ class MistouchPreventionWindowController @Inject constructor(
+     private val context: Context,
++    private val lockPatternUtils: LockPatternUtils,
++    private val selectedUserInteractor: SelectedUserInteractor,
+     private val keyguardStateController: KeyguardStateController,
+     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
+     private val biometricUnlockController: BiometricUnlockController,
+@@ -58,6 +63,7 @@ class MistouchPreventionWindowController @Inject constructor(
+ 
+     private val sensorManager = context.getSystemService(SensorManager::class.java)
+     private val proximitySensor = sensorManager?.getDefaultSensor(POCKET_SENSOR, true)
++        ?: sensorManager?.getDefaultSensor(POCKET_SENSOR)
+     private val accelerometerSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+     private val windowManager = context.getSystemService(WindowManager::class.java)
+ 
+@@ -92,21 +98,28 @@ class MistouchPreventionWindowController @Inject constructor(
+     private val sensorListener = object : SensorEventListener {
+         override fun onSensorChanged(event: SensorEvent?) {
+             event ?: return
++            // An event queued before unregisterListener must not revive the window.
++            if (!registered) return
+ 
+             if (event.sensor.type == POCKET_SENSOR) {
+-                isProxNear = event.values[0] < 1.0f
++                val distance = event.values.firstOrNull() ?: return
++                val threshold = minOf(5.0f, event.sensor.maximumRange)
++                isProxNear = distance.isFinite() && distance >= 0f && distance < threshold
+                 updateState()
+             } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
++                if (event.values.size < 3) return
+                 val g = event.values.clone()
+                 val magnitude = Math.sqrt(
+                     (g[0] * g[0] + g[1] * g[1] + g[2] * g[2]).toDouble()
+                 )
+ 
++                if (!magnitude.isFinite() || magnitude <= 0.0) return
++
+                 g[0] = (g[0] / magnitude).toFloat()
+                 g[1] = (g[1] / magnitude).toFloat()
+                 g[2] = (g[2] / magnitude).toFloat()
+ 
+-                val inclination = Math.round(Math.toDegrees(Math.acos(g[2].toDouble()))).toInt()
++                val inclination = Math.round(Math.toDegrees(Math.acos(g[2].toDouble().coerceIn(-1.0, 1.0)))).toInt()
+ 
+                 val isGravityInPocket = g[1] < GRAVITY_THRESHOLD
+                 val isInclinationInPocket = inclination in MIN_INCLINATION..MAX_INCLINATION
+@@ -120,7 +133,25 @@ class MistouchPreventionWindowController @Inject constructor(
+     }
+ 
+     private fun updateState() {
+-        if (isProxNear || isAccelInPocket) showWindow() else hideWindow()
++        if (!canPreventMistouch()) {
++            disable()
++            return
++        }
++        // Orientation alone is not evidence of covering an available proximity sensor.
++        val inPocket = isProxNear || (proximitySensor == null && isAccelInPocket)
++        if (inPocket) showWindow() else hideWindow()
++    }
++
++    private fun canPreventMistouch(): Boolean =
++        mistouchPreventionEnabled &&
++            !lockPatternUtils.isLockScreenDisabled(selectedUserInteractor.getSelectedUserId()) &&
++            keyguardShowing &&
++            !keyguardStateController.isOccluded && !biometricUnlockController.isWakeAndUnlock
++
++    private val keyguardStateCallback = object : KeyguardStateController.Callback {
++        override fun onKeyguardShowingChanged() {
++            handleKeyguardShowingChanged(keyguardShowing)
++        }
+     }
+ 
+     private val keyguardCallback = object : KeyguardUpdateMonitorCallback() {
+@@ -173,34 +204,48 @@ class MistouchPreventionWindowController @Inject constructor(
+         preventionView.addCallback(volumeKeyCallback)
+ 
+         if (proximitySensor != null || accelerometerSensor != null) {
++            keyguardStateController.addCallback(keyguardStateCallback)
+             keyguardUpdateMonitor.registerCallback(keyguardCallback)
+             wakefulnessLifecycle.addObserver(wakefulnessObserver)
+             statusBarStateController.addCallback(statusBarStateListener)
+             MistouchInteractor.get().addListener(this)
++            handleKeyguardShowingChanged(keyguardShowing)
+         }
+     }
+ 
+     private fun enable() {
+         if (proximitySensor == null && accelerometerSensor == null) return
+ 
+-        if (!mistouchPreventionEnabled || registered) return
+-        if (System.currentTimeMillis() - disableEventInMillis < DISABLE_DURATION) return
++        if (!canPreventMistouch()) {
++            disable()
++            return
++        }
++        if (registered) return
++        if (SystemClock.elapsedRealtime() - disableEventInMillis < DISABLE_DURATION) return
+ 
+-        proximitySensor?.let { sensorManager?.registerListener(sensorListener, it, SENSOR_DELAY) }
+-        accelerometerSensor?.let { sensorManager?.registerListener(sensorListener, it, SENSOR_DELAY) }
+-        registered = true
++        isProxNear = false
++        isAccelInPocket = false
+         addViewToWindow()
++        val proximityRegistered = proximitySensor?.let {
++            sensorManager?.registerListener(sensorListener, it, SENSOR_DELAY) == true
++        } ?: false
++        val accelRegistered = if (proximitySensor == null) {
++            accelerometerSensor?.let {
++                sensorManager?.registerListener(sensorListener, it, SENSOR_DELAY) == true
++            } ?: false
++        } else false
++        registered = proximityRegistered || accelRegistered
++        if (!registered) removeViewFromWindow()
+     }
+ 
+     private fun disable() {
+-        if (proximitySensor == null && accelerometerSensor == null) return
+-
++        val wasRegistered = registered
++        registered = false
++        isProxNear = false
++        isAccelInPocket = false
++        hideWindow()
+         removeViewFromWindow()
+-
+-        if (registered) {
+-            sensorManager?.unregisterListener(sensorListener)
+-            registered = false
+-        }
++        if (wasRegistered) sensorManager?.unregisterListener(sensorListener)
+     }
+ 
+     private fun addViewToWindow() {
+@@ -237,6 +282,10 @@ class MistouchPreventionWindowController @Inject constructor(
+     }
+ 
+     private fun showWindow() {
++        if (!registered || !windowAdded || !canPreventMistouch()) {
++            disable()
++            return
++        }
+         preventionView.addCallback(volumeKeyCallback)
+         preventionView.visibility = View.VISIBLE
+         preventionView.requestFocus()
+@@ -256,17 +305,17 @@ class MistouchPreventionWindowController @Inject constructor(
+     }
+ 
+     override fun onDoubleTapPowerGesture() {
+-        disableEventInMillis = System.currentTimeMillis()
++        disableEventInMillis = SystemClock.elapsedRealtime()
+         disable()
+     }
+ 
+     override fun onAffordanceLongClick() {
+-        disableEventInMillis = System.currentTimeMillis()
++        disableEventInMillis = SystemClock.elapsedRealtime()
+         disable()
+     }
+ 
+     override fun onEmergencyButtonClick() {
+-        disableEventInMillis = System.currentTimeMillis()
++        disableEventInMillis = SystemClock.elapsedRealtime()
+         disable()
+     }
+ 
+@@ -275,15 +324,7 @@ class MistouchPreventionWindowController @Inject constructor(
+     }
+ 
+     private fun handleKeyguardShowingChanged(showing: Boolean) {
+-        val occluded = keyguardStateController.isOccluded
+-
+-        if (showing) {
+-            enable()
+-        } else if (!showing && !occluded) {
+-            disable()
+-        } else if (occluded && System.currentTimeMillis() - disableEventInMillis < DISABLE_DURATION) {
+-            disable()
+-        }
++        if (showing && canPreventMistouch()) enable() else disable()
+     }
+ 
+     private fun handleStartedWakingUp() {
+diff --git a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+index 44735e40675aec54529fd7c33f1b756fb0e1abf6..37a33b59da9cf0c6b8d7b458f2d8462c203a174e 100644
+--- a/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
++++ b/services/core/java/com/android/server/graphics/fonts/FontManagerService.java
+@@ -69,6 +69,19 @@ import java.util.concurrent.CompletableFuture;
+ public final class FontManagerService extends IFontManager.Stub {
+     private static final String TAG = "FontManagerService";
+ 
++    private final String mBootFontFamily;
++
++    private static String readBootFontFamily(Context context) {
++        try {
++            return GlobalFontConfig.selectedFamily(android.provider.Settings.Secure.getStringForUser(
++                    context.getContentResolver(),
++                    android.provider.Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, 0));
++        } catch (RuntimeException e) {
++            Slog.w(TAG, "Cannot read boot font selection; using stock fonts", e);
++            return null;
++        }
++    }
++
+     private static final String FONT_FILES_DIR = "/data/fonts/files";
+     private static final String CONFIG_XML_FILE = "/data/fonts/config/config.xml";
+ 
+@@ -324,6 +337,9 @@ public final class FontManagerService extends IFontManager.Stub {
+         mContext = context;
+         mIsSafeMode = safeMode;
+         mUserCustomFonts = new UserCustomFontStore(safeMode);
++        // Freeze the choice for this boot. Existing processes retain their font map
++        // until reboot, so do not serve mixed selections to newly started apps.
++        mBootFontFamily = safeMode ? null : readBootFontFamily(context);
+ 
+         if (Flags.useOptimizedBoottimeFontLoading()) {
+             Slog.i(TAG, "Using optimized boot-time font loading.");
+@@ -334,7 +350,7 @@ public final class FontManagerService extends IFontManager.Stub {
+                 // If there is no updatable font directory, `initialize` will have already loaded
+                 // the system font map, so there's no need to set the system font map again here.
+                 synchronized (mUpdatableFontDirLock) {
+-                    if  (mUpdatableFontDir != null || mUserCustomFonts.hasLoadedFont()) {
++                    if (mUpdatableFontDir != null || mUserCustomFonts.hasLoadedFont() || mBootFontFamily != null) {
+                         setSystemFontMap();
+                     }
+                 }
+@@ -389,7 +405,8 @@ public final class FontManagerService extends IFontManager.Stub {
+     private void initialize() {
+         synchronized (mUpdatableFontDirLock) {
+             mUpdatableFontDir = createUpdatableFontDir();
+-            if (mUpdatableFontDir == null && !mUserCustomFonts.hasLoadedFont()) {
++            if (mUpdatableFontDir == null && !mUserCustomFonts.hasLoadedFont()
++                    && mBootFontFamily == null) {
+                 if (Flags.useOptimizedBoottimeFontLoading()) {
+                     // If fs-verity is not supported, load preinstalled system font map and use it
+                     // for all apps.
+@@ -497,10 +514,10 @@ public final class FontManagerService extends IFontManager.Stub {
+      * Makes new serialized font map data and updates mSerializedFontMap.
+      */
+     private void updateSerializedFontMap() {
+-        SharedMemory serializedFontMap = serializeFontMap(getSystemFontConfig());
++        SharedMemory serializedFontMap = serializeFontMap(getSystemFontConfig(), mBootFontFamily);
+         if (serializedFontMap == null && mUserCustomFonts.hasLoadedFont()) {
+             mUserCustomFonts.rejectLoadedFont();
+-            serializedFontMap = serializeFontMap(getSystemFontConfig());
++            serializedFontMap = serializeFontMap(getSystemFontConfig(), mBootFontFamily);
+         }
+         if (serializedFontMap == null) {
+             // Fallback to the preloaded config.
+@@ -510,13 +527,17 @@ public final class FontManagerService extends IFontManager.Stub {
+     }
+ 
+     @Nullable
+-    private static SharedMemory serializeFontMap(FontConfig fontConfig) {
++    private static SharedMemory serializeFontMap(FontConfig fontConfig, String selectedFamily) {
+         final ArrayMap<String, ByteBuffer> bufferCache = new ArrayMap<>();
+         try {
+             final Map<String, FontFamily[]> fallback =
+                     SystemFonts.buildSystemFallback(fontConfig, bufferCache);
+             final Map<String, Typeface> typefaceMap =
+-                    SystemFonts.buildSystemTypefaces(fontConfig, fallback);
++                    GlobalFontConfig.apply(SystemFonts.buildSystemTypefaces(fontConfig, fallback),
++                            selectedFamily, fontConfig.getAliases());
++            if (!typefaceMap.containsKey(Typeface.DEFAULT_FAMILY)) {
++                throw new IllegalStateException("Default font family could not be built");
++            }
+             return Typeface.serializeFontMap(typefaceMap);
+         } catch (IOException | ErrnoException | RuntimeException e) {
+             Slog.w(TAG, "Failed to serialize updatable font map. "
+diff --git a/services/core/java/com/android/server/graphics/fonts/GlobalFontConfig.java b/services/core/java/com/android/server/graphics/fonts/GlobalFontConfig.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..610e5552151f7665389c7b6d676de73b5a2a560d
+--- /dev/null
++++ b/services/core/java/com/android/server/graphics/fonts/GlobalFontConfig.java
+@@ -0,0 +1,83 @@
++/* Copyright (C) 2026 diting AviumUI contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.server.graphics.fonts;
++
++import android.text.FontConfig;
++import android.graphics.Typeface;
++
++import org.json.JSONObject;
++
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++/** Applies the boot-selected font to system-wide text families, retaining stock fallbacks. */
++final class GlobalFontConfig {
++    private GlobalFontConfig() {}
++
++    static String selectedFamily(String theme) {
++        if (theme == null || theme.isEmpty()) return null;
++        try {
++            switch (new JSONObject(theme).optString("android.theme.customization.font")) {
++                case "com.android.theme.font.custom": return UserCustomFontStore.FAMILY;
++                case "com.android.theme.font.condensed": return "sans-serif-condensed";
++                case "com.android.theme.font.sourcesanspro": return "source-sans-pro";
++                case "com.android.theme.font.notoserif": return "serif";
++                default: return null;
++            }
++        } catch (Exception e) {
++            // Malformed or unknown settings must never prevent system font initialization.
++            return null;
++        }
++    }
++
++    static Map<String, Typeface> apply(Map<String, Typeface> base, String selectedFamily,
++            List<FontConfig.Alias> aliases) {
++        if (selectedFamily == null) return base;
++        if (UserCustomFontStore.FAMILY.equals(selectedFamily)) {
++            for (FontConfig.Alias alias : aliases) {
++                // The store publishes an alias only when no imported font loaded.
++                // Do not turn that recovery alias into a new device-wide selection.
++                if (UserCustomFontStore.FAMILY.equals(alias.getName())) return base;
++            }
++        }
++        Typeface selected = base.get(selectedFamily);
++        if (selected == null) return base;
++        Map<String, Typeface> result = new HashMap<>(base);
++        Set<String> changed = new HashSet<>();
++        for (String name : base.keySet()) {
++            if (!name.equals(selectedFamily) && isTextFamily(name)) changed.add(name);
++        }
++        // Cover aliases such as arial/helvetica too, without replacing code/icon fonts.
++        boolean added;
++        do {
++            added = false;
++            for (FontConfig.Alias alias : aliases) {
++                if (changed.contains(alias.getOriginal()) && base.containsKey(alias.getName())
++                        && !alias.getName().equals(selectedFamily)) {
++                    added |= changed.add(alias.getName());
++                }
++            }
++        } while (added);
++        for (String name : changed) {
++            Typeface original = base.get(name);
++            // Settings can still preview the stock/default option while the global
++            // selection is active. These aliases do not change normal app lookups.
++            result.putIfAbsent("diting-stock-" + name, original);
++            // Reuse the selected native collection in full: retaining just its named
++            // fonts would lose language-specific CJK fallbacks (notably serif).
++            result.put(name, Typeface.create(selected, original.getWeight(), original.isItalic()));
++        }
++        return result;
++    }
++
++    private static boolean isTextFamily(String name) {
++        return name.equals("sans-serif") || name.startsWith("sans-serif-")
++                || name.equals("serif") || name.equals("system-ui")
++                || name.equals("source-sans-pro") || name.startsWith("source-sans-pro-")
++                || name.equals("google-sans") || name.startsWith("google-sans-");
++    }
++}

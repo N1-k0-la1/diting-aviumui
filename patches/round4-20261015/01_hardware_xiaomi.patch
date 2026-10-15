@@ -1,0 +1,64 @@
+diff --git a/aidl/fingerprint/Session.cpp b/aidl/fingerprint/Session.cpp
+index b9357318cbe3bdf3c07d51c25ef0150fbfddec20..5570578b9981c3691000c142b01e89987e37549f 100644
+--- a/aidl/fingerprint/Session.cpp
++++ b/aidl/fingerprint/Session.cpp
+@@ -61,8 +61,11 @@ ndk::ScopedAStatus Session::revokeChallenge(int64_t challenge) {
+ 
+ ndk::ScopedAStatus Session::enroll(const HardwareAuthToken& hat,
+                                    std::shared_ptr<ICancellationSignal>* out) {
+-    hw_auth_token_t authToken;
+-    translate(hat, authToken);
++    hw_auth_token_t authToken{};
++    if (!translate(hat, authToken)) {
++        ALOGE("Invalid hardware authentication token MAC length");
++        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
++    }
+ #ifndef IMPL_V2
+     int error = mDevice->enroll(mDevice, &authToken, mUserId, 60);
+ #else
+@@ -153,8 +156,11 @@ ndk::ScopedAStatus Session::invalidateAuthenticatorId() {
+ 
+ ndk::ScopedAStatus Session::resetLockout(const HardwareAuthToken& hat) {
+ #ifdef IMPL_V2
+-    hw_auth_token_t authToken;
+-    translate(hat, authToken);
++    hw_auth_token_t authToken{};
++    if (!translate(hat, authToken)) {
++        ALOGE("Invalid hardware authentication token MAC length");
++        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
++    }
+ 
+     int resetResult = mDevice->reset_lockout(mDevice, &authToken);
+     if (resetResult != 0) {
+diff --git a/aidl/fingerprint/include/Legacy2Aidl.h b/aidl/fingerprint/include/Legacy2Aidl.h
+index 3dac8c71bd7d7fa988bed3a5f190851061a98db6..920a1c71d32fb37453e7d4db20ae504e9c8ac197 100644
+--- a/aidl/fingerprint/include/Legacy2Aidl.h
++++ b/aidl/fingerprint/include/Legacy2Aidl.h
+@@ -10,12 +10,18 @@
+ 
+ #include <hardware/hw_auth_token.h>
+ 
++#include <algorithm>
+ #include <endian.h>
+ 
+ namespace aidl::android::hardware::biometrics::fingerprint {
+ 
+-inline void translate(const ::aidl::android::hardware::keymaster::HardwareAuthToken& authToken,
++inline bool translate(const ::aidl::android::hardware::keymaster::HardwareAuthToken& authToken,
+                       hw_auth_token_t& hat) {
++    // A legacy HAT has a fixed 32-byte MAC and version 0. Never pass stack
++    // garbage to the trusted application or copy a malformed MAC out of bounds.
++    if (authToken.mac.size() != sizeof(hat.hmac)) return false;
++    hat = {};
++    hat.version = HW_AUTH_TOKEN_VERSION;
+     hat.challenge = authToken.challenge;
+     hat.user_id = authToken.userId;
+     hat.authenticator_id = authToken.authenticatorId;
+@@ -23,6 +29,7 @@ inline void translate(const ::aidl::android::hardware::keymaster::HardwareAuthTo
+     hat.authenticator_type = htobe32(static_cast<uint32_t>(authToken.authenticatorType));
+     hat.timestamp = htobe64(authToken.timestamp.milliSeconds);
+     std::copy(authToken.mac.begin(), authToken.mac.end(), hat.hmac);
++    return true;
+ }
+ 
+ inline void translate(const hw_auth_token_t& hat,

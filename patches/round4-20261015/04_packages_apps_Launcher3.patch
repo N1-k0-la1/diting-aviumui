@@ -1,0 +1,107 @@
+diff --git a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+index 2afc3de6cd0780d07c27604309d099ec33f4b2e3..dca8a45cafbb12f29b4b81e29b5684f1ad811860 100644
+--- a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
++++ b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+@@ -248,7 +248,6 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+ import com.android.wm.shell.shared.desktopmode.DesktopState;
+ 
+ import org.avium.launcher.FolderDepthController;
+-import org.avium.launcher.anim.WorkspaceAnimator;
+ 
+ import kotlin.Unit;
+ 
+@@ -281,7 +280,6 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+     private PredictedContainerInfo mAllAppsPredictions;
+     private HotseatPredictionController mHotseatPredictionController;
+     private DepthController mDepthController;
+-    private WorkspaceAnimator mFolderWorkspaceAnimator;
+     private QuickstepTransitionManager mAppTransitionManager;
+ 
+     private OverviewActionsView<?> mActionsView;
+@@ -1383,14 +1381,6 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+         return mDepthController.folderDepth;
+     }
+ 
+-    @Override
+-    public void animateFolderBlur(boolean show) {
+-        if (mFolderWorkspaceAnimator == null) {
+-            mFolderWorkspaceAnimator = new WorkspaceAnimator(this);
+-        }
+-        mFolderWorkspaceAnimator.animateBlur(show, null);
+-    }
+-
+     @Nullable
+     public UnfoldTransitionProgressProvider getUnfoldTransitionProgressProvider() {
+         return mUnfoldTransitionProgressProvider;
+diff --git a/quickstep/src/com/android/quickstep/util/BaseDepthController.java b/quickstep/src/com/android/quickstep/util/BaseDepthController.java
+index 6d38156f9a49178eec01404369cd0977869da6cd..cc3b5c3077fb3f608349e06999ed263e3d77bf37 100644
+--- a/quickstep/src/com/android/quickstep/util/BaseDepthController.java
++++ b/quickstep/src/com/android/quickstep/util/BaseDepthController.java
+@@ -329,7 +329,7 @@ public class BaseDepthController {
+     /** @return {@code true} if the workspace should be blurred. */
+     @VisibleForTesting
+     public boolean blurWorkspaceDepthTargets() {
+-        if (!Flags.allAppsBlur()) {
++        if (!Flags.allAppsBlur() && folderDepth.getValue() <= 0f) {
+             clearWorkspaceDepthTargets();
+             return false;
+         }
+@@ -338,10 +338,15 @@ public class BaseDepthController {
+                 ? stateManager.getTargetState() : stateManager.getState();
+         // Only blur workspace if the current state wants to blur based on the target state.
+         boolean shouldBlurWorkspace =
+-                stateManager.getCurrentStableState().shouldBlurWorkspace(targetState);
+-
+-        RenderEffect blurEffect = shouldBlurWorkspace && mCurrentBlur > 0
+-                ? RenderEffect.createBlurEffect(mCurrentBlur, mCurrentBlur, Shader.TileMode.DECAL)
++                Flags.allAppsBlur()
++                        && stateManager.getCurrentStableState().shouldBlurWorkspace(targetState);
++
++        // One owner combines app-transition and folder blur. Returning to NORMAL
++        // must not clear the workspace while a folder is still open.
++        float folderBlur = 60f * Math.min(1f, Math.max(0f, folderDepth.getValue() / 0.3f));
++        float radius = Math.max(shouldBlurWorkspace ? mCurrentBlur : 0, folderBlur);
++        RenderEffect blurEffect = radius > 0
++                ? RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.DECAL)
+                 // If blur is not desired, clear the blur effect from the depth targets.
+                 : null;
+         Log.d(TAG, "shouldBlurWorkspace: " + shouldBlurWorkspace
+@@ -350,7 +355,7 @@ public class BaseDepthController {
+                 + " mCurrentBlur: " + mCurrentBlur
+                 + " mLauncher.getDepthBlurTargets(): " + mLauncher.getDepthBlurTargets());
+         mLauncher.getDepthBlurTargets().forEach(target -> target.setRenderEffect(blurEffect));
+-        return shouldBlurWorkspace;
++        return shouldBlurWorkspace || folderBlur > 0f;
+     }
+ 
+     private void clearWorkspaceDepthTargets() {
+diff --git a/src/org/avium/launcher/FolderDepthController.java b/src/org/avium/launcher/FolderDepthController.java
+index df46be5cff7c9357b52bd95d41f47f96ce6decc6..72d2885f138259f4bf09bb7d1f0dfa44bb30135b 100644
+--- a/src/org/avium/launcher/FolderDepthController.java
++++ b/src/org/avium/launcher/FolderDepthController.java
+@@ -21,5 +21,4 @@ import com.android.launcher3.util.MultiPropertyFactory.MultiProperty;
+ public interface FolderDepthController {
+     MultiProperty getFolderDepthProperty();
+ 
+-    void animateFolderBlur(boolean show);
+ }
+diff --git a/src/org/avium/launcher/folder/AviumFolderDepthAnimator.java b/src/org/avium/launcher/folder/AviumFolderDepthAnimator.java
+index c05729e6a23c4611532b2ad15c1a2004a9459058..8913e4e0f45ec07208ac97fe3b4107ffc67947c3 100644
+--- a/src/org/avium/launcher/folder/AviumFolderDepthAnimator.java
++++ b/src/org/avium/launcher/folder/AviumFolderDepthAnimator.java
+@@ -37,7 +37,6 @@ public final class AviumFolderDepthAnimator {
+         if (folderDepthController == null) {
+             return;
+         }
+-        folderDepthController.animateFolderBlur(isOpening);
+         MultiProperty folderDepth = folderDepthController.getFolderDepthProperty();
+         Animator depthAnimator = folderDepth.animateToValue(isOpening ? OPEN_FOLDER_DEPTH : 0f);
+         depthAnimator.setDuration(resources.getInteger(
+@@ -50,7 +49,6 @@ public final class AviumFolderDepthAnimator {
+         if (folderDepthController == null) {
+             return;
+         }
+-        folderDepthController.animateFolderBlur(depth > 0f);
+         MultiProperty folderDepth = folderDepthController.getFolderDepthProperty();
+         folderDepth.setValue(depth);
+     }
