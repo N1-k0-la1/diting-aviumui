@@ -1,7 +1,7 @@
 # 20261016 最新定制源码输入
 
 当前是 89 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错、2 份第三轮蓝牙/字体边界处理、4 份全局字体/防误触/指纹/文件夹模糊修复、6 份第五轮生命周期及边界修复、2 份第六轮授权回传及桌面动画修复、1 份第七轮无动画恢复桌面修复、1 份第八轮分身跨空间调用签名核验修复。
-GMS / Vanilla 媒体包均已完成构建和电脑侧校验，实机验证范围见 MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json；Vanilla 实机测试仍待完成。
+当前 round8fix20261016 GMS 已完成构建和电脑侧校验，维护者已反馈刷入后 QQ 登录与快速返回桌面 UI 正常；同批 Vanilla 正在独立构建。当前成品见 GMS-ROUND8-RELEASE.json；MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json 仅记录历史 media20261010 批次。
 媒体包启用 `TARGET_DITING_DOLBY_VISION=true`，杜比源码默认关闭。
 第二轮集成纠错及回归检查详见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)；此前审查见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
 软件 LHDC 已整合，不启用 RAW 或未经验证的 Qualcomm DSP offload。
