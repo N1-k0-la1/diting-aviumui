@@ -14,7 +14,7 @@ GMS 已在 12T Pro 刷入开机，维护者反馈手动验收除 LHDC 外正常�
 - [修正版 OrangeFox / Tested Recovery](OFRP-INSTALL.md)：12T Pro 在本 ROM 上完成启动、触摸/唤醒、完整 ZIP 安装、系统开机及快照合并；K50 至尊版与从 HyperOS 3.0.6 直接启动尚未验证。
 - [对应 Recovery 源码 / Corresponding source](recovery/orangefox-diting-20261010-bootctrl/README.md)。首版失败候选作为历史记录保留。
 - [OFRP review1 审查修复](OFRP-REVIEW-20261015.md) · [新版源码](recovery/orangefox-diting-20261015-review1/README.md)：待新版实机验收，旧镜像测试结果不沿用。
-- [OFRP review2 跨文件审查](OFRP-REVIEW-20261016.md) · [最新源码](recovery/orangefox-diting-20261016-review2/README.md)：补充签名失败处理、公共/设备 USB 规则互斥及安装器修复，仍待实机验收。
+- [OFRP review2 跨文件审查](OFRP-REVIEW-20261016.md) · [最新源码](recovery/orangefox-diting-20261016-review2/README.md)：补充签名失败处理、公共/设备 USB 规则互斥及安装器修复；维护者确认 12T Pro 多次刷 ROM 与 /sdcard 显示正常，按本项目非官方正式版提供，其他场景见报告。
 
 源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 89 份有序补丁。
 最新分身跨空间签名核验修复见 [第八轮报告](ROUND8-REVIEW-20261016.md)，新框架仍待刷入验收。

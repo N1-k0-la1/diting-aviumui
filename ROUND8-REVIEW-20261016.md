@@ -21,3 +21,9 @@ PackageManager 仅在原有本空间查询没有结果、请求只包含 GET_SIG
 执行提取的实际 PackageManager 方法及 ActivityStarter 授权代码，77 项断言覆盖真实 UID/签名、准确用户、非零父用户、未交互、错误 UID 对、禁用/锁定/隐藏/卸载状态、额外查询标志、保留原有本空间结果及跨用户权限拒绝；11 个故意删改保护的负控均被拒绝。既有回归和新回归共9套通过。完整 Android services 组件编译状态和89补丁精确重放结果以 VALIDATION.json 为准。
 
 新系统框架需要重新构建完整 ROM、刷入后再次验证主空间/分身 QQ 分别授权两款音乐应用。当前手机上的对照结果不能替代该最终验收。历史 ROM/Recovery 二进制及哈希不改写；未发布私人调试改动、截图、设备日志或隐藏配置。
+
+## 2026-10-16 GMS 整包与维护者实机反馈
+
+round8fix20261016 GMS 已完成整包构建、发布签名、完整 OTA/payload 与实际镜像内容核对，以及 Windows 独立 SHA256/ZIP CRC 回读。维护者反馈刷入所提供 GMS 后 QQ 登录、快速返回后的桌面 UI 正常。该反馈不扩大为所有账号/空间/音乐应用组合或全面硬件测试通过；Vanilla 在本记录更新时仍在独立构建。
+
+准备发布的 GMS、配套原版启动镜像与 OFRP review2 校验值及范围见 GMS-ROUND8-RELEASE.json。维护者另确认一直使用同一 review2 镜像安装后续项目 ROM，且 /sdcard 目录显示正常，因此 OFRP 按本项目 diting 非官方正式版提供。K50 Ultra 及扩展 Recovery 场景的限制见 OFRP-REVIEW-20261016.md。未改写既有 ROM/Recovery 二进制或历史哈希，未上传私有系统调试改动。

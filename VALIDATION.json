@@ -221,16 +221,23 @@
     "historical_rom_recovery_records_unchanged": true,
     "rom_patch_series_unchanged": true,
     "private_lineage_delta_exported": false,
-    "new_image_phone_tested": false,
+    "new_image_phone_tested": true,
     "recovery_reinstall_hardware_tested": false,
     "hardware_validation_pending": [
-      "boot/menu",
-      "FBE data access",
-      "screen wake touch",
-      "MTP/ADB/fastbootd/sideload",
-      "signed OTA/Android boot/snapshot merge",
+      "K50 Ultra hardware acceptance",
+      "PIN-protected FBE unlock",
+      "screen-wake/touch edge cases",
+      "MTP/ADB/fastbootd/sideload individually",
+      "explicit OTA snapshot merge completion",
       "dedicated recovery reinstall"
-    ]
+    ],
+    "phone_evidence_type": "maintainer report",
+    "phone_device": "Xiaomi 12T Pro",
+    "phone_verified_scope": [
+      "repeated project ROM installation",
+      "internal /sdcard directory display"
+    ],
+    "release_classification": "diting unofficial stable release"
   },
   "round7_20261016": {
     "ordered_patches": 88,
@@ -257,8 +264,8 @@
     "temporary_same_profile_package_control_bypassed_signature_rejection_apps": 2,
     "music_login_completed_after_control_apps": 2,
     "control_scope": "Temporary install-existing of music APK in clone; restored uninstalled state with keep-data. Not a phone test of the new framework.",
-    "new_framework_phone_tested": false,
-    "new_full_rom_built": false,
+    "new_framework_phone_tested": true,
+    "new_full_rom_built": true,
     "report": "ROUND8-REVIEW-20261016.md",
     "private_device_evidence_exported": false,
     "services_component_build_passed": true,
@@ -266,6 +273,19 @@
     "public_tree_replay_projects": 31,
     "public_tree_replay_patches": 89,
     "previous_88_patch_files_byte_identical": true,
-    "historical_binary_hashes_unchanged": true
+    "historical_binary_hashes_unchanged": true,
+    "full_rom_flavours_completed": [
+      "gms"
+    ],
+    "phone_evidence_type": "maintainer report after flashing supplied GMS",
+    "phone_verified_scope": [
+      "QQ login",
+      "desktop UI after rapid BACK"
+    ],
+    "all_qq_space_and_music_combinations_claimed": false,
+    "vanilla_phone_tested": false,
+    "gms_host_image_and_windows_readback_passed": true,
+    "gms_release_record": "GMS-ROUND8-RELEASE.json",
+    "maintainer_phone_feedback_recorded": true
   }
 }

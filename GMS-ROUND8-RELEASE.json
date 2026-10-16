@@ -1,0 +1,99 @@
+{
+  "batch": "round8fix20261016",
+  "type": "prepared-community-release",
+  "build_public_source_commit": "44ec6126bb2c74e922eed7b299f0c503d1eedcc0",
+  "public_patch_count": 89,
+  "gms": {
+    "flavour": "gms",
+    "file": "AviumUI-16.2.2-diting-gms-user-round8fix20261016.zip",
+    "assets": [
+      {
+        "path": "AviumUI-16.2.2-diting-gms-user-round8fix20261016.zip",
+        "bytes": 3076452982,
+        "sha256": "8609b1faa9915d4d1940c5be1e2b376882ab50fd508bb7b1256274014353852d"
+      },
+      {
+        "path": "gms/boot.img",
+        "bytes": 201326592,
+        "sha256": "492fe7a7ccaaae5858a3df4f989cd07031d6baaedd53ecd6069980fc3b2d011a"
+      },
+      {
+        "path": "gms/dtbo.img",
+        "bytes": 25165824,
+        "sha256": "72714695676d40cec7ce9707a04f05325f7a258e9ca227a11a6bc0125a11b811"
+      },
+      {
+        "path": "gms/vendor_boot.img",
+        "bytes": 100663296,
+        "sha256": "133fcf7504f17b997bbb7eafa62b7f9a543dc3191f1f33c84462ec4e6ab2f8b0"
+      },
+      {
+        "path": "gms/recovery.img",
+        "bytes": 104857600,
+        "sha256": "647ac06555ead7c30c2d20b78d51c99090605cbf2e41175e0fbb57f153517822"
+      },
+      {
+        "path": "gms/vbmeta.img",
+        "bytes": 8192,
+        "sha256": "06c7097f792f5d95a8883ecf1950da02c4a1119fcc3e379fcadcfdb2eb4bb062"
+      },
+      {
+        "path": "gms/vbmeta_system.img",
+        "bytes": 4096,
+        "sha256": "d956bb6700278ae874f142281a83c61d4c965486effcf68e8a417d717af95829"
+      }
+    ]
+  },
+  "orangefox": {
+    "path": "OFRP/OrangeFox-diting-ditingp-20261016-review2.img",
+    "bytes": 104857600,
+    "sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+    "phone_acceptance_pending": false,
+    "phone_verified_scope": [
+      "Repeated installation of all subsequent project ROMs using this exact review2 image",
+      "Internal /sdcard directory display"
+    ],
+    "release_classification": "diting unofficial stable release"
+  },
+  "verification": {
+    "date": "2026-10-16",
+    "batch": "round8fix20261016",
+    "flavour": "gms",
+    "host_qualified": true,
+    "source_commit": "44ec6126bb2c74e922eed7b299f0c503d1eedcc0",
+    "public_patches": 89,
+    "actual_fingerprint": "Xiaomi/diting/diting:16/BP4A.251205.006/1792147211:user/release-keys",
+    "phone_report": {
+      "source": "maintainer user message",
+      "recorded_at": "2026-10-16T19:57:00.332067+08:00",
+      "flashed_rom_reported": true,
+      "qq_login_passed": true,
+      "rapid_back_desktop_ui_passed": true,
+      "full_hardware_and_all_authorization_combinations_claimed": false,
+      "independent_adb_verification": false
+    },
+    "orangefox": {
+      "image": "OrangeFox-diting-ditingp-20261016-review2.img",
+      "sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+      "host_build_and_audits_passed": true,
+      "this_image_phone_acceptance_pending": false,
+      "phone_evidence": "maintainer user report on Xiaomi 12T Pro",
+      "verified_scope": [
+        "Repeated installation of all subsequent project ROMs using this exact review2 image",
+        "Internal /sdcard directory display"
+      ],
+      "extended_checks_pending": [
+        "K50 Ultra hardware acceptance",
+        "PIN-protected FBE unlock",
+        "Screen wake/touch edge cases",
+        "MTP/ADB, fastbootd and sideload separately",
+        "Explicit snapshot-merge completion and recovery self-reinstall"
+      ],
+      "release_classification": "diting unofficial stable release"
+    },
+    "vanilla_included": false,
+    "published_by_agent": false
+  },
+  "uploaded": false,
+  "distribution_by": "maintainer"
+}
