@@ -1,5 +1,7 @@
 # 修正版 OrangeFox：diting / ditingp（公开测试版）
 
+最新 [review2 源码与核实报告](OFRP-REVIEW-20261016.md) 已补充修复，成品仍待独立实机验收；携带旧式 `compatibility.zip` 的包默认将被明确拒绝。
+
 新增 [review1 源码与修复说明](OFRP-REVIEW-20261015.md)，新版候选仍待实机验收。
 以下镜像哈希与实测记录仍对应历史 bootctrl 版，不代表 review1 的测试结果。
 

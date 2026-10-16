@@ -124,6 +124,7 @@ fi
  # The ADSP name may be a platform address; use firmware identity too.
  run(dsp);assert (r/'properties').read_text().strip()=='vendor.recovery.adsp.ready 1'
  stamp=boot.stat().st_mtime_ns;run(dsp);assert boot.stat().st_mtime_ns==stamp,'already-running ADSP booted twice'
+ (adsp/'firmware').write_text('adsp.mbn\n');boot.write_text('');run(dsp);assert boot.read_text().strip()=='1'
  (r/'properties').unlink();boot.write_text('');run(dsp,allowed=(1,),extra={'DSP_FAIL':'1'});assert not (r/'properties').exists()
  assert not (r/'tmp/diting_adsp_init.lock').exists()
  # Unknown remote processors are never booted through the ADSP node.

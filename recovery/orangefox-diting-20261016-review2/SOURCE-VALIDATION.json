@@ -1,0 +1,16 @@
+{
+  "all_passed": true,
+  "projects": [
+    {
+      "project": "device/xiaomi/diting",
+      "tree_sha1": "1f1e5ec45c7014063a48febd9eac8a2ff8b9a9ce",
+      "exact_git_tree_match": true
+    },
+    {
+      "project": "bootable/recovery",
+      "tree_sha1": "16c6a9b6fcbb1de5eb1ad8884a20ff891a6ad00c",
+      "exact_git_tree_match": true
+    }
+  ],
+  "validation_scope": "Two exact project Git trees replayed from local pinned upstream objects, including modes and deletion; not an independent remote build"
+}

@@ -44,7 +44,6 @@ bool Pipe(unique_fd* a,unique_fd* b,int){pipe_calls++;a->fd=10;b->fd=11;return p
 std::string get_value(const std::map<std::string,std::string>& m,const std::string& k){auto it=m.find(k);return it==m.end()?"":it->second;}
 std::string OtaTypeToString(OtaType t){return t==OtaType::AB?"AB":t==OtaType::BRICK?"BRICK":"BLOCK";}
 bool CheckCoreAbSpecificMetadata(const std::map<std::string,std::string>&){return true;}
-int CheckTwAbSpecificMetadata(const std::map<std::string,std::string>&){return INSTALL_SUCCESS;}
 void property_get(const char* k,char* value,const char* fallback){strcpy(value,android::base::GetProperty(k,fallback).c_str());}
 constexpr int PROPERTY_VALUE_MAX=256;
 struct ZipEntry64 {uint64_t uncompressed_length=0;long offset=64;int kind=0;};
@@ -69,10 +68,12 @@ constexpr int kUpdateBinaryCommandFailure=1;
 int legacy_result=0;bool empty_legacy=false;
 int SetUpNonAbUpdateCommands(const std::string&,Zip*,int,int,std::vector<std::string>* args){if(!empty_legacy)args->push_back("legacy-updater");return legacy_result;}
 '''
+code+=method(tw,'CheckAbSpecificMetadata').replace('CheckAbSpecificMetadata','CheckTwAbSpecificMetadata')+'\n'
 code+=method(core,'CheckPackageMetadata').replace('CheckPackageMetadata','CheckCorePackageMetadata').replace('CheckAbSpecificMetadata','CheckCoreAbSpecificMetadata')+'\n'
 code+=method(tw,'CheckPackageMetadata').replace('CheckPackageMetadata','CheckTwPackageMetadata').replace('CheckAbSpecificMetadata','CheckTwAbSpecificMetadata')+'\n'
 code+='int CheckPackageMetadata(const std::map<std::string,std::string>& m,OtaType t){return CheckTwPackageMetadata(m,t);}\n'
 for text,name in ((tw,'ReadMetadataFromPackage'),(cmd,'check_ab_package'),(cmd,'abupdate_binary_command'),(tw,'SetUpAbUpdateCommands')):code+=method(text,name)+'\n'
+code+=method(core,'ReadMetadataFromPackage').replace('ReadMetadataFromPackage','ReadCoreMetadataFromPackage')+'\n'
 prefix=method(tw,'try_update_binary').split('  pid_t pid = fork();')[0]
 code+=prefix+'  return INSTALL_SUCCESS;\n}\n'
 gui_prefix=method(gui,'Run_Update_Binary').split('\tif (pid == 0) {')[0]
@@ -94,8 +95,16 @@ int main(){
  meta["pre-device"]="ditingp";meta["serialno"]="other | fixture ";expect_metadata(meta,true);meta["serialno"]="wrong";expect_metadata(meta,false);meta.erase("serialno");
  meta["ota-type"]="BLOCK";expect_metadata(meta,false);meta["ota-type"]="AB";
  props["ro.product.device"]="raphael";expect_metadata(meta,false);props["ro.product.device"]="diting";
- Zip z;active=&z;std::vector<std::string> args={"stale"};
+ Zip z;active=&z;std::vector<std::string> args={"stale"};std::map<std::string,std::string> parsed;
+ assert(ReadCoreMetadataFromPackage(&z,&parsed));
+ z.metadata="";assert(!ReadCoreMetadataFromPackage(&z,&parsed)&&!ReadMetadataFromPackage(&z,&parsed));
+ z.metadata="ota-type=AB\npre-device=ditingp\n";
+ for(auto bytes:{1024ULL*1024+1,1ULL<<40}){z.meta_size=bytes;assert(!ReadCoreMetadataFromPackage(&z,&parsed)&&!ReadMetadataFromPackage(&z,&parsed));}z.meta_size=0;
+ z.extract_meta=false;assert(!ReadCoreMetadataFromPackage(&z,&parsed));z.extract_meta=true;
  assert(check_ab_package(&z)==0);assert(abupdate_binary_command("fixture.zip",0,3,&args)==0&&args.size()==5&&args.front()=="/system/bin/update_engine_sideload");
+ for(auto value:{"other | fixture/build", "fixture/build|another"}){z.metadata=std::string("ota-type=AB\npre-device=ditingp\npre-build=")+value+"\n";assert(check_ab_package(&z)==0);}
+ for(auto value:{"fixture/build_other", "wrong|another"}){z.metadata=std::string("ota-type=AB\npre-device=ditingp\npre-build=")+value+"\n";assert(check_ab_package(&z)!=0);}
+ z.metadata="ota-type=AB\npre-device=ditingp\n";
  z.extract_properties=false;assert(abupdate_binary_command("fixture.zip",0,3,&args)==INSTALL_CORRUPT&&args.empty());z.extract_properties=true;
  z.payload=false;assert(abupdate_binary_command("fixture.zip",0,3,&args)==INSTALL_CORRUPT);z.payload=true;
  z.properties=false;assert(abupdate_binary_command("fixture.zip",0,3,&args)==INSTALL_CORRUPT);z.properties=true;

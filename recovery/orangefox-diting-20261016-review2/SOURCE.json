@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "source_manifest_url": "https://gitlab.com/OrangeFox/Manifest",
+  "source_manifest_commit": "4c65ca28fa67580172ee6bf99892a054c19dcebe",
+  "branch": "fox_16.0",
+  "canonical_device": "diting",
+  "accepted_aliases": [
+    "diting",
+    "ditingp"
+  ],
+  "upstream_projects": 405,
+  "target": "twrp_diting-bp2a-eng",
+  "build_target": "recoveryimage",
+  "build_jobs": 4,
+  "excludes_standalone_kernel": true,
+  "recovery_partition_bytes": 104857600,
+  "public_ota_certificate_sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+  "encrypted_backups_compiled_out": true,
+  "projects": [
+    {
+      "path": "device/xiaomi/diting",
+      "upstream_commit": "1a1b5d3f6c908145e360da990a70b41042929615",
+      "url": "https://github.com/AviderMin/ofrp_device_xiaomi_diting",
+      "patch": "device.patch",
+      "patch_sha256": "7cb510b8942161029ca66c0ad77ced07bd6cb21940e6b4de9c9dea76213f89e2",
+      "local_build_commit": "e800e0fdc00a8a4cd02a1dc46cdb1e35c36e3ee6",
+      "previous_tested_commit": "fa3c23dc30c7c6903843ecc71844cabdc78ba8fc",
+      "changed_files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "d3f1da84ac1089f4d13d1d880b0c488fb57c56f1dcaff586435256b3edacac6d",
+          "git_mode": "100644"
+        },
+        {
+          "path": "Android.bp",
+          "sha256": "24c849416a4296d9e593704a55ad625bf74c141df4f91dda1a6056220f642583",
+          "git_mode": "100644"
+        },
+        {
+          "path": "AndroidProducts.mk",
+          "sha256": "5aeb7fa9d890c2758609217a935d375e21de8ac86dab2eefe40c9b3c48ca0b5c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "BoardConfig.mk",
+          "sha256": "deb7b65082709f20cf4af5f000491315722dafbfafc2833b395d5b8c725f4930",
+          "git_mode": "100644"
+        },
+        {
+          "path": "README.md",
+          "sha256": "7d4b8427267ed53892c28d55eb0b7db33bbf6f5dc4d9357511a8a87242260b39",
+          "git_mode": "100644"
+        },
+        {
+          "path": "bootctrl/slots.cpp",
+          "sha256": "878b921058c1052ba1a6c02d0b915ea44c59615e426bb33ef9779eafbaf4eac9",
+          "git_mode": "100644"
+        },
+        {
+          "path": "device.mk",
+          "sha256": "442c46532972640554e3eae550e3f4c0260bdbde39f00c79d91ba371f9a52bc4",
+          "git_mode": "100644"
+        },
+        {
+          "path": "fox_diting.mk",
+          "sha256": "9cbc0fd53e73f21479ca9abce6513d508121074012f0a17f90648c2c75c5dd17",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery.fstab",
+          "sha256": "63fe8e503e07de681142c4e947575daa7c4aa8fd6ee2d5ee770d1a133c08d7dd",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/init.recovery.qcom.rc",
+          "sha256": "78862675fa8ce2100fc4b6a110bde4268d7580ed9abd63ff0e6b694b3c15d8da",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/init.recovery.usb.rc",
+          "sha256": "6b3c69b7a959855e37250a9a6375a5d2f1f3383117ca1ffa8ed5896d97a471b7",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/system/bin/diting-adsp-init.sh",
+          "sha256": "916ee030f222ee8f95557cc1e0673d7d82436e369c72113bb2c736ff5be4eb83",
+          "git_mode": "100755"
+        },
+        {
+          "path": "recovery/root/system/bin/postrecoveryboot.sh",
+          "sha256": "91b2918f7086a1b2899e069b4ea0bf0380cf6fd25827c26a41694d5eb2cfc064",
+          "git_mode": "100755"
+        },
+        {
+          "path": "recovery/root/system/bin/postscreenunblank.sh",
+          "sha256": "c3f0b00f8d7739dc71f542fb167451d755d98f4568cd468ed761bbc25f36c8dd",
+          "git_mode": "100755"
+        },
+        {
+          "path": "recovery/root/system/etc/init/android.hardware.boot@1.2-service.rc",
+          "sha256": "88405ae621569d3d244e17d4b00d3049f2a210b7adb46e21c471ea927fb9f293",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/twres/languages/zh_CN.xml",
+          "sha256": "1d06137dee87852f138c95381a50d6ca0a8e671cdd945bef6c0536ee642c1f92",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/twres/languages/zh_TW.xml",
+          "sha256": "4d95b25dc04979238f53184cb658ffee9d5795b63cbdcecef9264e65cc1ae587",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/vendor/etc/init/android.hardware.security.keymint-service-qti.rc",
+          "sha256": "82f0d524e402ff8aaff66e7adf1b1005ceb7e34941301d6425c6d3bfd2153af6",
+          "git_mode": "100644"
+        },
+        {
+          "path": "recovery/root/vendor/etc/vintf/manifest/android.hardware.boot@1.2.xml",
+          "sha256": "20d480b72adf8f2633a086347edec58e9eb562bb1fa889035c96df946d5a0b0d",
+          "git_mode": "100644"
+        },
+        {
+          "path": "security/avium-release.x509.pem",
+          "sha256": "16e416bdaf1ee7046466a28a3b773dfa44e7eb7eb9a33e99722a4a294a540191",
+          "git_mode": "100644"
+        },
+        {
+          "path": "twrp_diting.mk",
+          "sha256": "9db4fd37ac5c5b0be3ca5af9844fcc03dcea413c082ed83a7feb0d6aef31511c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "vendor.prop",
+          "sha256": "2d8c259f3b05773d745f8369c6e70ab4132675a7c91a4ac6526d476558d1fa6e",
+          "git_mode": "100644"
+        },
+        {
+          "path": "vendorsetup.sh",
+          "sha256": "60e639c1f248154e752155b6e252ec7488e38956f15f6bb64ccb703ad3d36884",
+          "git_mode": "100644"
+        }
+      ],
+      "deleted_files": [
+        "recovery/root/twres/languages/zn_TW.xml"
+      ]
+    },
+    {
+      "path": "bootable/recovery",
+      "upstream_commit": "0f7831d3240f4c3925a0b5fd7d2c907ddf8704c2",
+      "url": "https://gitlab.com/OrangeFox/bootable/Recovery",
+      "patch": "recovery.patch",
+      "patch_sha256": "61e3851fb2c864400799c55018fdc90768cdc8cdb182f7e47e7c1bd6a51cc305",
+      "local_build_commit": "020fe2457982411cd53ece7916ac9f253a4763bb",
+      "previous_tested_commit": "3b5f4c1a0f71e3112bae451a6308f43a222709b6",
+      "changed_files": [
+        {
+          "path": "diting_ota_aliases.h",
+          "sha256": "caa6e85aa76ba2f7f1c57c530068a1401812971251b1562322c9f5f0f691cb1f",
+          "git_mode": "100644"
+        },
+        {
+          "path": "etc/init.rc",
+          "sha256": "111dc4554c170cdf94683a43ff6854a228984851f58b98a675a1505cc11a2c0c",
+          "git_mode": "100644"
+        },
+        {
+          "path": "install/install.cpp",
+          "sha256": "2423a59fb7aa4120d6500756754b89366b75425740281b0248ebf0c6614dc2c5",
+          "git_mode": "100755"
+        },
+        {
+          "path": "twrpinstall/include/installcommand.h",
+          "sha256": "6d1f9e36f10cb6a9366c1d9717809331b79f4081b1f970a79c8efa755f8b16a7",
+          "git_mode": "100644"
+        },
+        {
+          "path": "twrpinstall/install.cpp",
+          "sha256": "7a94469e481b6fc353ac8d5e39f87f5d7741314f0a979b91f69b01618c90c200",
+          "git_mode": "100755"
+        },
+        {
+          "path": "twrpinstall/installcommand.cpp",
+          "sha256": "604d92867b878884e56c3dba96d05dc1c16c539124de7e1a236c8c833ec42a35",
+          "git_mode": "100755"
+        },
+        {
+          "path": "twrpinstall/twinstall.cpp",
+          "sha256": "ff83ab7174105b1ee37083e8a05a17fb1b6f3f7f7c8bdbb615375f41b3821566",
+          "git_mode": "100755"
+        }
+      ],
+      "deleted_files": []
+    }
+  ],
+  "manifest_sha256": "e8b3bc68db26d2ef70052d315d939bc69ec1e3a118c3a8ebfb3d1ca055156023",
+  "built_manifest_sha256": "fd585bffe3ef8d258c72ac990141bd2619628a06786506b175e2dadd28dab33f",
+  "state": "review2-built-host-qualified-phone-test-pending",
+  "runtime_boot_verified": false,
+  "k50_ultra_phone_tested": false,
+  "build_completed": true,
+  "scope": "Recovery review2 source; host validation and image audit only. No new phone boot, USB, touch, fastbootd or OTA test.",
+  "previous_tested_bundle": "../orangefox-diting-20261010-bootctrl",
+  "image_audit": "IMAGE-AUDIT.json",
+  "image_sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+  "recovery_image_sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+  "image_bytes": 104857600
+}

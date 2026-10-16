@@ -164,5 +164,44 @@
       "fastbootd and battery",
       "signed OTA/Android boot/snapshot merge"
     ]
+  },
+  "ofrp_review2_20261016": {
+    "report": "OFRP-REVIEW-20261016.md",
+    "source_bundle": "recovery/orangefox-diting-20261016-review2",
+    "full_recovery_build_passed": true,
+    "image_sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+    "image_bytes": 104857600,
+    "packaged_shared_init_and_device_files_match": true,
+    "packaged_usb_selector_and_mtp_defaults_verified": true,
+    "critical_recursive_dependency_elfs_checked": 133,
+    "dedicated_recovery_copy_path_compiled": true,
+    "alias_cases_asan_ubsan": 22,
+    "individual_device_usb_transitions": 72,
+    "shared_and_device_usb_transitions": 128,
+    "generic_usb_fallback_modes": 3,
+    "negative_controls": 3,
+    "signature_wrapper_and_ab_failure_status_asan_ubsan": true,
+    "source_fingerprint_lists_and_both_metadata_readers_passed": true,
+    "compatibility_archive_policy": "Explicit rejection when legacy compatibility checking is requested; no archive allocation or replacement VINTF API claim",
+    "legacy_vintf_zip_validation_implemented": false,
+    "existing_gms_and_vanilla_zip_legacy_archive_absent": true,
+    "recovery_source_helper_cases": 13,
+    "existing_helper_cases": 24,
+    "adsp_mdt_and_mbn_cases_passed": true,
+    "exact_upstream_git_tree_replay_projects": 2,
+    "pinned_source_projects": 405,
+    "historical_rom_recovery_records_unchanged": true,
+    "rom_patch_series_unchanged": true,
+    "private_lineage_delta_exported": false,
+    "new_image_phone_tested": false,
+    "recovery_reinstall_hardware_tested": false,
+    "hardware_validation_pending": [
+      "boot/menu",
+      "FBE data access",
+      "screen wake touch",
+      "MTP/ADB/fastbootd/sideload",
+      "signed OTA/Android boot/snapshot merge",
+      "dedicated recovery reinstall"
+    ]
   }
 }

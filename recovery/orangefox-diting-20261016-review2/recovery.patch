@@ -1,0 +1,666 @@
+diff --git a/diting_ota_aliases.h b/diting_ota_aliases.h
+new file mode 100644
+index 0000000..6e92bf8
+--- /dev/null
++++ b/diting_ota_aliases.h
+@@ -0,0 +1,34 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Copyright (C) 2026 N1-k0-la1
++#pragma once
++#include <string>
++
++namespace diting_recovery {
++inline bool HasToken(const std::string& list, char separator, const std::string& value) {
++    if (value.empty()) return false;
++    size_t start = 0;
++    while (start <= list.size()) {
++        size_t end = list.find(separator, start);
++        if (end == std::string::npos) end = list.size();
++        const auto token = list.substr(start, end - start);
++        const auto first = token.find_first_not_of(" \t\r\n\f\v");
++        if (first != std::string::npos) {
++            const auto last = token.find_last_not_of(" \t\r\n\f\v");
++            if (token.substr(first, last - first + 1) == value) return true;
++        }
++        if (end == list.size()) break;
++        start = end + 1;
++    }
++    return false;
++}
++
++// Only this explicitly configured hardware family may use its alternate OTA name.
++// Serial, downgrade, signature and payload checks remain at their original call sites.
++inline bool PackageUsesDitingAlias(const std::string& device, const std::string& package,
++                                  const std::string& configured_devices) {
++    if (device != "diting" && device != "ditingp") return false;
++    if (!HasToken(configured_devices, ',', "diting") ||
++        !HasToken(configured_devices, ',', "ditingp")) return false;
++    return HasToken(package, '|', "diting") || HasToken(package, '|', "ditingp");
++}
++}  // namespace diting_recovery
+diff --git a/etc/init.rc b/etc/init.rc
+index b9921d4..f87eec9 100644
+--- a/etc/init.rc
++++ b/etc/init.rc
+@@ -24,6 +24,7 @@ on early-init
+ 
+     start ueventd
+ 
++    setprop sys.usb.device_config ${vendor.recovery.usb.device_config:-0}
+     setprop sys.usb.configfs 0
+ 
+ on init
+@@ -168,7 +169,7 @@ service fastbootd /system/bin/fastbootd
+ on property:service.adb.root=1
+     restart adbd
+ 
+-on fs && property:sys.usb.configfs=1
++on fs && property:sys.usb.configfs=1 && property:sys.usb.device_config=0
+     mount configfs none /config
+     mkdir /config/usb_gadget/g1 0770 shell shell
+     write /config/usb_gadget/g1/idVendor 0x${ro.recovery.usb.vid}
+@@ -183,7 +184,7 @@ on fs && property:sys.usb.configfs=1
+     write /config/usb_gadget/g1/configs/b.1/MaxPower 0x384
+     mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
+ 
+-on fs && property:sys.usb.configfs=0
++on fs && property:sys.usb.configfs=0 && property:sys.usb.device_config=0
+     write /sys/class/android_usb/android0/f_ffs/aliases adb,fastboot
+     write /sys/class/android_usb/android0/idVendor ${ro.recovery.usb.vid}
+     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
+@@ -192,44 +193,46 @@ on fs && property:sys.usb.configfs=0
+ 
+ on fs
+     mount pstore pstore /sys/fs/pstore
++
++on fs && property:sys.usb.device_config=0
+     mkdir /dev/usb-ffs 0770 shell shell
+     mkdir /dev/usb-ffs/adb 0770 shell shell
+     mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
+     mkdir /dev/usb-ffs/fastboot 0770 system system
+     mount functionfs fastboot /dev/usb-ffs/fastboot rmode=0770,fmode=0660,uid=1000,gid=1000
+ 
+-on property:sys.usb.config=adb
++on property:sys.usb.config=adb && property:sys.usb.device_config=0
+     start adbd
+ 
+-on property:sys.usb.config=fastboot
++on property:sys.usb.config=fastboot && property:sys.usb.device_config=0
+     start fastbootd
+ 
+-on property:sys.usb.config=none && property:sys.usb.configfs=0
++on property:sys.usb.config=none && property:sys.usb.configfs=0 && property:sys.usb.device_config=0
+     stop adbd
+     stop fastbootd
+     write /sys/class/android_usb/android0/enable 0
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=adb && property:sys.usb.configfs=0
++on property:sys.usb.config=adb && property:sys.usb.configfs=0 && property:sys.usb.device_config=0
+     write /sys/class/android_usb/android0/idProduct ${ro.recovery.usb.adb.pid}
+     write /sys/class/android_usb/android0/functions adb
+     write /sys/class/android_usb/android0/enable 1
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=sideload && property:sys.usb.configfs=0
++on property:sys.usb.config=sideload && property:sys.usb.configfs=0 && property:sys.usb.device_config=0
+     write /sys/class/android_usb/android0/idProduct ${ro.recovery.usb.adb.pid}
+     write /sys/class/android_usb/android0/functions adb
+     write /sys/class/android_usb/android0/enable 1
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=fastboot && property:sys.usb.configfs=0
++on property:sys.usb.config=fastboot && property:sys.usb.configfs=0 && property:sys.usb.device_config=0
+     write /sys/class/android_usb/android0/idProduct ${ro.recovery.usb.fastboot.pid}
+     write /sys/class/android_usb/android0/functions fastboot
+     write /sys/class/android_usb/android0/enable 1
+     setprop sys.usb.state ${sys.usb.config}
+ 
+ # Configfs triggers
+-on property:sys.usb.config=none && property:sys.usb.configfs=1
++on property:sys.usb.config=none && property:sys.usb.configfs=1 && property:sys.usb.device_config=0
+     write /config/usb_gadget/g1/UDC "none"
+     stop adbd
+     stop fastbootd
+@@ -237,21 +240,21 @@ on property:sys.usb.config=none && property:sys.usb.configfs=1
+     rm /config/usb_gadget/g1/configs/b.1/f1
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=sideload && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1
++on property:sys.usb.config=sideload && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1 && property:sys.usb.device_config=0
+     write /config/usb_gadget/g1/idProduct 0x${ro.recovery.usb.adb.pid}
+     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
+     symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
+     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=adb && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1
++on property:sys.usb.config=adb && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1 && property:sys.usb.device_config=0
+     write /config/usb_gadget/g1/idProduct 0x${ro.recovery.usb.adb.pid}
+     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
+     symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
+     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=fastboot && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1
++on property:sys.usb.config=fastboot && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1 && property:sys.usb.device_config=0
+     write /config/usb_gadget/g1/idProduct 0x${ro.recovery.usb.fastboot.pid}
+     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "fastboot"
+     symlink /config/usb_gadget/g1/functions/ffs.fastboot /config/usb_gadget/g1/configs/b.1/f1
+diff --git a/install/install.cpp b/install/install.cpp
+index 9afb68e..63641ae 100755
+--- a/install/install.cpp
++++ b/install/install.cpp
+@@ -1,3 +1,4 @@
++#include "../diting_ota_aliases.h"
+ /*
+  * Copyright (C) 2007 The Android Open Source Project
+  *
+@@ -89,7 +90,11 @@ bool ReadMetadataFromPackage(ZipArchiveHandle zip, std::map<std::string, std::st
+     return false;
+   }
+ 
+-  uint32_t length = entry.uncompressed_length;
++  if (entry.uncompressed_length == 0 || entry.uncompressed_length > 1024 * 1024) {
++    LOG(ERROR) << "Invalid OTA metadata size";
++    return false;
++  }
++  const size_t length = static_cast<size_t>(entry.uncompressed_length);
+   std::string metadata_string(length, '\0');
+   int32_t err =
+       ExtractToMemory(zip, &entry, reinterpret_cast<uint8_t*>(&metadata_string[0]), length);
+@@ -221,7 +226,9 @@ bool CheckPackageMetadata(const std::map<std::string, std::string>& metadata, Ot
+   auto device = android::base::GetProperty("ro.product.device", "");
+   auto pkg_device = get_value(metadata, "pre-device");
+   // device name can be a | separated list, so need to check
+-  if (pkg_device.empty() || !isInStringList(device, pkg_device, FINGERPRING_SEPARATOR)) {
++  if ((pkg_device.empty() || !diting_recovery::HasToken(pkg_device, '|', device)) &&
++      !diting_recovery::PackageUsesDitingAlias(device, pkg_device,
++          android::base::GetProperty("ro.twrp.target.devices", ""))) {
+     LOG(ERROR) << "Package is for product " << pkg_device << " but expected " << device;
+     return false;
+   }
+diff --git a/twrpinstall/include/installcommand.h b/twrpinstall/include/installcommand.h
+index f265801..da82bf1 100644
+--- a/twrpinstall/include/installcommand.h
++++ b/twrpinstall/include/installcommand.h
+@@ -22,6 +22,8 @@
+ #include <string>
+ #include <ziparchive/zip_archive.h>
+ 
++int check_ab_package(ZipArchiveHandle zip);
++
+ bool read_metadata_from_package(ZipArchiveHandle zip, std::string* meta_data);
+ 
+ int
+diff --git a/twrpinstall/install.cpp b/twrpinstall/install.cpp
+index d270d26..bbb16ad 100755
+--- a/twrpinstall/install.cpp
++++ b/twrpinstall/install.cpp
+@@ -1,3 +1,4 @@
++#include "../diting_ota_aliases.h"
+ /*
+  * Copyright (C) 2007 The Android Open Source Project
+  *
+@@ -78,7 +79,11 @@ bool ReadMetadataFromPackage(ZipArchiveHandle zip, std::map<std::string, std::st
+     return false;
+   }
+ 
+-  uint32_t length = entry.uncompressed_length;
++  if (entry.uncompressed_length == 0 || entry.uncompressed_length > 1024 * 1024) {
++    LOG(ERROR) << "Invalid OTA metadata size";
++    return false;
++  }
++  const size_t length = static_cast<size_t>(entry.uncompressed_length);
+   std::string metadata_string(length, '\0');
+   int32_t err =
+       ExtractToMemory(zip, &entry, reinterpret_cast<uint8_t*>(&metadata_string[0]), length);
+@@ -134,9 +139,8 @@ static void ReadSourceTargetBuild(const std::map<std::string, std::string>& meta
+   }
+ }
+ 
+-// Checks the build version, fingerprint and timestamp in the metadata of the A/B package.
+-// Downgrading is not allowed unless explicitly enabled in the package and only for
+-// incremental packages.
++// Check incremental source constraints. Timestamp downgrade enforcement remains
++// disabled by the existing OrangeFox policy below; this is not an OEM rollback guard.
+ static int CheckAbSpecificMetadata(const std::map<std::string, std::string>& metadata) {
+   // Incremental updates should match the current build.
+   auto device_pre_build = android::base::GetProperty("ro.build.version.incremental", "");
+@@ -149,7 +153,8 @@ static int CheckAbSpecificMetadata(const std::map<std::string, std::string>& met
+ 
+   auto device_fingerprint = android::base::GetProperty("ro.build.fingerprint", "");
+   auto pkg_pre_build_fingerprint = get_value(metadata, "pre-build");
+-  if (!pkg_pre_build_fingerprint.empty() && pkg_pre_build_fingerprint != device_fingerprint) {
++  if (!pkg_pre_build_fingerprint.empty() &&
++      !diting_recovery::HasToken(pkg_pre_build_fingerprint, '|', device_fingerprint)) {
+     LOG(ERROR) << "Package is for source build " << pkg_pre_build_fingerprint << " but expected "
+                << device_fingerprint;
+     return INSTALL_ERROR;
+@@ -197,7 +202,9 @@ int CheckPackageMetadata(const std::map<std::string, std::string>& metadata, Ota
+ 
+   auto device = android::base::GetProperty("ro.product.device", "");
+   auto pkg_device = get_value(metadata, "pre-device");
+-  if (pkg_device != device || pkg_device.empty()) {
++  if ((pkg_device.empty() || !diting_recovery::HasToken(pkg_device, '|', device)) &&
++      !diting_recovery::PackageUsesDitingAlias(device, pkg_device,
++          android::base::GetProperty("ro.twrp.target.devices", ""))) {
+     LOG(ERROR) << "Package is for product " << pkg_device << " but expected " << device;
+     return INSTALL_ERROR;
+   }
+@@ -240,7 +247,9 @@ int SetUpAbUpdateCommands(const std::string& package, ZipArchiveHandle zip, int
+     LOG(ERROR) << "Failed to find " << AB_OTA_PAYLOAD_PROPERTIES;
+     return INSTALL_CORRUPT;
+   }
+-  uint32_t properties_entry_length = properties_entry.uncompressed_length;
++  if (properties_entry.uncompressed_length == 0 ||
++      properties_entry.uncompressed_length > 1024 * 1024) return INSTALL_CORRUPT;
++  const size_t properties_entry_length = static_cast<size_t>(properties_entry.uncompressed_length);
+   std::vector<uint8_t> payload_properties(properties_entry_length);
+   int32_t err =
+       ExtractToMemory(zip, &properties_entry, payload_properties.data(), properties_entry_length);
+@@ -330,19 +339,19 @@ static int try_update_binary(const std::string& package, ZipArchiveHandle zip, b
+                              int* max_temperature) {
+   std::map<std::string, std::string> metadata;
+ 
+-  if (!ReadMetadataFromPackage(zip, &metadata)) {
+-    LOG(ERROR) << "Failed to parse metadata in the zip file";
+-    // return INSTALL_CORRUPT;
++  // Classify the package, not the device: legacy add-ons need no A/B metadata.
++  ZipEntry64 updater_entry;
++  const bool is_ab = FindEntry(zip, UPDATE_BINARY_NAME, &updater_entry) != 0;
++  const bool metadata_read = ReadMetadataFromPackage(zip, &metadata);
++  if (is_ab && !metadata_read) return INSTALL_CORRUPT;
++  if (is_ab) {
++    const int check_status = CheckPackageMetadata(metadata, OtaType::AB);
++    if (check_status != INSTALL_SUCCESS) {
++      log_buffer->push_back(android::base::StringPrintf("error: %d", kUpdateBinaryCommandFailure));
++      return check_status;
++    }
+   }
+ 
+-  bool is_ab = android::base::GetBoolProperty("ro.build.ab_update", false);
+-  // Verifies against the metadata in the package first.
+-  // if (int check_status = is_ab ? CheckPackageMetadata(metadata, OtaType::AB) : 0;
+-  //     check_status != 0) {
+-  //   log_buffer->push_back(android::base::StringPrintf("error: %d", kUpdateBinaryCommandFailure));
+-    // return check_status;
+-  // }
+-
+   ReadSourceTargetBuild(metadata, log_buffer);
+   LOG(ERROR) << "try_update_binary::here1";
+   // The updater in child process writes to the pipe to communicate with recovery.
+@@ -388,22 +397,15 @@ static int try_update_binary(const std::string& package, ZipArchiveHandle zip, b
+ 
+   std::vector<std::string> args;
+ 
+-  is_ab = false;
+-  std::string binary_name(UPDATE_BINARY_NAME);
+-  ZipEntry64 binary_entry;
+-  if (FindEntry(zip, binary_name, &binary_entry) != 0) {
+-    LOG(ERROR) << "Failed to find update binary " << UPDATE_BINARY_NAME;
+-    is_ab = true;
+-  }
+-
+   if (int update_status =
+           is_ab ? SetUpAbUpdateCommands(package, zip, pipe_write.get(), &args)
+                 : SetUpNonAbUpdateCommands(package, zip, retry_count, pipe_write.get(), &args);
+       update_status != 0) {
+     log_buffer->push_back(android::base::StringPrintf("error: %d", kUpdateBinaryCommandFailure));
+-    // return update_status;
++    return update_status;
+   }
+ 
++  if (args.empty() || args.front().empty()) return INSTALL_CORRUPT;
+   pid_t pid = fork();
+   if (pid == -1) {
+     PLOG(ERROR) << "Failed to fork update binary";
+@@ -745,7 +747,7 @@ bool verify_package(Package* package) {
+   if (err != VERIFY_SUCCESS) {
+     LOG(ERROR) << "Signature verification failed";
+     LOG(ERROR) << "error: " << kZipVerificationFailure;
+-  //   return false;
++    return false;
+   }
+   return true;
+ }
+diff --git a/twrpinstall/installcommand.cpp b/twrpinstall/installcommand.cpp
+index 0fff18b..e549220 100755
+--- a/twrpinstall/installcommand.cpp
++++ b/twrpinstall/installcommand.cpp
+@@ -60,8 +60,8 @@ bool read_metadata_from_package(ZipArchiveHandle zip, std::string* meta_data) {
+     std::string binary_name(METADATA_PATH);
+     ZipEntry64 binary_entry;
+     if (FindEntry(zip, binary_name, &binary_entry) == 0) {
+-        long size = binary_entry.uncompressed_length;
+-        if (size <= 0)
++        const auto size = binary_entry.uncompressed_length;
++        if (size == 0 || size > 1024 * 1024)
+             return false;
+ 
+         meta_data->resize(size, '\0');
+@@ -106,104 +106,14 @@ void read_source_target_build(ZipArchiveHandle zip/*, std::vector<std::string>&
+     }
+ }
+ 
+-// Parses the metadata of the OTA package in |zip| and checks whether we are
+-// allowed to accept this A/B package. Downgrading is not allowed unless
+-// explicitly enabled in the package and only for incremental packages.
+-static int check_newer_ab_build(ZipArchiveHandle zip)
++// Use one package guard for GUI/sideload and updater command construction.
++// Recovery's existing timestamp/SPL policy is not an OEM anti-rollback guarantee.
++int check_ab_package(ZipArchiveHandle zip)
+ {
+-    std::string metadata_str;
+-    if (!read_metadata_from_package(zip, &metadata_str)) {
+-        return INSTALL_CORRUPT;
+-    }
+     std::map<std::string, std::string> metadata;
+-    for (const std::string& line : android::base::Split(metadata_str, "\n")) {
+-        size_t eq = line.find('=');
+-        if (eq != std::string::npos) {
+-            metadata[line.substr(0, eq)] = line.substr(eq + 1);
+-        }
+-    }
+-    char value[PROPERTY_VALUE_MAX];
+-    char propmodel[PROPERTY_VALUE_MAX];
+-    char propname[PROPERTY_VALUE_MAX];
+-
+-    property_get("ro.product.device", value, "");
+-    property_get("ro.product.model", propmodel, "");
+-    property_get("ro.product.name", propname, "");
+-    const std::string& pkg_device = metadata["pre-device"];
+-
+-    std::vector<std::string> assertResults = android::base::Split(pkg_device, "[,|]");
+-
+-    // Fox
+-    bool has_fox_devices = false;
+-    char fox_devices[PROPERTY_VALUE_MAX * 2];
+-    property_get("ro.twrp.target.devices", fox_devices, "");
+-    std::vector<std::string> OrangeFox_Devices = android::base::Split(fox_devices, "[,|]");
+-    if (strlen(fox_devices) > 1) {
+-       has_fox_devices = true;
+-    }
+-    // Fox
+-
+-    bool deviceExists = false;
+-
+-    for(const std::string& deviceAssert : assertResults)
+-    {
+-        std::string assertName = android::base::Trim(deviceAssert);
+-        if ((assertName == value || assertName == propmodel || assertName == propname ) && !assertName.empty()) {
+-            deviceExists = true;
+-            break;
+-        }
+-        // Fox
+-        else 
+-        if (has_fox_devices) {
+-           for(const std::string& FoxDevice_x : OrangeFox_Devices) {
+-               std::string foxName = android::base::Trim(FoxDevice_x);
+-               if (!foxName.empty() && !assertName.empty() && assertName == foxName) {
+-            	   deviceExists = true;
+-            	   printf("Package is for product %s. The selected OrangeFox target device is %s\n", pkg_device.c_str(), foxName.c_str());
+-            	   break;
+-               }
+-           }
+-        }
+-        // Fox
+-    }
+-
+-    if (!deviceExists) {
+-        printf("Package is for product %s but expected %s\n",
+-            pkg_device.c_str(), value);
+-        return INSTALL_ERROR;
+-    }
+-
+-    // We allow the package to not have any serialno, but if it has a non-empty
+-    // value it should match.
+-    property_get("ro.serialno", value, "");
+-    const std::string& pkg_serial_no = metadata["serialno"];
+-    if (!pkg_serial_no.empty() && pkg_serial_no != value) {
+-        printf("Package is for serial %s\n", pkg_serial_no.c_str());
+-        return INSTALL_ERROR;
+-    }
+-
+-    if (metadata["ota-type"] != "AB") {
+-        printf("Package is not A/B\n");
+-        return INSTALL_ERROR;
+-    }
+-
+-    // Incremental updates should match the current build.
+-    property_get("ro.build.version.incremental", value, "");
+-    const std::string& pkg_pre_build = metadata["pre-build-incremental"];
+-    if (!pkg_pre_build.empty() && pkg_pre_build != value) {
+-        printf("Package is for source build %s but expected %s\n",
+-             pkg_pre_build.c_str(), value);
+-        return INSTALL_ERROR;
+-    }
+-    property_get("ro.build.fingerprint", value, "");
+-    const std::string& pkg_pre_build_fingerprint = metadata["pre-build"];
+-    if (!pkg_pre_build_fingerprint.empty() &&
+-        pkg_pre_build_fingerprint != value) {
+-        printf("Package is for source build %s but expected %s\n",
+-             pkg_pre_build_fingerprint.c_str(), value);
+-        return INSTALL_ERROR;
+-    }
+-
++    if (!ReadMetadataFromPackage(zip, &metadata)) return INSTALL_CORRUPT;
++    const int check_status = CheckPackageMetadata(metadata, OtaType::AB);
++    if (check_status != INSTALL_SUCCESS) return check_status;
+     return 0;
+ }
+ 
+@@ -211,6 +121,7 @@ int
+ abupdate_binary_command(const char* path, int retry_count __unused,
+                       int status_fd, std::vector<std::string>* cmd)
+ {
++    cmd->clear();
+     auto package = Package::CreateMemoryPackage(path);
+ 	if (!package) {
+ 		return INSTALL_CORRUPT;
+@@ -218,7 +129,7 @@ abupdate_binary_command(const char* path, int retry_count __unused,
+ 
+ 	ZipArchiveHandle Zip = package->GetZipArchiveHandle();
+     read_source_target_build(Zip);
+-    int ret = check_newer_ab_build(Zip);
++    int ret = check_ab_package(Zip);
+     if (ret) {
+         return ret;
+     }
+@@ -232,13 +143,16 @@ abupdate_binary_command(const char* path, int retry_count __unused,
+         printf("Can't find %s\n", AB_OTA_PAYLOAD_PROPERTIES);
+         return INSTALL_CORRUPT;
+     }
++    if (binary_entry.uncompressed_length == 0 || binary_entry.uncompressed_length > 1024 * 1024) {
++        return INSTALL_CORRUPT;
++    }
+     std::vector<unsigned char> payload_properties(
+             binary_entry.uncompressed_length);
+     int32_t extract_ret = ExtractToMemory(Zip, &binary_entry, reinterpret_cast<uint8_t*>(payload_properties.data()),
+                                   binary_entry.uncompressed_length);
+     if (extract_ret != 0) {
+         printf("Can't extract %s\n", AB_OTA_PAYLOAD_PROPERTIES);
+-        return false;
++        return INSTALL_CORRUPT;
+     }
+ 
+     std::string ab_ota_payload(AB_OTA_PAYLOAD);
+@@ -263,6 +177,7 @@ abupdate_binary_command(const char* path, int retry_count __unused,
+ #else
+ 
+ void read_source_target_build(ZipArchiveHandle zip __unused /*, std::vector<std::string>& log_buffer*/) {return;}
++int check_ab_package(ZipArchiveHandle) { return INSTALL_CORRUPT; }
+ 
+ int
+ abupdate_binary_command(__unused const char* path, __unused int retry_count,
+@@ -298,59 +213,13 @@ update_binary_command(const char* path, int retry_count,
+ // Verifes the compatibility info in a Treble-compatible package. Returns true directly if the
+ // entry doesn't exist. Note that the compatibility info is packed in a zip file inside the OTA
+ // package.
+-bool verify_package_compatibility(ZipArchiveHandle zw) {
+-  printf("Verifying package compatibility...\n");
+-
+-  static constexpr const char* COMPATIBILITY_ZIP_ENTRY = "compatibility.zip";
+-  std::string compatibility_entry_name(COMPATIBILITY_ZIP_ENTRY);
+-  ZipEntry64 compatibility_entry;
+-  if (FindEntry(zw, compatibility_entry_name, &compatibility_entry) != 0) {
+-    printf("Package doesn't contain %s entry\n", COMPATIBILITY_ZIP_ENTRY);
+-    return true;
+-  }
+-
+-  std::string zip_content(compatibility_entry.uncompressed_length, '\0');
+-  int32_t ret;
+-  if ((ret = ExtractToMemory(zw, &compatibility_entry,
+-                             reinterpret_cast<uint8_t*>(&zip_content[0]),
+-                             compatibility_entry.uncompressed_length)) != 0) {
+-    printf("Failed to read %s: %s\n", COMPATIBILITY_ZIP_ENTRY, ErrorCodeString(ret));
+-    return false;
+-  }
+-
+-  ZipArchiveHandle zip_handle;
+-  ret = OpenArchiveFromMemory(static_cast<void*>(const_cast<char*>(zip_content.data())),
+-                              zip_content.size(), COMPATIBILITY_ZIP_ENTRY, &zip_handle);
+-  if (ret != 0) {
+-    printf("Failed to OpenArchiveFromMemory: %s\n", ErrorCodeString(ret));
+-    return false;
+-  }
+-
+-  // Iterate all the entries inside COMPATIBILITY_ZIP_ENTRY and read the contents.
+-  void* cookie;
+-  ret = StartIteration(zip_handle, &cookie);
+-  if (ret != 0) {
+-    printf("Failed to start iterating zip entries: %s\n", ErrorCodeString(ret));
+-    CloseArchive(zip_handle);
++// Android 16 libvintf has no legacy ZIP-vector compatibility API. Do not
++// allocate untrusted nested archives or silently report an unperformed check.
++// Modern packages omit this obsolete archive; an explicitly skipped Treble
++// check remains a caller policy, not a success returned by this function.
++bool verify_package_compatibility(ZipArchiveHandle zip) {
++    ZipEntry64 entry;
++    if (FindEntry(zip, "compatibility.zip", &entry) != 0) return true;
++    printf("Legacy compatibility.zip cannot be verified by this Android 16 recovery.\n");
+     return false;
+-  }
+-  std::unique_ptr<void, decltype(&EndIteration)> guard(cookie, EndIteration);
+-
+-  std::vector<std::string> compatibility_info;
+-  ZipEntry64 info_entry;
+-  std::string info_name;
+-  while (Next(cookie, &info_entry, &info_name) == 0) {
+-    std::string content(info_entry.uncompressed_length, '\0');
+-    int32_t ret = ExtractToMemory(zip_handle, &info_entry, reinterpret_cast<uint8_t*>(&content[0]),
+-                                  info_entry.uncompressed_length);
+-    if (ret != 0) {
+-      printf("Failed to read %s: %s\n", info_name.c_str(), ErrorCodeString(ret));
+-      CloseArchive(zip_handle);
+-      return false;
+-    }
+-    compatibility_info.emplace_back(std::move(content));
+-  }
+-  CloseArchive(zip_handle);
+-
+-  return true;
+ }
+diff --git a/twrpinstall/twinstall.cpp b/twrpinstall/twinstall.cpp
+index 3691a2f..46d2da7 100755
+--- a/twrpinstall/twinstall.cpp
++++ b/twrpinstall/twinstall.cpp
+@@ -175,7 +175,10 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype)
+ 	int aroma_running = 0;
+ 	char buffer[1024];
+ 	FILE* child_data;
+-	pipe(pipe_fd);
++    if (pipe(pipe_fd) != 0) {
++        LOGERR("Failed to create updater pipe: %s\n", strerror(errno));
++        return INSTALL_ERROR;
++    }
+ 
+ 	std::vector<std::string> args;
+     if (ztype == UPDATE_BINARY_ZIP_TYPE) {
+@@ -186,10 +189,10 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype)
+ 		LOGERR("Unknown zip type %i\n", ztype);
+ 		ret_val = INSTALL_CORRUPT;
+ 	}
+-    if (ret_val) {
++    if (ret_val || args.empty() || args.front().empty()) {
+         close(pipe_fd[0]);
+         close(pipe_fd[1]);
+-        return ret_val;
++        return ret_val ? ret_val : INSTALL_CORRUPT;
+     }
+ 
+ 	// Convert the vector to a NULL-terminated char* array suitable for execv.
+@@ -198,7 +201,18 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype)
+ 	for (size_t i = 0; i < args.size(); i++)
+ 		chr_args[i] = args[i].c_str();
+ 
+-	pid_t pid = fork();
++    child_data = fdopen(pipe_fd[0], "r");
++    if (child_data == nullptr) {
++        close(pipe_fd[0]);
++        close(pipe_fd[1]);
++        return INSTALL_ERROR;
++    }
++    pid_t pid = fork();
++    if (pid < 0) {
++        fclose(child_data);
++        close(pipe_fd[1]);
++        return INSTALL_ERROR;
++    }
+ 	if (pid == 0) {
+ 		close(pipe_fd[0]);
+ 		execve(chr_args[0], const_cast<char**>(chr_args), environ);
+@@ -210,7 +224,6 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype)
+ 	*wipe_cache = 0;
+ 
+ 	DataManager::GetValue(TW_SIGNED_ZIP_VERIFY_VAR, zip_verify);
+-	child_data = fdopen(pipe_fd[0], "r");
+ 	while (fgets(buffer, sizeof(buffer), child_data) != NULL) {
+ 		char* command = strtok(buffer, " \n");
+ 		if (command == NULL) {
+@@ -362,6 +375,12 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+       return INSTALL_CORRUPT;
+     }
+ 
++    if (!Fox_Skip_Treble_Compatibility_Check() && !verify_package_compatibility(Zip)) {
++        set_miui_install_status(OTA_CORRUPT, true);
++        gui_err("zip_compatible_err=Zip Treble compatibility error!");
++        return INSTALL_CORRUPT;
++    }
++
+     if (unmount_system) {
+ 	if (PartitionManager.Is_Mounted_By_Path(PartitionManager.Get_Android_Root_Path())) {
+ 		gui_msg("unmount_system=Unmounting System...");
+@@ -404,11 +423,7 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+   ZipEntry64 update_binary_entry;
+   if (FindEntry(Zip, update_binary_name, &update_binary_entry) == 0) {
+ 		LOGINFO("Update binary zip\n");
+-		// Additionally verify the compatibility of the package.
+-		if (!Fox_Skip_Treble_Compatibility_Check() && !verify_package_compatibility(Zip)) {
+-			gui_err("zip_compatible_err=Zip Treble compatibility error!");
+-			ret_val = INSTALL_CORRUPT;
+-		} else {
++		{
+ 			ret_val = Prepare_Update_Binary(path, Zip);
+ 			if (ret_val == INSTALL_SUCCESS) {
+ 				usleep(32);
+@@ -432,6 +447,11 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+ 		std::string ab_binary_name(AB_OTA);
+ 		ZipEntry64 ab_binary_entry;
+ 		if (FindEntry(Zip, ab_binary_name, &ab_binary_entry) == 0) {
++            // GUI and sideload must reject an incompatible A/B package before pre-flash scripts.
++            ret_val = check_ab_package(Zip);
++            if (ret_val != INSTALL_SUCCESS) {
++                gui_err("ab_metadata_failed=A/B package metadata check failed!");
++            } else {
+ 			LOGINFO("AB zip\n");
+ 			gui_msg(Msg(msg::kHighlight, "flash_ab_inactive=Flashing A/B zip to inactive slot: {1}")(PartitionManager.Get_Active_Slot_Display()=="A"?"B":"A"));
+ 			// We need this so backuptool can do its magic
+@@ -467,6 +487,7 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+ 				gui_warn("mount_vab_partitions=Devices on super may not mount until after rebooting recovery.");
+ 			}
+ 			gui_warn("flash_ab_reboot=To flash additional zips, please reboot recovery to switch to the updated slot.");
++            }
+ 		} else {
+ 			std::string binary_name("ui.xml");
+ 			ZipEntry64 binary_entry;

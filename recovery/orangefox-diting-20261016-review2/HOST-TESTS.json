@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "recorded_at": "2026-10-16T08:50:23.203946+08:00",
+  "projects": [
+    {
+      "path": "device/xiaomi/diting",
+      "commit": "e800e0fdc00a8a4cd02a1dc46cdb1e35c36e3ee6"
+    },
+    {
+      "path": "bootable/recovery",
+      "commit": "020fe2457982411cd53ece7916ac9f253a4763bb"
+    }
+  ],
+  "tests": [
+    {
+      "test": "alias_compile",
+      "passed": true,
+      "output": "",
+      "test_file": "recovery/orangefox-diting-20261016-review2/test-diting-ota-aliases.cpp",
+      "test_sha256": "88f626d7d51b2d255dc06d9dfe1d809025aad0e060a8e35ed69cf27ca1220de1"
+    },
+    {
+      "test": "alias_22_asan_ubsan",
+      "passed": true,
+      "output": "22 device alias acceptance/rejection cases passed"
+    },
+    {
+      "test": "ofrp-device-regressions.py",
+      "passed": true,
+      "output": "{\n  \"passed\": true,\n  \"usb_transition_cases\": 72,\n  \"mtp_and_adb_readiness_orders\": 2,\n  \"actual_goodix_worker_irq_identity_and_24_concurrent_invocations\": true,\n  \"unblank_returns_before_delay_and_ignores_sleeping_display\": true,\n  \"actual_adsp_worker_online_failed_unknown_and_repeated_start_cases\": true,\n  \"traditional_chinese_filename_and_fstab\": true,\n  \"hardware_usb_touch_and_fastbootd_tested\": false\n}",
+      "test_file": "tests/ofrp-device-regressions.py",
+      "test_sha256": "596e00b0a4b891de6bab7b3b5573b5b2b8f40c2cb40df2049b8f4022d3399b4d"
+    },
+    {
+      "test": "ofrp-installer-regressions.py",
+      "passed": true,
+      "output": "PASS: actual metadata/device/serial/alias guards, GUI/sideload shared preflight, bounded metadata, payload failures, legacy add-ons, empty argv, pipe/stream/fork failures under ASAN/UBSAN; no device writes",
+      "test_file": "tests/ofrp-installer-regressions.py",
+      "test_sha256": "8f1c1d43727a3a7cb7457e3825b59585ca257756fd54aef32ecba542f7d35131"
+    },
+    {
+      "test": "ofrp-source-helper-regressions.py",
+      "passed": true,
+      "output": "{\n  \"passed\": 13,\n  \"checks\": [\n    \"applied verification\",\n    \"Deleted source still present\",\n    \"Executable mode mismatch\",\n    \"applied verification\",\n    \"Deleted source still present\",\n    \"Executable mode mismatch\",\n    \"Symlink in source path\",\n    \"Symlink in source path\",\n    \"Unrelated change\",\n    \"built manifest hash mismatch\",\n    \"Invalid source path\",\n    \"clean apply\",\n    \"applied verification\"\n  ]\n}",
+      "test_file": "tests/ofrp-source-helper-regressions.py",
+      "test_sha256": "b77d8d316358bcdc0fde9d1bee2204e9e212d61a6658f0a6a61688932edece5d"
+    },
+    {
+      "test": "ofrp-cross-file-regressions.py",
+      "passed": true,
+      "output": "{\n  \"passed\": true,\n  \"shared_and_device_usb_transitions\": 128,\n  \"generic_usb_fallback_modes\": 3,\n  \"negative_controls\": 3,\n  \"actual_signature_wrapper_and_ab_error_tail_asan_ubsan\": true,\n  \"legacy_compatibility_archive_no_allocation_and_fail_closed\": true,\n  \"product_defaults_without_shell_exports\": true,\n  \"phone_tested\": false\n}",
+      "test_file": "tests/ofrp-cross-file-regressions.py",
+      "test_sha256": "33a61274b4126a819e32350401980de6749d5bb5dddcf8bdb32f0e54fb7cf38b"
+    },
+    {
+      "test": "helper-regressions.py",
+      "passed": true,
+      "output": "Prepared 2 exact media ELF inputs. No signing material is included.\nAll source patches, exact media inputs and Via APK applied. Build/sign/phone validation remain.\n{\n  \"passed\": 24,\n  \"checks\": [\n    \"Path outside\",\n    \"resolved symlink root accepted\",\n    \"Unexpected existing media input\",\n    \"not a directory\",\n    \"collision preflight left source and marker unchanged\",\n    \"Symlink in input path\",\n    \"Symlink in input path\",\n    \"Symlink in input path\",\n    \"donor HEAD checked once for two inputs\",\n    \"Unknown media input family\",\n    \"orangefox-diting-20261010: bad manifest rejected normal\",\n    \"orangefox-diting-20261010: bad manifest rejected optimized\",\n    \"orangefox-diting-20261010: bad patch and dirty tree rejected optimized\",\n    \"orangefox-diting-20261010: executable mode rejected and restored normal\",\n    \"orangefox-diting-20261010: executable mode rejected and restored optimized\",\n    \"orangefox-diting-20261010: matching-content executable symlink rejected\",\n    \"orangefox-diting-20261010-bootctrl: bad manifest rejected normal\",\n    \"orangefox-diting-20261010-bootctrl: bad manifest rejected optimized\",\n    \"orangefox-diting-20261010-bootctrl: bad patch and dirty tree rejected optimized\",\n    \"orangefox-diting-20261010-bootctrl: executable mode rejected and restored normal\",\n    \"orangefox-diting-20261010-bootctrl: executable mode rejected and restored optimized\",\n    \"orangefox-diting-20261010-bootctrl: matching-content executable symlink rejected\",\n    \"Unexpected existing Via input\",\n    \"tracked upstream Via replacement remains supported\"\n  ]\n}",
+      "test_file": "tests/helper-regressions.py",
+      "test_sha256": "1f0f6078213a8c4fc1e4940de7c33c7e7c5dc8a7c117cbdf3aa5defcaa63f3c9"
+    },
+    {
+      "test": "pinned_405_project_source_inputs",
+      "passed": true,
+      "output": "Pinned recovery source inputs verified.",
+      "test_file": "recovery/orangefox-diting-20261016-review2/apply-source.py",
+      "test_sha256": "f8a5df1b93edaafc5378f614f562d3258af156e61ad69ff67fd352c9c5f6d230"
+    }
+  ],
+  "phone_writes_performed": false,
+  "new_image_phone_tested": false,
+  "scope": "Actual extracted installer functions with controlled host APIs; init action simulation and actual shell workers in fake sysfs; no hardware equivalence claim."
+}
