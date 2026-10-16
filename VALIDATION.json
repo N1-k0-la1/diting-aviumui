@@ -2,17 +2,31 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 85,
+  "ordered_patches": 87,
   "round6_20261016": {
     "ordered_patches": 87,
     "immutable_approval_forward_result_fix": true,
     "interrupted_launcher_depth_restore_fix": true,
-    "component_builds_passed": ["frameworks/base/services", "packages/apps/Launcher3/Launcher3QuickStep"],
+    "component_builds_passed": [
+      "frameworks/base/services",
+      "packages/apps/Launcher3/Launcher3QuickStep"
+    ],
     "round6_host_regressions_passed": true,
-    "gms_image_audit_passed": true,
+    "gms_image_audit_passed": false,
     "vanilla_image_audit_pending": true,
     "private_lineage_debug_delta_exported": false,
-    "phone_acceptance_pending": ["QQ clone authorization", "Thanox rapid double-back wallpaper state"]
+    "phone_acceptance_pending": [
+      "QQ clone authorization",
+      "Thanox rapid double-back wallpaper state"
+    ],
+    "gms_image_audit_pending": true,
+    "extracted_production_java_method_regressions_passed": true,
+    "negative_controls_rejected": 4,
+    "host_regression_suites_passed": 7,
+    "public_tree_replay_projects": 31,
+    "public_tree_replay_patches": 87,
+    "release_batch": "round6fix20261016",
+    "old_85_patch_gms_audit_does_not_validate_round6": true
   },
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
@@ -49,13 +63,13 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 85 reconstructed from local pinned Git objects across 31 customized projects",
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 87 reconstructed from local pinned Git objects across 31 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 85,
+    "ordered_patches": 87,
     "customized_projects": 31,
     "all_git_trees_match_safe_public_revisions": true,
     "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND5-REVIEW-20261015.md"
+    "report": "ROUND6-REVIEW-20261016.md"
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,

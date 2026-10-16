@@ -22,9 +22,12 @@ assert 'restoreStateDepth()' in back and 'restoreStateDepth()' in reveal
 assert 'target != null ? target : mLauncher.getStateManager().getState()' in depth
 assert 'mQuickstepTransitionManager.cancelAppLaunchDepthAnimation();' in back
 
-# Negative controls: removing either ownership handoff must fail this check.
+# Structural integration checks supplement the executable method fixtures.
 assert transition.count('cancelAppLaunchDepthAnimation();') >= 3
 assert back.count('restoreStateDepth();') >= 1
 assert 'FLAG_IMMUTABLE' in interceptor and 'FLAG_ACTIVITY_FORWARD_RESULT' in interceptor
+import runpy, sys
+sys.argv = [str(pathlib.Path(__file__).with_name('round6-behavior-regressions.py')), str(root)]
+runpy.run_path(sys.argv[0], run_name='__main__')
 print('{"passed": true, "approval_forward_result_immutable_boundary": true, '
       '"launcher_depth_cancel_and_restore": true, "security_capability_checks_retained": true}')
