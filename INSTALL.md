@@ -9,7 +9,7 @@ GitHub 仓库根目录的 `MANIFEST.json` 是 batch14 历史资料，不能替�
 
 ## 从此前本项目 ROM 升级
 
-1. 选择同一版本系列：本目录 GMS 升 GMS；核对 SHA256SUMS。
+1. 选择同一版本系列：GMS 升 GMS、Vanilla 升 Vanilla；核对 SHA256SUMS。
 2. 在已可用的 Recovery 中安装对应完整 ZIP，等待手机端显示成功。普通升级不要求逐个刷六个配套镜像，也不要求清空数据。
 3. 先使用整包的原版 boot 启动 Android。不要叠加旧版本修补 boot。
 4. 首次开机完成后等待 OTA 快照合并结束，再进行 root 或恢复 OFRP。
@@ -26,6 +26,6 @@ GMS/Vanilla 跨系列保留数据切换未验证，不按普通同系列升级�
 
 ## boot 与备用镜像
 
-配套原版 boot 为 gms/boot.img，取自本目录 GMS ZIP 的已签名 payload，未经 root 修补。
+GMS 用 gms/boot.img，Vanilla 用 vanilla/boot.img，均取自该 ZIP 的已签名 payload，未经 root 修补。
 另外五个镜像也只对应同目录版本；其中 recovery.img 是 Avium Recovery，不是 OFRP。
 确认正常启动后才用本批 boot 修补 root。不要使用另一版本或旧包的 boot。

@@ -11,14 +11,14 @@ ROM 批次：**`round8fix20261016`**。当前公开源码包含 **89 份有序�
 | 成品 | 当前状态 | 已有实测 |
 | --- | --- | --- |
 | GMS ROM | 已完成构建、发布签名、OTA/分区镜像及 Windows 回读校验，已准备发布 | 维护者确认 12T Pro 刷入后 QQ 登录、快速返回后的桌面 UI 正常 |
-| Vanilla ROM | 正在独立构建；尚未完成本批成品校验 | 本批尚无刷入结果 |
+| Vanilla ROM | 已完成独立构建、发布签名及与 GMS 相同的电脑侧校验 | 本批尚无刷入结果 |
 | OrangeFox review2 | 本项目 diting **非官方正式版** | 维护者在 12T Pro 持续使用同一镜像安装后续 ROM，刷入与 `/sdcard` 目录显示正常 |
 
 GMS 文件名：`AviumUI-16.2.2-diting-gms-user-round8fix20261016.zip`。
-对应原版 boot：成品目录中的 `gms/boot.img`。OFRP 镜像：`OrangeFox-diting-ditingp-20261016-review2.img`。
+对应原版 boot：成品目录中的 `gms/boot.img`；Vanilla 使用同批 `vanilla/boot.img`。OFRP 镜像：`OrangeFox-diting-ditingp-20261016-review2.img`。
 GMS 的六个配套镜像来自同一已签名 ROM；其中 `gms/recovery.img` 是 Avium Recovery。
 
-- [当前 GMS / OFRP 文件、SHA256 与验证范围](GMS-ROUND8-RELEASE.json)
+- [当前 GMS / Vanilla / OFRP 文件、SHA256 与验证范围](ROUND8-VARIANTS.json)
 - [发布说明与已知限制](RELEASE.md)
 - [当前 ROM 安装说明](INSTALL.md) · [当前 OFRP 安装说明](OFRP-INSTALL.md)
 - [二进制校验值](ROM-SHA256SUMS) · [详细验证记录](VALIDATION.json)
@@ -77,6 +77,6 @@ LHDC 仍缺兼容耳机实测；OFRP 的 PIN 解密、各类 USB 模式及扩展
 
 Current batch: **round8fix20261016**, with **89 ordered public patches**.
 The GMS build is signed, host-qualified and prepared for maintainer distribution. The maintainer reports successful QQ login and correct desktop UI after rapid BACK gestures on 12T Pro after flashing this build.
-Vanilla is still being built and has no phone acceptance result for this batch.
+Vanilla is independently built, signed and host-qualified; it has no phone acceptance result for this batch.
 OrangeFox review2 is this project's **unofficial stable diting release**: the maintainer repeatedly installed subsequent ROMs with it and confirmed internal storage listing works on 12T Pro.
 K50 Ultra, LHDC headset playback and extended Recovery scenarios remain pending. See the current artifact metadata and installation documents above. Older batches are listed only under History.

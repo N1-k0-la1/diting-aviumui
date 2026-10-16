@@ -1,0 +1,134 @@
+{
+  "batch": "round8fix20261016",
+  "type": "host-qualified-assets",
+  "public_source_commit": "44ec6126bb2c74e922eed7b299f0c503d1eedcc0",
+  "public_patch_count": 89,
+  "candidates": [
+    {
+      "flavour": "gms",
+      "file": "AviumUI-16.2.2-diting-gms-user-round8fix20261016.zip",
+      "assets": [
+        {
+          "path": "AviumUI-16.2.2-diting-gms-user-round8fix20261016.zip",
+          "bytes": 3076452982,
+          "sha256": "8609b1faa9915d4d1940c5be1e2b376882ab50fd508bb7b1256274014353852d"
+        },
+        {
+          "path": "gms/boot.img",
+          "bytes": 201326592,
+          "sha256": "492fe7a7ccaaae5858a3df4f989cd07031d6baaedd53ecd6069980fc3b2d011a"
+        },
+        {
+          "path": "gms/dtbo.img",
+          "bytes": 25165824,
+          "sha256": "72714695676d40cec7ce9707a04f05325f7a258e9ca227a11a6bc0125a11b811"
+        },
+        {
+          "path": "gms/vendor_boot.img",
+          "bytes": 100663296,
+          "sha256": "133fcf7504f17b997bbb7eafa62b7f9a543dc3191f1f33c84462ec4e6ab2f8b0"
+        },
+        {
+          "path": "gms/recovery.img",
+          "bytes": 104857600,
+          "sha256": "647ac06555ead7c30c2d20b78d51c99090605cbf2e41175e0fbb57f153517822"
+        },
+        {
+          "path": "gms/vbmeta.img",
+          "bytes": 8192,
+          "sha256": "06c7097f792f5d95a8883ecf1950da02c4a1119fcc3e379fcadcfdb2eb4bb062"
+        },
+        {
+          "path": "gms/vbmeta_system.img",
+          "bytes": 4096,
+          "sha256": "d956bb6700278ae874f142281a83c61d4c965486effcf68e8a417d717af95829"
+        }
+      ],
+      "host_qualified": true,
+      "actual_fingerprint": "Xiaomi/diting/diting:16/BP4A.251205.006/1792147211:user/release-keys",
+      "phone_evidence": "maintainer reported QQ login and rapid BACK desktop UI",
+      "full_hardware_acceptance_pending": true,
+      "original_images_match_signed_payload": true
+    },
+    {
+      "flavour": "vanilla",
+      "file": "AviumUI-16.2.2-diting-vanilla-user-round8fix20261016.zip",
+      "assets": [
+        {
+          "path": "AviumUI-16.2.2-diting-vanilla-user-round8fix20261016.zip",
+          "bytes": 2245077100,
+          "sha256": "a4c46d63663719409a85947332117a2080b49b0d6096c3c6ab4b04beba63079c"
+        },
+        {
+          "path": "vanilla/boot.img",
+          "bytes": 201326592,
+          "sha256": "24f96583b1b42ac56cd0b1dc85be2dc4f4ad9e795f1f8f7a3cb7eeaa349d06e2"
+        },
+        {
+          "path": "vanilla/dtbo.img",
+          "bytes": 25165824,
+          "sha256": "b683189ebd2d92302ae406794a82c86f9d77a5371d01a9fa9a9214017152946b"
+        },
+        {
+          "path": "vanilla/vendor_boot.img",
+          "bytes": 100663296,
+          "sha256": "22f4d7872ae35a9e4e8851cf1b60a94e88e2b05ffd924a96bbe2a9cc3de55bcc"
+        },
+        {
+          "path": "vanilla/recovery.img",
+          "bytes": 104857600,
+          "sha256": "f871a59bb5b5ed0702ce4aa0e91bbe245500294e3c643fa34669ad1b9a3aea4a"
+        },
+        {
+          "path": "vanilla/vbmeta.img",
+          "bytes": 8192,
+          "sha256": "3afcc3a8bb985eee704ea0bc7d5cf5a83b9daacdf0e8bc760d4902dac7ad3cba"
+        },
+        {
+          "path": "vanilla/vbmeta_system.img",
+          "bytes": 4096,
+          "sha256": "7cd81e44697ae9683c4b921bfcf1693c28ce8790508025950e7601da443626b2"
+        }
+      ],
+      "host_qualified": true,
+      "actual_fingerprint": "Xiaomi/diting/diting:16/BP4A.251205.006/1792150476:user/release-keys",
+      "phone_evidence": "not tested on a phone",
+      "full_hardware_acceptance_pending": true,
+      "original_images_match_signed_payload": true
+    }
+  ],
+  "orangefox": {
+    "path": "OFRP/OrangeFox-diting-ditingp-20261016-review2.img",
+    "bytes": 104857600,
+    "sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+    "phone_acceptance_pending": false,
+    "release_classification": "diting unofficial stable release",
+    "phone_verified_scope": [
+      "repeated project ROM installation",
+      "internal /sdcard directory display"
+    ],
+    "phone_evidence": "maintainer report on Xiaomi 12T Pro"
+  },
+  "maintainer_phone_feedback": {
+    "reported_date": "2026-10-16",
+    "source": "maintainer user message after flashing the supplied GMS ROM",
+    "batch": "round8fix20261016",
+    "flavour": "gms",
+    "qq_login_passed": true,
+    "rapid_back_desktop_ui_passed": true,
+    "all_qq_accounts_spaces_music_combinations_claimed": false,
+    "full_hardware_regression_claimed": false,
+    "independent_adb_verification": false,
+    "vanilla_phone_tested": false,
+    "ofrp_review2_phone_tested": true,
+    "ofrp_review2_phone_evidence": "Maintainer confirms every project ROM since review2 was compiled was installed with that image; ROM flashing and /sdcard display work on the maintainer Xiaomi 12T Pro.",
+    "ofrp_review2_verified_scope": [
+      "repeated project ROM installation",
+      "internal /sdcard directory display"
+    ],
+    "ofrp_release_classification": "diting unofficial stable release"
+  },
+  "vanilla_phone_tested": false,
+  "all_hardware_validated": false,
+  "uploaded_by_agent": false
+}

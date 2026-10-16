@@ -793,6 +793,12 @@
     "report": "ROUND8-REVIEW-20261016.md",
     "cross_profile_result_caller_uid_corrected": true,
     "clone_actual_caller_signing_metadata": true,
-    "new_framework_phone_tested": false
+    "new_framework_phone_tested": true,
+    "full_gms_and_vanilla_candidates_built": true,
+    "host_candidate_audits_passed": true,
+    "candidate_record": "ROUND8-VARIANTS.json",
+    "vanilla_phone_acceptance_pending": true,
+    "phone_evidence": "maintainer reported GMS QQ login and rapid BACK desktop UI",
+    "all_authorization_combinations_claimed": false
   }
 }

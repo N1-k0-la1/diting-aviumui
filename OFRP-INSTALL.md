@@ -4,7 +4,7 @@
 GitHub 仓库根目录的 `MANIFEST.json` 是 batch14 历史资料，不能替代本批成品目录随附的清单。
 
 镜像：OFRP/OrangeFox-diting-ditingp-20261016-review2.img。
-此镜像作为 diting 非官方正式版发布。完整编译和主机检查已通过；维护者确认在 12T Pro 使用本镜像多次刷入后续 ROM，且 /sdcard 目录显示正常。PIN 解密、各类 USB 模式等扩展项目仍待单独验证。
+本镜像作为 diting 非官方正式版提供，完整编译与主机检查已通过。维护者确认自 review2 编译后均用本镜像刷入项目 ROM，安装与 /sdcard 显示正常；PIN 解密、各类 USB 模式及 K50 Ultra 等仍待分别验证。
 首次迁移前先看 INSTALL.md；仅在 Bootloader 已解锁且电脑识别为 diting 时继续。
 
 ## 已在本项目 ROM 上替换 Recovery
@@ -24,7 +24,7 @@ set ROM_FLAVOUR=gms
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File Install-Recovery.ps1 -Serial %SERIAL% -Flavour %ROM_FLAVOUR% -ManifestPath MANIFEST.json -FastbootPath C:\platform-tools\fastboot.exe
 ```
 
-本目录只包含 GMS。此命令只读核对 ROM/六个配套镜像、设备、槽位、分区类型和大小；应显示 No flash。
+Vanilla 将 ROM_FLAVOUR 改为 vanilla。此命令只读核对 ROM/六个配套镜像、设备、槽位、分区类型和大小；应显示 No flash。
 **此处不要加 -FlashRecovery**：该选项安装的是配套 Avium Recovery，不是 OFRP。
 
 核对 OFRP 校验值后，读取 current-slot，将下面 SLOT 替换成实际 a 或 b。每行完成且无报错后才运行下一行；不要直接粘贴整组：

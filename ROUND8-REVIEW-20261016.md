@@ -27,3 +27,7 @@ PackageManager 仅在原有本空间查询没有结果、请求只包含 GET_SIG
 round8fix20261016 GMS 已完成整包构建、发布签名、完整 OTA/payload 与实际镜像内容核对，以及 Windows 独立 SHA256/ZIP CRC 回读。维护者反馈刷入所提供 GMS 后 QQ 登录、快速返回后的桌面 UI 正常。该反馈不扩大为所有账号/空间/音乐应用组合或全面硬件测试通过；Vanilla 在本记录更新时仍在独立构建。
 
 准备发布的 GMS、配套原版启动镜像与 OFRP review2 校验值及范围见 GMS-ROUND8-RELEASE.json。维护者另确认一直使用同一 review2 镜像安装后续项目 ROM，且 /sdcard 目录显示正常，因此 OFRP 按本项目 diting 非官方正式版提供。K50 Ultra 及扩展 Recovery 场景的限制见 OFRP-REVIEW-20261016.md。未改写既有 ROM/Recovery 二进制或历史哈希，未上传私有系统调试改动。
+
+## 2026-10-16 Vanilla 构建完成
+
+同批 Vanilla 已完成构建、私有发布签名、完整 OTA/payload、实际镜像内容核对及 Windows SHA256/ZIP CRC 回读；两版配套原版 boot 和六镜像已齐全。两版文件与验证范围见 ROUND8-VARIANTS.json。Vanilla 仍待实机刷入，GMS 与 OFRP 的维护者反馈范围保持原记录，未推断全面硬件通过。

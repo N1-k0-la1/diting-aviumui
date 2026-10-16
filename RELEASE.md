@@ -1,10 +1,10 @@
 # 当前发布准备：20261016 / round8fix20261016
 
 GMS 已完成整包构建、发布签名、OTA/实际镜像核对和 Windows 回读，并获维护者刷入后 QQ 登录、快速返回桌面 UI 正常的反馈。
-Vanilla 正在独立构建，本批尚无完成校验与刷入结果。
+Vanilla 已完成独立构建、发布签名、OTA/实际镜像核对与 Windows 回读；本批尚无实机刷入结果。
 OFRP review2 按本项目 diting 非官方正式版提供：维护者在 12T Pro 用同一镜像安装后续项目 ROM，刷入及 /sdcard 显示正常。
 
-- [当前文件清单、原版 boot、OFRP 与 SHA256](GMS-ROUND8-RELEASE.json)
+- [当前两版文件清单、原版 boot、OFRP 与 SHA256](ROUND8-VARIANTS.json)
 - [ROM 安装](INSTALL.md) · [OFRP 安装](OFRP-INSTALL.md)
 - [最新功能及验证范围](README.md) · [详细验证记录](VALIDATION.json)
 - [历史 batch14 及更早说明](HISTORY-RELEASE-BATCH14.md) · [历史媒体版](MEDIA-RELEASE.md)

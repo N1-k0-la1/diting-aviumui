@@ -275,7 +275,8 @@
     "previous_88_patch_files_byte_identical": true,
     "historical_binary_hashes_unchanged": true,
     "full_rom_flavours_completed": [
-      "gms"
+      "gms",
+      "vanilla"
     ],
     "phone_evidence_type": "maintainer report after flashing supplied GMS",
     "phone_verified_scope": [
@@ -286,6 +287,10 @@
     "vanilla_phone_tested": false,
     "gms_host_image_and_windows_readback_passed": true,
     "gms_release_record": "GMS-ROUND8-RELEASE.json",
-    "maintainer_phone_feedback_recorded": true
+    "maintainer_phone_feedback_recorded": true,
+    "both_full_rom_builds_and_private_signing_passed": true,
+    "both_native_windows_readbacks_passed": true,
+    "matching_original_boots_verified": true,
+    "public_candidate_record": "ROUND8-VARIANTS.json"
   }
 }
