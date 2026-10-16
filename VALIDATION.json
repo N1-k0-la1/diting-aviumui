@@ -131,5 +131,38 @@
     "delivered_reviewfix20261015_binaries_contain_this_round": false,
     "released_rom_images_rebuilt": false,
     "report": "ROUND5-REVIEW-20261015.md"
+  },
+  "ofrp_review1_20261015": {
+    "report": "OFRP-REVIEW-20261015.md",
+    "source_bundle": "recovery/orangefox-diting-20261015-review1",
+    "full_recovery_build_passed": true,
+    "image_sha256": "b85b4a3fb69f70c7f3eefc49de717c987ea60dc630f049a947ff4b0771536293",
+    "image_bytes": 104857600,
+    "avb_header_and_embedded_hash_verified": true,
+    "critical_elf_dependencies_and_strong_symbol_names_verified": true,
+    "packaged_source_files_match": true,
+    "obsolete_language_file_absent": true,
+    "alias_cases_asan_ubsan": 22,
+    "usb_transition_cases": 72,
+    "ffs_readiness_orders": 2,
+    "concurrent_goodix_workers": 24,
+    "installer_actual_function_fault_tests_asan_ubsan": true,
+    "recovery_source_helper_cases": 13,
+    "existing_helper_cases": 24,
+    "exact_upstream_git_tree_replay_projects": 2,
+    "pinned_source_projects": 405,
+    "historical_rom_recovery_records_unchanged": true,
+    "rom_patch_series_unchanged": true,
+    "private_lineage_delta_exported": false,
+    "new_image_phone_tested": false,
+    "k50_ultra_phone_tested": false,
+    "hardware_validation_pending": [
+      "boot/menu",
+      "FBE storage decryption",
+      "screen wake touch",
+      "MTP/ADB transitions",
+      "fastbootd and battery",
+      "signed OTA/Android boot/snapshot merge"
+    ]
   }
 }
