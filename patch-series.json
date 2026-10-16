@@ -619,6 +619,13 @@
       "original_commit": "fd0dc4d15f96428e2a5184e825b5e25ed97460e7",
       "patch": "patches/round7-20261016/01_packages_apps_Launcher3.patch",
       "sha256": "d187b797deb68ff12f2c779939d14ac11942d2b5f52deb3c78798f242bf1ece6"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "1482245d7fb83011542de664e30ec00537ab1225",
+      "original_commit": "d4719f1176131d52f322b86be1b74e7911a1de25",
+      "patch": "patches/round8-20261016/01_frameworks_base.patch",
+      "sha256": "c9c140f55bb50ab37173a03a757b79a31d027f0f44436eef5d8e731a675e055a"
     }
   ],
   "upstream_bases": {
@@ -704,7 +711,7 @@
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "1482245d7fb83011542de664e30ec00537ab1225",
+    "frameworks/base": "d4719f1176131d52f322b86be1b74e7911a1de25",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
     "device/xiaomi/sm8450-common": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
@@ -779,5 +786,13 @@
     "updated_launcher_phone_tested": true,
     "new_full_rom_phone_tested": false,
     "temporary_trace_exported": false
+  },
+  "round8_corrections": {
+    "date": "2026-10-16",
+    "patch_count": 1,
+    "report": "ROUND8-REVIEW-20261016.md",
+    "cross_profile_result_caller_uid_corrected": true,
+    "clone_actual_caller_signing_metadata": true,
+    "new_framework_phone_tested": false
   }
 }

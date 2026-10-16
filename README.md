@@ -16,7 +16,8 @@ GMS 已在 12T Pro 刷入开机，维护者反馈手动验收除 LHDC 外正常�
 - [OFRP review1 审查修复](OFRP-REVIEW-20261015.md) · [新版源码](recovery/orangefox-diting-20261015-review1/README.md)：待新版实机验收，旧镜像测试结果不沿用。
 - [OFRP review2 跨文件审查](OFRP-REVIEW-20261016.md) · [最新源码](recovery/orangefox-diting-20261016-review2/README.md)：补充签名失败处理、公共/设备 USB 规则互斥及安装器修复，仍待实机验收。
 
-源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 88 份有序补丁。
+源码包含 1187 个上游基础项目、3 个可选 GMS 项目与 89 份有序补丁。
+最新分身跨空间签名核验修复见 [第八轮报告](ROUND8-REVIEW-20261016.md)，新框架仍待刷入验收。
 20261014 最新源码、字体功能和审查修复见 [完整审查报告](FULL-REVIEW-20261014.md)；以上历史发布镜像保持原 SHA256，不含后续源码更新。
 Via APK 及 23 个媒体 ELF 二进制不放入源码仓库；构建者按固定来源和 SHA256 另行提供。
 本仓库未托管 ROM 二进制；网盘发布由维护者提供。

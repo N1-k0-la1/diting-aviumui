@@ -1,0 +1,112 @@
+diff --git a/services/core/java/com/android/server/pm/AppsFilterBase.java b/services/core/java/com/android/server/pm/AppsFilterBase.java
+index 721cc80f3da78a3caf098ae74dfb33e032f2aa7e..95f627d5d23e5132616405667c2add7309264230 100644
+--- a/services/core/java/com/android/server/pm/AppsFilterBase.java
++++ b/services/core/java/com/android/server/pm/AppsFilterBase.java
+@@ -215,7 +215,8 @@ public abstract class AppsFilterBase implements AppsFilterSnapshot {
+         return mQueriesViaComponent.contains(callingAppId, targetAppId);
+     }
+ 
+-    protected boolean isImplicitlyQueryable(int callingUid, int targetUid) {
++    @Override
++    public boolean isImplicitlyQueryable(int callingUid, int targetUid) {
+         return mImplicitlyQueryable.contains(callingUid, targetUid);
+     }
+ 
+diff --git a/services/core/java/com/android/server/pm/AppsFilterLocked.java b/services/core/java/com/android/server/pm/AppsFilterLocked.java
+index e29f2b9db13ea2bfd1b590f0c01dd98e9348baa7..d86bf84a9886c95e5fb131f2b9549dc51eb33739 100644
+--- a/services/core/java/com/android/server/pm/AppsFilterLocked.java
++++ b/services/core/java/com/android/server/pm/AppsFilterLocked.java
+@@ -73,7 +73,7 @@ abstract class AppsFilterLocked extends AppsFilterBase {
+     }
+ 
+     @Override
+-    protected boolean isImplicitlyQueryable(int callingUid, int targetUid) {
++    public boolean isImplicitlyQueryable(int callingUid, int targetUid) {
+         synchronized (mImplicitlyQueryableLock) {
+             return super.isImplicitlyQueryable(callingUid, targetUid);
+         }
+diff --git a/services/core/java/com/android/server/pm/AppsFilterSnapshot.java b/services/core/java/com/android/server/pm/AppsFilterSnapshot.java
+index dd84e061d1fbe568005be63c854fea4e4631005a..10936a9ae8934e1bf223a06be79b2e1859ddf016 100644
+--- a/services/core/java/com/android/server/pm/AppsFilterSnapshot.java
++++ b/services/core/java/com/android/server/pm/AppsFilterSnapshot.java
+@@ -74,6 +74,9 @@ public interface AppsFilterSnapshot {
+      */
+     boolean canQueryPackage(@NonNull AndroidPackage querying, String potentialTarget);
+ 
++    /** Whether a real interaction granted visibility to this exact user-scoped UID pair. */
++    boolean isImplicitlyQueryable(int callingUid, int targetUid);
++
+     /**
+      * Dump the packages that are queryable by the querying package.
+      *
+diff --git a/services/core/java/com/android/server/pm/ComputerEngine.java b/services/core/java/com/android/server/pm/ComputerEngine.java
+index a259d757ae28b28f5f882da1918fdaa875d188f4..0062d68b30c7f0f724cdb69052e045fcad7b8850 100644
+--- a/services/core/java/com/android/server/pm/ComputerEngine.java
++++ b/services/core/java/com/android/server/pm/ComputerEngine.java
+@@ -1656,8 +1656,51 @@ public class ComputerEngine implements Computer {
+         if (GmsManagerService.shouldHide(userId, packageName)) {
+             return null;
+         }
+-        return getPackageInfoInternal(packageName, PackageManager.VERSION_CODE_HIGHEST,
+-                flags, Binder.getCallingUid(), userId);
++        final int callingUid = Binder.getCallingUid();
++        final PackageInfo info = getPackageInfoInternal(packageName,
++                PackageManager.VERSION_CODE_HIGHEST, flags, callingUid, userId);
++        if (info != null) return info;
++        return getCloneCallerSigningInfo(packageName, flags, callingUid, userId);
++    }
++
++    /**
++     * A clone may verify the real parent-space caller of an activity-for-result without
++     * installing another copy of that caller. Return authentic signing metadata only;
++     * this does not resolve activities, enumerate parent apps or grant access to their data.
++     */
++    private PackageInfo getCloneCallerSigningInfo(String packageName, long flags,
++            int callingUid, int userId) {
++        final long signingFlags = PackageManager.GET_SIGNATURES
++                | (long) PackageManager.GET_SIGNING_CERTIFICATES;
++        if ((flags & signingFlags) == 0 || (flags & ~signingFlags) != 0
++                || userId != UserHandle.getUserId(callingUid)
++                || UserHandle.getAppId(callingUid) < Process.FIRST_APPLICATION_UID
++                || Process.isIsolated(callingUid) || Process.isSdkSandboxUid(callingUid)
++                || getInstantAppPackageName(callingUid) != null) return null;
++        final UserManagerInternal users = mInjector.getUserManagerInternal();
++        final UserInfo clone = users.getUserInfo(userId);
++        if (clone == null || !clone.isCloneProfile() || !clone.isEnabled()
++                || clone.isQuietModeEnabled() || !users.isUserUnlocked(userId)) return null;
++        final int parentId = users.getProfileParentId(userId);
++        final UserInfo parent = users.getUserInfo(parentId);
++        if (parent == null || parentId == userId || !parent.isEnabled()
++                || parent.isProfile() || !users.isUserUnlocked(parentId)
++                || GmsManagerService.shouldHide(parentId, packageName)) return null;
++        final PackageStateInternal ps = mSettings.getPackage(packageName);
++        if (ps == null || ps.getPkg() == null
++                // Preserve explicit clone-local installs (including hidden/disabled ones).
++                || ps.getUserStateOrDefault(userId).isInstalled()) return null;
++        final PackageUserStateInternal state = ps.getUserStateOrDefault(parentId);
++        if (!state.isInstalled() || state.isHidden() || state.isSuspended()
++                || state.isInstantApp() || PackageArchiver.isArchived(state)
++                || (state.getEnabledState() != PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
++                && state.getEnabledState() != PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
++                || !mAppsFilter.isImplicitlyQueryable(callingUid,
++                        UserHandle.getUid(parentId, ps.getAppId()))) return null;
++        // Internal body retains ordinary visibility filtering and the real parent UID/signers.
++        // Cross-user permission checks above still apply to every explicit other-user query.
++        return getPackageInfoInternalBody(packageName, PackageManager.VERSION_CODE_HIGHEST,
++                flags, callingUid, parentId);
+     }
+ 
+     /**
+diff --git a/services/core/java/com/android/server/wm/ActivityStarter.java b/services/core/java/com/android/server/wm/ActivityStarter.java
+index 902b5cd286b07c1b0d2206e133f234ee76e9569b..d655d198ab1060d7c8fcbce6e32d98e0586f69a8 100644
+--- a/services/core/java/com/android/server/wm/ActivityStarter.java
++++ b/services/core/java/com/android/server/wm/ActivityStarter.java
+@@ -2131,7 +2131,7 @@ class ActivityStarter {
+                     mService.getPackageManagerInternalLocked();
+             final int resultToUid = pmInternal.getPackageUid(
+                     mStartActivity.resultTo.info.packageName, 0 /* flags */,
+-                    mStartActivity.mUserId);
++                    mStartActivity.resultTo.mUserId);
+             pmInternal.grantImplicitAccess(mStartActivity.mUserId, mIntent,
+                     UserHandle.getAppId(mStartActivity.info.applicationInfo.uid) /*recipient*/,
+                     resultToUid /*visible*/, true /*direct*/);
