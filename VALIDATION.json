@@ -3,6 +3,17 @@
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
   "ordered_patches": 85,
+  "round6_20261016": {
+    "ordered_patches": 87,
+    "immutable_approval_forward_result_fix": true,
+    "interrupted_launcher_depth_restore_fix": true,
+    "component_builds_passed": ["frameworks/base/services", "packages/apps/Launcher3/Launcher3QuickStep"],
+    "round6_host_regressions_passed": true,
+    "gms_image_audit_passed": true,
+    "vanilla_image_audit_pending": true,
+    "private_lineage_debug_delta_exported": false,
+    "phone_acceptance_pending": ["QQ clone authorization", "Thanox rapid double-back wallpaper state"]
+  },
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
   "full_fresh_repo_sync_and_build_performed": false,

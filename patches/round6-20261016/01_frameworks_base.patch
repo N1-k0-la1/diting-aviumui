@@ -1,0 +1,15 @@
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index 3bdcde22c01600edd5ce44c224d7147c92ede105..b9b2851e44b6d225e74f3a9f15751e28298ad046 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -483,6 +483,10 @@ class ActivityStartInterceptor {
+                         targetPackage, profile.id);
+                 final IBinder token = new android.os.Binder();
+                 candidate.setSelector(null);
++                // Immutable PendingIntents ignore flags supplied by the sender. Freeze the
++                // forwarding flag here so the approval activity can hand the original
++                // caller/result target to the chosen activity without changing attribution.
++                candidate.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+                 candidate.setPackage(targetPackage);
+                 candidate.setComponent(new android.content.ComponentName(targetPackage,
+                         resolved.activityInfo.name));

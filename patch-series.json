@@ -598,6 +598,20 @@
       "original_commit": "65a63fbc746effe234458b53061e7a0977e27882",
       "patch": "patches/round5-20261015/06_system_core.patch",
       "sha256": "ad3c9912212c4710870113612bdb357904d745889a3990d32ed6a68dba5b448e"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "62cb34a12523ddb237eb1da32e1dbae6f96a1b24",
+      "original_commit": "1482245d7fb83011542de664e30ec00537ab1225",
+      "patch": "patches/round6-20261016/01_frameworks_base.patch",
+      "sha256": "9cc15596d6c883c042d0394d1d7fb6ec4e552e5477e8ec4346445e53419b3cb0"
+    },
+    {
+      "project": "packages/apps/Launcher3",
+      "base": "3045cd3437fc16bbd0e24bb74bfca4f3f954b075",
+      "original_commit": "43cc0ada5a2d72a9f2a4b82a5bcd03e25b134745",
+      "patch": "patches/round6-20261016/02_packages_apps_Launcher3.patch",
+      "sha256": "ba4b03645d7085fe22b68e5c8a85a4cfcbf610daf000f46c373804bd8b5184b3"
     }
   ],
   "upstream_bases": {
@@ -683,7 +697,7 @@
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "62cb34a12523ddb237eb1da32e1dbae6f96a1b24",
+    "frameworks/base": "1482245d7fb83011542de664e30ec00537ab1225",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
     "device/xiaomi/sm8450-common": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
@@ -705,7 +719,7 @@
     "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
     "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
     "system/core": "65a63fbc746effe234458b53061e7a0977e27882",
-    "packages/apps/Launcher3": "3045cd3437fc16bbd0e24bb74bfca4f3f954b075"
+    "packages/apps/Launcher3": "43cc0ada5a2d72a9f2a4b82a5bcd03e25b134745"
   },
   "latest_source_update": {
     "date": "2026-10-14",
@@ -737,5 +751,17 @@
     "report": "ROUND5-REVIEW-20261015.md",
     "released_artifacts_rebuilt": false,
     "private_system_core_delta_exported": false
+  },
+  "round6_corrections": {
+    "date": "2026-10-16",
+    "patch_count": 2,
+    "report": "ROUND6-REVIEW-20261016.md",
+    "private_lineage_debug_delta_exported": false,
+    "source_components_built": [
+      "frameworks/base/services",
+      "packages/apps/Launcher3/Launcher3QuickStep"
+    ],
+    "immutable_approval_forward_result_fix": true,
+    "interrupted_launcher_depth_restore_fix": true
   }
 }

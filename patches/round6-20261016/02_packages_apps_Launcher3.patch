@@ -1,0 +1,157 @@
+diff --git a/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java b/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
+index 983d1dec0c8a6e546943774142f32e330dd4a067..ae0637329538fb831293eab874b7db13cb474b38 100644
+--- a/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
++++ b/quickstep/src/com/android/launcher3/QuickstepTransitionManager.java
+@@ -258,6 +258,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+ 
+     private boolean mBlurBackgroundAtAppLaunch = false;
+     @Nullable private SurfaceControl mAppLaunchBlurLayer;
++    @Nullable private ObjectAnimator mAppLaunchDepthAnimator;
+ 
+     private final StartingWindowListener mStartingWindowListener =
+             new StartingWindowListener(this);
+@@ -1253,10 +1254,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+         boolean allowBlurringLauncher =
+                 launcherState != OVERVIEW && BlurUtils.supportsBlursOnWindows();
+ 
+-        ObjectAnimator backgroundRadiusAnim = ObjectAnimator.ofFloat(
+-                        mLauncher.getDepthController().stateDepth, MULTI_PROPERTY_VALUE,
+-                        BACKGROUND_APP.getDepth(mLauncher))
+-                .setDuration(APP_LAUNCH_DURATION);
++        ObjectAnimator backgroundRadiusAnim = createAppLaunchDepthAnimator();
+ 
+         if (allowBlurringLauncher) {
+             // Create a temporary effect layer, that lives on top of launcher, so we can apply
+@@ -1294,10 +1292,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+                 && BlurUtils.supportsBlursOnWindows();
+ 
+         // Use the launcher's existing depth controller directly (no LaunchDepthController needed)
+-        ObjectAnimator backgroundRadiusAnim = ObjectAnimator.ofFloat(
+-                        mLauncher.getDepthController().stateDepth, MULTI_PROPERTY_VALUE,
+-                        BACKGROUND_APP. getDepth(mLauncher))
+-                .setDuration(APP_LAUNCH_DURATION);
++        ObjectAnimator backgroundRadiusAnim = createAppLaunchDepthAnimator();
+ 
+         if (allowBlurringLauncher) {
+             View rootView = mLauncher.getDragLayer();
+@@ -1357,6 +1352,26 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+         return backgroundRadiusAnim;
+     }
+ 
++    private ObjectAnimator createAppLaunchDepthAnimator() {
++        cancelAppLaunchDepthAnimation();
++        ObjectAnimator animation = ObjectAnimator.ofFloat(
++                mLauncher.getDepthController().stateDepth, MULTI_PROPERTY_VALUE,
++                BACKGROUND_APP.getDepth(mLauncher)).setDuration(APP_LAUNCH_DURATION);
++        mAppLaunchDepthAnimator = animation;
++        animation.addListener(AnimatorListeners.forEndCallback(() -> {
++            if (mAppLaunchDepthAnimator == animation) mAppLaunchDepthAnimator = null;
++        }));
++        return animation;
++    }
++
++    /** Stop a late app-opening writer before a back/home transition takes ownership. */
++    public void cancelAppLaunchDepthAnimation() {
++        ObjectAnimator animation = mAppLaunchDepthAnimator;
++        mAppLaunchDepthAnimator = null;
++        if (animation != null) animation.cancel();
++        cleanupAppLaunchBlurLayer();
++    }
++
+     private void cleanupAppLaunchBlurLayer() {
+         SurfaceControl blurLayer = mAppLaunchBlurLayer;
+         if (blurLayer == null) {
+@@ -1472,7 +1487,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+     }
+ 
+     public void onActivityDestroyed() {
+-        cleanupAppLaunchBlurLayer();
++        cancelAppLaunchDepthAnimation();
+         unregisterRemoteAnimations();
+         unregisterRemoteTransitions();
+         mLauncher.removeOnDeviceProfileChangeListener(this);
+@@ -1931,6 +1946,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
+             RectF startRect,
+             float startWindowCornerRadius,
+             boolean fromPredictiveBack) {
++        cancelAppLaunchDepthAnimation();
+         View launcherView = findLauncherView(appTargets);
+         if (launcherView != null
+                 && launcherView.getTag() instanceof ItemInfo info
+diff --git a/quickstep/src/com/android/launcher3/statehandlers/DepthController.java b/quickstep/src/com/android/launcher3/statehandlers/DepthController.java
+index c8f16ac9d6d889ff526c3d53966c4ed5512cf3ee..225eeacbb1098799e1a1acbf81d808a3f99a7ef2 100644
+--- a/quickstep/src/com/android/launcher3/statehandlers/DepthController.java
++++ b/quickstep/src/com/android/launcher3/statehandlers/DepthController.java
+@@ -146,6 +146,12 @@ public class DepthController extends BaseDepthController implements StateHandler
+         }
+     }
+ 
++    /** Restore state-owned depth after a custom app transition ends or is cancelled. */
++    public void restoreStateDepth() {
++        LauncherState target = mLauncher.getStateManager().getTargetState();
++        setState(target != null ? target : mLauncher.getStateManager().getState());
++    }
++
+     @Override
+     public void setState(LauncherState toState) {
+         stateDepth.setValue(toState.getDepth(mLauncher));
+diff --git a/quickstep/src/com/android/quickstep/LauncherBackAnimationController.java b/quickstep/src/com/android/quickstep/LauncherBackAnimationController.java
+index 76b2ede6f53c8a679f4df2f22a82119c1f07f33b..d264810216b037619bc27518cd14b7f5fbf87bd8 100644
+--- a/quickstep/src/com/android/quickstep/LauncherBackAnimationController.java
++++ b/quickstep/src/com/android/quickstep/LauncherBackAnimationController.java
+@@ -291,7 +291,16 @@ public class LauncherBackAnimationController {
+         }
+ 
+         @Override
+-        public void onAnimationCancelled() {}
++        public void onAnimationCancelled() {
++            LauncherBackAnimationController controller = mControllerRef.get();
++            if (controller == null) return;
++            Runnable cancel = () -> {
++                controller.mProgressAnimator.reset();
++                controller.onCancelFinished();
++            };
++            if (mHandler != null) mHandler.post(cancel);
++            else cancel.run();
++        }
+     }
+ 
+     private void onCancelFinished() {
+@@ -348,6 +357,7 @@ public class LauncherBackAnimationController {
+                 && !mLauncher.isInState(LauncherState.ALL_APPS)) {
+             Animations.cancelOngoingAnimation(mLauncher.getWorkspace());
+             Animations.cancelOngoingAnimation(mLauncher.getHotseat());
++            mQuickstepTransitionManager.cancelAppLaunchDepthAnimation();
+             mLauncher.getDepthController().pauseBlursOnWindows(true);
+             mLauncher.getDepthController().stateDepth.setValue(
+                     LauncherState.BACKGROUND_APP.getDepth(mLauncher));
+@@ -529,6 +539,7 @@ public class LauncherBackAnimationController {
+         }
+         mLauncherTarget = null;
+         mBackInProgress = false;
++        mWaitStartTransition = false;
+         mBackProgress = 0;
+         mTransformMatrix.reset();
+         mCurrentRect.setEmpty();
+@@ -556,6 +567,7 @@ public class LauncherBackAnimationController {
+         }
+         if (!mLauncher.getWorkspace().isOverlayShown()
+                 && !mLauncher.isInState(LauncherState.ALL_APPS)) {
++            mLauncher.getDepthController().restoreStateDepth();
+             mLauncher.getDepthController().pauseBlursOnWindows(false);
+         }
+         mLastBlurRadius = 0;
+diff --git a/quickstep/src/com/android/quickstep/util/ScalingWorkspaceRevealAnim.kt b/quickstep/src/com/android/quickstep/util/ScalingWorkspaceRevealAnim.kt
+index f2dbda437d9ec8b462e6416355e3656cd16429c4..145c4abe93da487619e76aefb4ea43effbbb0b91 100644
+--- a/quickstep/src/com/android/quickstep/util/ScalingWorkspaceRevealAnim.kt
++++ b/quickstep/src/com/android/quickstep/util/ScalingWorkspaceRevealAnim.kt
+@@ -292,6 +292,9 @@ class ScalingWorkspaceRevealAnim(
+                     Animations.setOngoingAnimation(workspace, animation = null)
+                     Animations.setOngoingAnimation(hotseat, animation = null)
+                     removeBlurLayer()
++                    // Cancellation does not run animated properties to their final value.
++                    // Restore the actual state rather than leaving BACKGROUND_APP depth behind.
++                    depthController?.restoreStateDepth()
+                     depthController?.pauseBlursOnWindows(false)
+                 }
+             )
