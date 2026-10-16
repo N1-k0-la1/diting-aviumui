@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 87,
+  "ordered_patches": 88,
   "round6_20261016": {
     "ordered_patches": 87,
     "immutable_approval_forward_result_fix": true,
@@ -12,21 +12,24 @@
       "packages/apps/Launcher3/Launcher3QuickStep"
     ],
     "round6_host_regressions_passed": true,
-    "gms_image_audit_passed": false,
-    "vanilla_image_audit_pending": true,
+    "gms_image_audit_passed": true,
+    "vanilla_image_audit_pending": false,
     "private_lineage_debug_delta_exported": false,
     "phone_acceptance_pending": [
       "QQ clone authorization",
       "Thanox rapid double-back wallpaper state"
     ],
-    "gms_image_audit_pending": true,
+    "gms_image_audit_pending": false,
     "extracted_production_java_method_regressions_passed": true,
     "negative_controls_rejected": 4,
     "host_regression_suites_passed": 7,
     "public_tree_replay_projects": 31,
     "public_tree_replay_patches": 87,
     "release_batch": "round6fix20261016",
-    "old_85_patch_gms_audit_does_not_validate_round6": true
+    "old_85_patch_gms_audit_does_not_validate_round6": true,
+    "vanilla_image_audit_passed": true,
+    "thanox_phone_test_passed": false,
+    "confirmed_phone_issue": "Queued second BACK resumes home with stateDepth0.7; follow-up source fix in round7; old candidates held"
   },
   "independently_fetched_upstream_files": 79,
   "all_patches_apply_to_upstream_touched_files": true,
@@ -63,13 +66,13 @@
     }
   },
   "independently_fetched_upstream_patches_validated": 50,
-  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 87 reconstructed from local pinned Git objects across 31 customized projects",
+  "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 88 reconstructed from local pinned Git objects across 31 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 87,
+    "ordered_patches": 88,
     "customized_projects": 31,
     "all_git_trees_match_safe_public_revisions": true,
     "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND6-REVIEW-20261016.md"
+    "report": "ROUND7-REVIEW-20261016.md"
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,
@@ -228,5 +231,20 @@
       "signed OTA/Android boot/snapshot merge",
       "dedicated recovery reinstall"
     ]
+  },
+  "round7_20261016": {
+    "ordered_patches": 88,
+    "extracted_deferred_resume_methods_passed": true,
+    "negative_controls_rejected": 5,
+    "updated_signed_launcher_double_back_phone_cases": 6,
+    "additional_ui_phone_cases": 7,
+    "phone_scope": "Signed updated Launcher on round6 GMS, not a newly flashed round7 ROM",
+    "temporary_trace_exported": false,
+    "new_full_rom_build_pending": true,
+    "new_full_rom_phone_tested": false,
+    "public_tree_replay_projects": 31,
+    "public_tree_replay_patches": 88,
+    "previous_87_patch_files_byte_identical": true,
+    "historical_binary_hashes_unchanged": true
   }
 }

@@ -1,0 +1,30 @@
+diff --git a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+index dca8a45cafbb12f29b4b81e29b5684f1ad811860..b76c6c989bcc66ed3af72628a3aa7b5cc7f97510 100644
+--- a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
++++ b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+@@ -1217,9 +1217,25 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+     @Override
+     protected void onDeferredResumed() {
+         super.onDeferredResumed();
++        restoreDepthAfterUnanimatedResume();
+         handlePendingActivityRequest();
+     }
+ 
++    /** Queued BACK can resume home without running a back-to-home animation callback. */
++    private void restoreDepthAfterUnanimatedResume() {
++        if (!hasBeenResumed() || isForceInvisible() || mIsPredictiveBackToHomeInProgress
++                || getStateManager().isInTransition()
++                || !getStateManager().isInStableState(NORMAL)
++                || getWorkspace().isOverlayShown()
++                || mAppTransitionManager == null || mDepthController == null) {
++            return;
++        }
++        // End an obsolete app-opening writer before returning depth ownership to home.
++        mAppTransitionManager.cancelAppLaunchDepthAnimation();
++        mDepthController.restoreStateDepth();
++        mDepthController.pauseBlursOnWindows(false);
++    }
++
+     private void handlePendingActivityRequest() {
+         if (mPendingActivityRequestCode != -1 && isInState(NORMAL)
+                 && ((getActivityFlags() & ACTIVITY_STATE_DEFERRED_RESUMED) != 0)) {

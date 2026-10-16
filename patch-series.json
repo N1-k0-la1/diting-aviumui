@@ -612,6 +612,13 @@
       "original_commit": "43cc0ada5a2d72a9f2a4b82a5bcd03e25b134745",
       "patch": "patches/round6-20261016/02_packages_apps_Launcher3.patch",
       "sha256": "ba4b03645d7085fe22b68e5c8a85a4cfcbf610daf000f46c373804bd8b5184b3"
+    },
+    {
+      "project": "packages/apps/Launcher3",
+      "base": "43cc0ada5a2d72a9f2a4b82a5bcd03e25b134745",
+      "original_commit": "fd0dc4d15f96428e2a5184e825b5e25ed97460e7",
+      "patch": "patches/round7-20261016/01_packages_apps_Launcher3.patch",
+      "sha256": "d187b797deb68ff12f2c779939d14ac11942d2b5f52deb3c78798f242bf1ece6"
     }
   ],
   "upstream_bases": {
@@ -719,7 +726,7 @@
     "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
     "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
     "system/core": "65a63fbc746effe234458b53061e7a0977e27882",
-    "packages/apps/Launcher3": "43cc0ada5a2d72a9f2a4b82a5bcd03e25b134745"
+    "packages/apps/Launcher3": "fd0dc4d15f96428e2a5184e825b5e25ed97460e7"
   },
   "latest_source_update": {
     "date": "2026-10-14",
@@ -763,5 +770,14 @@
     ],
     "immutable_approval_forward_result_fix": true,
     "interrupted_launcher_depth_restore_fix": true
+  },
+  "round7_corrections": {
+    "date": "2026-10-16",
+    "patch_count": 1,
+    "report": "ROUND7-REVIEW-20261016.md",
+    "queued_back_without_home_animation_fix": true,
+    "updated_launcher_phone_tested": true,
+    "new_full_rom_phone_tested": false,
+    "temporary_trace_exported": false
   }
 }
