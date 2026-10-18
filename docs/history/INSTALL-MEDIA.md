@@ -17,7 +17,7 @@
 
 示例文件位置如下；若使用其他目录，请修改命令中的路径：
 
-从本仓库取当前的 [Install-Recovery.ps1](Install-Recovery.ps1) 和 [CANDIDATES.json](CANDIDATES.json) 放到 `C:\ROM`。旧工具包内的脚本可能没有 `-ManifestPath` 参数；请使用当前脚本，镜像仍取所选版本的同批工具包，不修改旧工具包 ZIP。
+从本仓库取当前的 [Install-Recovery.ps1](../../Install-Recovery.ps1) 和 [CANDIDATES.json](../../CANDIDATES.json) 放到 `C:\ROM`。旧工具包内的脚本可能没有 `-ManifestPath` 参数；请使用当前脚本，镜像仍取所选版本的同批工具包，不修改旧工具包 ZIP。
 
 ```text
 C:\platform-tools\adb.exe
@@ -41,7 +41,7 @@ C:\ROM\gms\vbmeta_system.img
 ## A. 已在本项目 ROM 中：用修正版 OFRP 安装更新
 
 1. 确认上一轮更新已完成首次系统启动；不要在待合并的更新上连续重装 ZIP。备份数据，先处理与更新不兼容的 root 模块。保数据兼容性与长期稳定性没有全面保证。
-2. 使用本次提供的 `OrangeFox-diting-ditingp-20261010-bootctrl.img`，安装方式见 [OFRP-INSTALL.md](OFRP-INSTALL.md)。只更新 Recovery 不需要格式化数据。
+2. 使用本次提供的 `OrangeFox-diting-ditingp-20261010-bootctrl.img`，安装方式见 [OFRP-INSTALL.md](../../OFRP-INSTALL.md)。只更新 Recovery 不需要格式化数据。
 3. 进入 OFRP，确认界面、触摸正常，内部存储可见。将完整 ROM ZIP 放到手机存储或 OTG；如果需要，电脑可用 MTP 复制。点击“文件”，选完整 ROM ZIP，滑动安装。**解压后的文件、源码 ZIP 和工具包 ZIP 都不能作为 ROM 刷入。**
 4. ZIP 签名校验可开启：本 OFRP 包含本项目公开 OTA 证书。不要启用“禁用加密/DM-Verity”等附加修改；自动重装 OFRP 未列入验收，本流程不依赖它。
 5. 必须看 Recovery 是否明确安装成功，不能只看百分比。成功后先“重启 → 系统”，解锁并让后台完成快照合并，再考虑 root 或另一轮安装。**不要手动切换 A/B 槽位，不要在首次系统启动前反复安装同一 ZIP。**
@@ -147,7 +147,7 @@ certutil -hashfile "C:\ROM\OrangeFox-diting-ditingp-20261010-bootctrl.img" SHA25
 
 ## Vanilla 可选 microG / MIRA
 
-Vanilla 不内置 microG。若自行安装 microG 并使用 MIRA + Kasumi 挂载，此前旧版 MIRA 在本设备上因不存在的 Volla 路径替换标记导致挂载失败、Play 商店闪退。可参考 [MIRA-KASUMI.md](MIRA-KASUMI.md) 及附带的非官方兼容预览；该预览此前已实测商店可打开，新 Vanilla 上仍需自行验收。它不是刷 ROM 的必需项，不保证 Play Integrity。
+Vanilla 不内置 microG。若自行安装 microG 并使用 MIRA + Kasumi 挂载，此前旧版 MIRA 在本设备上因不存在的 Volla 路径替换标记导致挂载失败、Play 商店闪退。可参考 [MIRA-KASUMI.md](../../MIRA-KASUMI.md) 及附带的非官方兼容预览；该预览此前已实测商店可打开，新 Vanilla 上仍需自行验收。它不是刷 ROM 的必需项，不保证 Play Integrity。
 
 ## 错误反馈
 

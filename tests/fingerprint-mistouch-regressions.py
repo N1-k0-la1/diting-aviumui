@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Run production token conversion and the full mistouch controller with host Android fixtures."""
 import argparse, json, os, pathlib, subprocess, tempfile
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Exercise production font IPC completion and boot cleanup with host API stubs."""
 import argparse, pathlib, re, subprocess, tempfile
 parser=argparse.ArgumentParser(description=__doc__)

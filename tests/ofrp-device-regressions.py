@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Exercise actual device init actions and shell workers against isolated fake sysfs trees."""
 import argparse,itertools,json,os,pathlib,shlex,subprocess,tempfile,time,xml.etree.ElementTree as ET
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=pathlib.Path)

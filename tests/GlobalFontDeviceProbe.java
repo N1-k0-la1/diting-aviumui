@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 package com.android.server.graphics.fonts;
 
 import android.graphics.Bitmap;

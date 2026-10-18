@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Regression checks using real helper scripts and extracted production functions."""
 import hashlib, importlib.util, json, os, pathlib, shutil, subprocess, sys, tempfile
 from unittest.mock import patch

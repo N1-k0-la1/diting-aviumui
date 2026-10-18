@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Run actual Session lifecycle methods under ASAN/UBSAN, and the guest-map guard in debug mode."""
 import argparse,pathlib,re,subprocess,tempfile
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=pathlib.Path)

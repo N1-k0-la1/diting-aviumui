@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Run the native probe on the build-installed SKU policy, merging installed XIncludes."""
 import argparse,hashlib,json,pathlib,subprocess,tempfile,xml.etree.ElementTree as ET
 from xml.etree import ElementInclude

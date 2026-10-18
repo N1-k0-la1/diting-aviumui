@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Review2: execute shared/device init rules together and real verification/error branches."""
 import argparse,json,os,pathlib,re,resource,shlex,subprocess,tempfile
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=pathlib.Path)

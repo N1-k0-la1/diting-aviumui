@@ -1,12 +1,12 @@
 # 历史 OFRP bootctrl 安装说明（包含后续补充）
 
-当前版本请从 [README.md](README.md) 进入。以下为旧文档快照，文件名与测试结果仅对应其所述批次。
+当前版本请从 [README.md](../../README.md) 进入。以下为旧文档快照，文件名与测试结果仅对应其所述批次。
 
 # 修正版 OrangeFox：diting / ditingp（公开测试版）
 
-最新 [review2 源码与核实报告](OFRP-REVIEW-20261016.md) 已补充修复，维护者已确认 review2 在 12T Pro 多次刷入项目 ROM 且 /sdcard 显示正常，作为本项目 diting 非官方正式版提供；其余扩展场景待逐项验证；携带旧式 `compatibility.zip` 的包默认将被明确拒绝。
+最新 [review2 源码与核实报告](../../OFRP-REVIEW-20261016.md) 已补充修复，维护者已确认 review2 在 12T Pro 多次刷入项目 ROM 且 /sdcard 显示正常，作为本项目 diting 非官方正式版提供；其余扩展场景待逐项验证；携带旧式 `compatibility.zip` 的包默认将被明确拒绝。
 
-新增 [review1 源码与修复说明](OFRP-REVIEW-20261015.md)，新版候选仍待实机验收。
+新增 [review1 源码与修复说明](../../OFRP-REVIEW-20261015.md)，新版候选仍待实机验收。
 以下镜像哈希与实测记录仍对应历史 bootctrl 版，不代表 review1 的测试结果。
 
 文件：`OrangeFox-diting-ditingp-20261010-bootctrl.img`。
@@ -24,7 +24,7 @@ SHA256: 6328c4b97b9ce0cfdf2f064fa40bef11bc5a354122f1e56f3131754804700f61
 
 本镜像修复了继承中文字体引用造成的狐狸循环、Goodix 启动/唤醒后触摸异常、缺失 boot HAL VINTF 声明，以及旧 QTI HAL 把 unsuffixed boot 别名算成第三个槽的问题。槽位写入和快照操作保留原 HAL；没有修改触控固件。
 
-**直接在 HyperOS 3.0.6 上启动本镜像尚未验证。** 它没有独立内核，依赖兼容的 boot / vendor_boot。不能用本次在 AviumUI 中成功的结果证明任意原厂系统可直接进入。首次迁入请读 [INSTALL.md](INSTALL.md)，不要把只刷 OFRP 的步骤当成完整 ROM 安装。
+**直接在 HyperOS 3.0.6 上启动本镜像尚未验证。** 它没有独立内核，依赖兼容的 boot / vendor_boot。不能用本次在 AviumUI 中成功的结果证明任意原厂系统可直接进入。首次迁入请读 [INSTALL.md](../../INSTALL.md)，不要把只刷 OFRP 的步骤当成完整 ROM 安装。
 
 ## 从当前项目 ROM 安装 OFRP
 

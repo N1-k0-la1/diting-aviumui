@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Execute production clone signing fallback and real activity-result visibility grant."""
 import argparse,json,pathlib,re,subprocess,tempfile
 parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('source',type=pathlib.Path)

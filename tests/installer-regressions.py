@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Exercise the actual installer with a mock fastboot and inert test assets."""
 import hashlib,json,os,pathlib,shutil,subprocess,tempfile
 root=pathlib.Path(__file__).resolve().parents[1]; results=[]

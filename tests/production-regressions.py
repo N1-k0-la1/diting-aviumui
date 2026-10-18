@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Compile and exercise production methods with bounded host-side dependencies."""
 import pathlib, re, subprocess, tempfile, json, argparse
 

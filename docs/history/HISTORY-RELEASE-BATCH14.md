@@ -1,6 +1,6 @@
 # 历史发布说明（包含当时的媒体版本入口）
 
-当前版本请从 [README.md](README.md) 进入。以下为旧文档快照，文件名与测试结果仅对应其所述批次。
+当前版本请从 [README.md](../../README.md) 进入。以下为旧文档快照，文件名与测试结果仅对应其所述批次。
 
 # 当前媒体测试版
 
@@ -16,7 +16,7 @@ The latest GMS media release is described in MEDIA-RELEASE.md. Notes below are h
 
 2026-10-08：GMS 版已在 12T Pro 完成首次启动，实际内核／user/release-keys／SELinux Enforcing 匹配；维护者反馈相机、eSIM、Google 登录及商店下载正常。完整 GMS Classic Integrity 回执为 BASIC / PLAY_RECOGNIZED / LICENSED，启用内置 BL 伪装仍未获得 DEVICE／STRONG。其他硬件、推送和待机验收仍有缺项。Vanilla 第十四批和 K50 至尊版尚未实测，不能继承另一版本／机型的通过状态。
 
-本次按测试版分发，不标稳定版。GMS 需在系统自带“启用GMS服务”开关中启用，不内置 root，不承诺 Google 认证。通用安装／恢复说明见 [INSTALL.md](INSTALL.md)，成品元数据见 [MANIFEST.json](MANIFEST.json)，原始二进制 SHA256 见 [ROM-SHA256SUMS](ROM-SHA256SUMS)。整包和同版本六镜像由维护者另行提供下载；个人固定序列号安装脚本不作为通用公开安装器。
+本次按测试版分发，不标稳定版。GMS 需在系统自带“启用GMS服务”开关中启用，不内置 root，不承诺 Google 认证。通用安装／恢复说明见 [INSTALL.md](../../INSTALL.md)，成品元数据见 [MANIFEST.json](../../MANIFEST.json)，原始二进制 SHA256 见 [ROM-SHA256SUMS](../../ROM-SHA256SUMS)。整包和同版本六镜像由维护者另行提供下载；个人固定序列号安装脚本不作为通用公开安装器。
 
 | 版本 | 文件名 | 字节数 | SHA256 |
 |---|---|---:|---|
@@ -30,7 +30,7 @@ The latest GMS media release is described in MEDIA-RELEASE.md. Notes below are h
 12T Pro 第十三批实测记录保留，不能作为第十四批验收。K50 至尊版暂为源码支持、未实测。
 共用 diting 代号不代替 K50 启动、108MP 相机、双实体 SIM 和固件兼容实测。
 计划两份通用候选，不拆成四份包。eUICC feature 限于 ditingp SKU，相关 RRO 限于 GL。
-已测／未测范围以本页为准，安装准备见 [INSTALL.md](INSTALL.md)。
+已测／未测范围以本页为准，安装准备见 [INSTALL.md](../../INSTALL.md)。
 
 ## English
 

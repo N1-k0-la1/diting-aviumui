@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Execute actual recovery package guards/setup paths with fault-controlled host ZIP and process APIs."""
 import argparse,pathlib,re,subprocess,tempfile
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=pathlib.Path)

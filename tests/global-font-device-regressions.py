@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Compile the production global font mapper and check native rendering in a temporary device process."""
 import argparse, hashlib, json, pathlib, shlex, subprocess, tempfile, uuid
 

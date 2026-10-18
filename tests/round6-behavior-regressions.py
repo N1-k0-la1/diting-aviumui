@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Execute production Java methods with bounded fixtures and failing mutants."""
 import argparse,json,pathlib,re,subprocess,tempfile
 parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('source',type=pathlib.Path)

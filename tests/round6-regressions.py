@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Host checks for the round-six approval and launcher transition fixes."""
 import argparse
 import pathlib

@@ -1,6 +1,6 @@
 # 2026-10-10 媒体测试版 / Media testing release
 
-本批已补齐新的 Vanilla，成品见 [MEDIA-VARIANTS.json](MEDIA-VARIANTS.json)，主机验收通过、实机待测。下文保留 GMS 的具体实测范围。
+本批已补齐新的 Vanilla，成品见 [MEDIA-VARIANTS.json](../../MEDIA-VARIANTS.json)，主机验收通过、实机待测。下文保留 GMS 的具体实测范围。
 
 GMS 完整 ROM：`AviumUI-16.2.2-diting-gms-user-media20261010.zip`。
 旧 batch14 Vanilla 仍是旧版本，不包含本批媒体整合；不要将两者标为同一批更新。
@@ -21,9 +21,9 @@ LHDC RAW 未启用；不含 Dolby DAP 音效或 Dolby 音效应用。
 - 本轮未确认干净/保数据安装及测试时的 root 状态，长期待机仍待反馈。
 - 本批没有新的 Google 认证或 Play Integrity 通过承诺。
 
-ROM 字节数、SHA256 与同版六镜像见 [MEDIA-RELEASE.json](MEDIA-RELEASE.json)。
+ROM 字节数、SHA256 与同版六镜像见 [MEDIA-RELEASE.json](../../MEDIA-RELEASE.json)。
 本仓库发布源码和校验信息；ROM 网盘链接由维护者另行提供。
-安装说明见 [INSTALL.md](INSTALL.md)，修正版 OrangeFox 见 [OFRP-INSTALL.md](OFRP-INSTALL.md)。12T Pro 已通过本修正版的完整 ZIP 安装、系统开机和快照合并；HyperOS 3.0.6 直接迁入仍未验证。
+安装说明见 [INSTALL.md](../../INSTALL.md)，修正版 OrangeFox 见 [OFRP-INSTALL.md](../../OFRP-INSTALL.md)。12T Pro 已通过本修正版的完整 ZIP 安装、系统开机和快照合并；HyperOS 3.0.6 直接迁入仍未验证。
 
 ## English
 

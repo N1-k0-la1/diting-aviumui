@@ -1,6 +1,6 @@
 # 历史教程：仅适用 batch14
 
-当前版本请读 [INSTALL.md](INSTALL.md)。不要把这里的文件名或镜像用于 media20261010。
+当前版本请读 [INSTALL.md](../../INSTALL.md)。不要把这里的文件名或镜像用于 media20261010。
 
 # Windows 刷机教程：AviumUI 16.2.2 diting 测试版
 

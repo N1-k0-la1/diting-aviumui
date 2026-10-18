@@ -1,13 +1,12 @@
-# 20261016 最新定制源码输入
+# 当前公开构建输入：round8fix20261016
 
-当前是 89 份补丁：前 50 份 batch14 基础、1 份 Aperture 热修复、9 份媒体整合、4 份首轮纠错、6 份最新字体/音频源码与扩展审查修复、3 份第二轮集成与字体生命周期纠错、2 份第三轮蓝牙/字体边界处理、4 份全局字体/防误触/指纹/文件夹模糊修复、6 份第五轮生命周期及边界修复、2 份第六轮授权回传及桌面动画修复、1 份第七轮无动画恢复桌面修复、1 份第八轮分身跨空间调用签名核验修复。
-当前 round8fix20261016 GMS 已完成构建和电脑侧校验，维护者已反馈刷入后 QQ 登录与快速返回桌面 UI 正常；同批 Vanilla 也已完成构建、签名与电脑侧校验，尚未刷入实机。当前两版成品见 ROUND8-VARIANTS.json；MEDIA-RELEASE.md 与 MEDIA-VANILLA-RELEASE.json 仅记录历史 media20261010 批次。
-媒体包启用 `TARGET_DITING_DOLBY_VISION=true`，杜比源码默认关闭。
-第二轮集成纠错及回归检查详见 [ROUND2-REVIEW-20261014.md](ROUND2-REVIEW-20261014.md)；此前审查见 [FULL-REVIEW-20261014.md](FULL-REVIEW-20261014.md)；历史发布镜像未重建，不含后续源码更新。
-软件 LHDC 已整合，不启用 RAW 或未经验证的 Qualcomm DSP offload。
+本仓库当前公开 89 份有序补丁，对应已发布的 round8fix20261016（历史总批次27）；冻结源码为 `44ec6126bb2c74e922eed7b299f0c503d1eedcc0`。
+维护端后续修复尚未作为新的公开源码版本提供，不应根据本仓库构建说明推断能复现未公开候选。
+GMS/Vanilla 两版均已独立构建、签名并通过主机产物核对；GMS 在12T Pro 有限的 QQ/桌面验收反馈不代替 Vanilla、K50 Ultra 或全部硬件验收。
 
-在应用补丁之前，另行取得精确 Via APK，以及两个固定版本的媒体 donor checkout。
-SHA256、来源及文件清单见 external-artifacts.json；本仓库不包含这些二进制。
+软件 LHDC、相机修复和按区域启用的 eSIM 已纳入补丁；不启用 RAW 或未经验证的 Qualcomm DSP offload。
+源码默认关闭 Dolby Vision；维护者公开媒体成品使用 `TARGET_DITING_DOLBY_VISION=true`。按需求明确设置，不把开关启用等同于实机解码验收。
+应用补丁前，构建者应按 [external-artifacts.json](external-artifacts.json) 取得精确 Via APK 和23个媒体 ELF；来源、许可范围见 [LICENSES.md](LICENSES.md)。
 
 ```sh
 git clone https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc.git lhdc-donor
@@ -18,15 +17,7 @@ git -C dolby-donor lfs pull
 python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor --dolby-checkout dolby-donor --output media-inputs
 ```
 
-把新建 media-inputs 的绝对路径传给下方 `--media-input-dir`。工具在写入源码前核对全部 23 个媒体输入。
-额外 XML、init、策略、ABI 桥接源码、LHDC 头文件和 diting 原厂屏幕配置在有序文本补丁中。
-构建者需按自己的使用/分发范围确认外部专有组件许可；提供来源不代表转授其许可。
-
-English: The series now has 89 ordered patches. Supply exact donor ELF inputs separately;
-the preparation tool verifies pinned commits and SHA256 before creating a new input directory.
-The GMS media candidate enables `TARGET_DITING_DOLBY_VISION=true`; the feature defaults off.
-Both GMS and Vanilla media artifacts have been built and host-qualified; Vanilla phone testing remains pending. Historical validation details follow.
----
+将 media-inputs 的绝对路径传给下方 `--media-input-dir`，工具在写入源码前校验固定输入。
 
 # Build / 构建
 
@@ -70,7 +61,9 @@ m target-files-package otatools -j4
 遵循 [AOSP release signing](https://source.android.com/docs/core/ota/sign_builds) 并以实际工具的帮助和元数据为准。
 维护者私钥不公开，因此自己的签名、日期和构建环境不同，输出字节和哈希不会与 发布包相同。
 
-## Validation scope / 验证范围
+## Historical validation / 早期验证记录
+
+以下 batch13/batch14 记录保留其历史范围；当前公开89补丁版本状态以本文顶部和 README 为准。
 
 前 48 份补丁对应已构建的 batch13 功能源代码链，最后 2 份是 batch14 的区域 eSIM 与内核命名改动，两种 flavour 已完成维护者现有 checkout 的构建与主机产物核对。GMS 已在 12T Pro 完成首次启动和部分功能验收；Vanilla／K50 及完整硬件与长期回归尚待进行。公开清单固定上游基础版本，再按顺序恢复变更。
 公开导出不包含 Via 二进制补丁，只包含 README 元数据和精确 APK 的独立输入要求。

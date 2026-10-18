@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Exercise the production depth target renderer across home/folder transition ordering."""
 import argparse, pathlib, subprocess, tempfile, re, json
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=pathlib.Path)
