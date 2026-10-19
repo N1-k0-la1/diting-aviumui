@@ -1,0 +1,466 @@
+diff --git a/aidl/fingerprint/Fingerprint.cpp b/aidl/fingerprint/Fingerprint.cpp
+index cf98a29..758d4a4 100644
+--- a/aidl/fingerprint/Fingerprint.cpp
++++ b/aidl/fingerprint/Fingerprint.cpp
+@@ -7,6 +7,9 @@
+ 
+ #include "Fingerprint.h"
+ 
++#include <atomic>
++#include <utility>
++
+ #include <android-base/properties.h>
+ #include <fingerprint.sysprop.h>
+ #include "util/Util.h"
+@@ -40,65 +43,24 @@ static const fingerprint_hal_t kModules[] = {
+ }  // namespace
+ 
+ static const uint16_t kVersion = HARDWARE_MODULE_API_VERSION(2, 1);
+-static Fingerprint* sInstance;
++static std::atomic<Fingerprint*> sInstance{nullptr};
+ 
+ Fingerprint::Fingerprint(std::shared_ptr<FingerprintConfig> config) : mConfig(std::move(config)) {
+-    sInstance = this;  // keep track of the most recent instance
++    sInstance.store(this);  // keep track of the most recent instance
+ 
+-    if (mDevice) {
+-        ALOGI("fingerprint HAL already opened");
+-    } else {
+-        for (auto& [module] : kModules) {
+-            std::string class_name;
+-            std::string class_module_id;
+-
+-            auto parts = ::android::base::Split(module, ":");
+-
+-            if (parts.size() == 2) {
+-                class_name = parts[0];
+-                class_module_id = parts[1];
+-            } else {
+-                class_name = module;
+-                class_module_id = FINGERPRINT_HARDWARE_MODULE_ID;
+-            }
+-
+-            mDevice = openFingerprintHal(class_name.c_str(), class_module_id.c_str());
+-            if (!mDevice) {
+-                ALOGE("Can't open HAL module, class: %s, module_id: %s", class_name.c_str(),
+-                      class_module_id.c_str());
+-                continue;
+-            }
+-            ALOGI("Opened fingerprint HAL, class: %s, module_id: %s", class_name.c_str(),
+-                  class_module_id.c_str());
+-            SetProperty("persist.vendor.sys.fp.vendor", class_name);
+-            break;
+-        }
+-        if (!mDevice) {
+-            ALOGE("Can't open any fingerprint HAL module");
+-            SetProperty("persist.vendor.sys.fp.vendor", "none");
+-        }
+-    }
++    openHal();
+ 
+     std::string sensorTypeProp = mConfig->get<std::string>("type");
+     if (sensorTypeProp == "udfps" || sensorTypeProp == "udfps_optical") {
+         SetProperty("ro.hardware.fp.udfps", "true");
++        mIsUdfps = true;
+ 
+         if (sensorTypeProp == "udfps") {
+             mSensorType = FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC;
+         } else {
+             mSensorType = FingerprintSensorType::UNDER_DISPLAY_OPTICAL;
+         }
+-        mUdfpsHandlerFactory = getUdfpsHandlerFactory();
+-        if (!mUdfpsHandlerFactory) {
+-            ALOGE("Can't get UdfpsHandlerFactory");
+-        } else {
+-            mUdfpsHandler = mUdfpsHandlerFactory->create();
+-            if (!mUdfpsHandler) {
+-                ALOGE("Can't create UdfpsHandler");
+-            } else {
+-                mUdfpsHandler->init(mDevice);
+-            }
+-        }
++        initUdfpsHandler();
+     } else if (sensorTypeProp == "side") {
+         mSensorType = FingerprintSensorType::POWER_BUTTON;
+     } else if (sensorTypeProp == "home") {
+@@ -115,6 +77,8 @@ Fingerprint::Fingerprint(std::shared_ptr<FingerprintConfig> config) : mConfig(st
+ 
+ Fingerprint::~Fingerprint() {
+     ALOGV("~Fingerprint()");
++    Fingerprint* self = this;
++    sInstance.compare_exchange_strong(self, nullptr);
+     if (mUdfpsHandler) {
+         mUdfpsHandlerFactory->destroy(mUdfpsHandler);
+     }
+@@ -130,6 +94,56 @@ Fingerprint::~Fingerprint() {
+     mDevice = nullptr;
+ }
+ 
++// Opens the first available legacy module. Called by the constructor and, while no module is
++// open, by createSession; both run before vendor callbacks can depend on mDevice.
++bool Fingerprint::openHal() {
++    for (auto& [module] : kModules) {
++        std::string class_name;
++        std::string class_module_id;
++
++        auto parts = ::android::base::Split(module, ":");
++
++        if (parts.size() == 2) {
++            class_name = parts[0];
++            class_module_id = parts[1];
++        } else {
++            class_name = module;
++            class_module_id = FINGERPRINT_HARDWARE_MODULE_ID;
++        }
++
++        mDevice = openFingerprintHal(class_name.c_str(), class_module_id.c_str());
++        if (!mDevice) {
++            ALOGE("Can't open HAL module, class: %s, module_id: %s", class_name.c_str(),
++                  class_module_id.c_str());
++            continue;
++        }
++        ALOGI("Opened fingerprint HAL, class: %s, module_id: %s", class_name.c_str(),
++              class_module_id.c_str());
++        SetProperty("persist.vendor.sys.fp.vendor", class_name);
++        return true;
++    }
++    ALOGE("Can't open any fingerprint HAL module");
++    SetProperty("persist.vendor.sys.fp.vendor", "none");
++    return false;
++}
++
++// The UDFPS helper drives the opened device from its own thread, so it is created only
++// once a device exists.
++void Fingerprint::initUdfpsHandler() {
++    if (!mIsUdfps || mDevice == nullptr || mUdfpsHandler != nullptr) return;
++    if (mUdfpsHandlerFactory == nullptr) mUdfpsHandlerFactory = getUdfpsHandlerFactory();
++    if (!mUdfpsHandlerFactory) {
++        ALOGE("Can't get UdfpsHandlerFactory");
++        return;
++    }
++    mUdfpsHandler = mUdfpsHandlerFactory->create();
++    if (!mUdfpsHandler) {
++        ALOGE("Can't create UdfpsHandler");
++        return;
++    }
++    mUdfpsHandler->init(mDevice);
++}
++
+ fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
+                                                       const char* module_id) {
+     const hw_module_t* hw_mdl = nullptr;
+@@ -160,6 +174,7 @@ fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
+     auto fp_device = reinterpret_cast<fingerprint_device_t*>(device);
+     if (fp_device->set_notify(fp_device, Fingerprint::notify) != 0) {
+         ALOGE("Can't register fingerprint module callback");
++        if (device->close != nullptr) device->close(device);
+         return nullptr;
+     }
+ 
+@@ -200,13 +215,30 @@ std::vector<SensorLocation> Fingerprint::getSensorLocations() {
+     return locations;
+ }
+ 
++std::shared_ptr<Session> Fingerprint::currentSession() {
++    std::lock_guard lock(mSessionMutex);
++    return mSession;
++}
++
++std::shared_ptr<LockoutTracker> Fingerprint::lockoutTrackerForUser(int32_t userId) {
++    std::lock_guard lock(mSessionMutex);
++    auto& tracker = mLockoutTrackers[userId];
++    if (!tracker) tracker = std::make_shared<LockoutTracker>();
++    return tracker;
++}
++
++// Runs on the vendor HAL thread. The local copy keeps the session alive while the callback
++// is delivered, even if a binder call closes and replaces mSession at the same time. Messages
++// for a session that is already closed are dropped; legacy messages carry no operation id,
++// so they cannot be redirected to a newer session.
+ void Fingerprint::notify(const fingerprint_msg_t* msg) {
+-    Fingerprint* thisPtr = sInstance;
+-    if (thisPtr == nullptr || thisPtr->mSession == nullptr || thisPtr->mSession->isClosed()) {
++    Fingerprint* thisPtr = sInstance.load();
++    std::shared_ptr<Session> session = thisPtr ? thisPtr->currentSession() : nullptr;
++    if (session == nullptr || session->isClosed()) {
+         ALOGE("Receiving callbacks before a session is opened.");
+         return;
+     }
+-    thisPtr->mSession->notify(msg);
++    session->notify(msg);
+ }
+ 
+ ndk::ScopedAStatus Fingerprint::getSensorProps(std::vector<SensorProps>* out) {
+@@ -242,12 +274,32 @@ ndk::ScopedAStatus Fingerprint::getSensorProps(std::vector<SensorProps>* out) {
+ ndk::ScopedAStatus Fingerprint::createSession(int32_t /*sensorId*/, int32_t userId,
+                                               const std::shared_ptr<ISessionCallback>& cb,
+                                               std::shared_ptr<ISession>* out) {
+-    CHECK(mSession == nullptr || mSession->isClosed()) << "Open session already exists!";
++    {
++        std::lock_guard lock(mSessionMutex);
++        CHECK(mSession == nullptr || mSession->isClosed()) << "Open session already exists!";
++    }
+ 
+-    mSession = SharedRefBase::make<Session>(mDevice, mUdfpsHandler, userId, cb, mLockoutTracker);
+-    *out = mSession;
++    if (mDevice == nullptr && openHal()) initUdfpsHandler();
++    if (mDevice == nullptr) {
++        ALOGE("Refusing to create a session without an open fingerprint HAL");
++        // The framework recovers from RemoteException only. FAILED_TRANSACTION reaches Java as
++        // DeadObjectException without marking the binder proxy dead, so later attempts retry.
++        return ndk::ScopedAStatus::fromStatus(STATUS_FAILED_TRANSACTION);
++    }
+ 
+-    mSession->linkToDeath(cb->asBinder().get());
++    // Constructing the session calls into the vendor HAL, so do it without holding the lock.
++    auto session = SharedRefBase::make<Session>(mDevice, mUdfpsHandler, userId, cb,
++                                                lockoutTrackerForUser(userId));
++    std::shared_ptr<Session> previous;
++    {
++        std::lock_guard lock(mSessionMutex);
++        CHECK(mSession == nullptr || mSession->isClosed()) << "Open session already exists!";
++        previous = std::exchange(mSession, session);
++    }
++    previous.reset();  // a replaced closed session may be destroyed here, outside the lock
++    session->restoreLockoutTimer();
++    session->linkToDeath(cb->asBinder().get());
++    *out = session;
+ 
+     return ndk::ScopedAStatus::ok();
+ }
+diff --git a/aidl/fingerprint/Fingerprint.h b/aidl/fingerprint/Fingerprint.h
+index 6117fb6..90f4a25 100644
+--- a/aidl/fingerprint/Fingerprint.h
++++ b/aidl/fingerprint/Fingerprint.h
+@@ -9,6 +9,10 @@
+ 
+ #include <aidl/android/hardware/biometrics/fingerprint/BnFingerprint.h>
+ 
++#include <map>
++#include <memory>
++#include <mutex>
++
+ #include "FingerprintConfig.h"
+ #include "LockoutTracker.h"
+ #include "Session.h"
+@@ -32,18 +36,31 @@ class Fingerprint : public BnFingerprint {
+                                      std::shared_ptr<ISession>* out) override;
+ 
+   private:
++    bool openHal();
++    void initUdfpsHandler();
+     fingerprint_device_t* openFingerprintHal(const char* class_name, const char* module_id);
+     std::vector<SensorLocation> getSensorLocations();
++    std::shared_ptr<Session> currentSession();
++    std::shared_ptr<LockoutTracker> lockoutTrackerForUser(int32_t userId);
+     static void notify(const fingerprint_msg_t* msg);
+ 
+     std::shared_ptr<FingerprintConfig> mConfig;
++    FingerprintSensorType mSensorType = FingerprintSensorType::UNKNOWN;
++    bool mIsUdfps = false;
++
++    // Guards mSession and mLockoutTrackers. Binder calls publish sessions while vendor
++    // callbacks read them on the vendor thread. Never held across vendor HAL calls or
++    // framework callbacks.
++    std::mutex mSessionMutex;
+     std::shared_ptr<Session> mSession;
+-    LockoutTracker mLockoutTracker;
+-    FingerprintSensorType mSensorType;
++    // Failed-attempt state belongs to the user, not to one session. It is kept in memory
++    // only, so it survives session re-creation but not a restart of this HAL process.
++    std::map<int32_t, std::shared_ptr<LockoutTracker>> mLockoutTrackers;
+ 
+-    fingerprint_device_t* mDevice;
+-    UdfpsHandlerFactory* mUdfpsHandlerFactory;
+-    UdfpsHandler* mUdfpsHandler;
++    // Written only by the constructor and createSession; vendor callbacks never read these.
++    fingerprint_device_t* mDevice = nullptr;
++    UdfpsHandlerFactory* mUdfpsHandlerFactory = nullptr;
++    UdfpsHandler* mUdfpsHandler = nullptr;
+ };
+ 
+ }  // namespace aidl::android::hardware::biometrics::fingerprint
+diff --git a/aidl/fingerprint/LockoutTracker.cpp b/aidl/fingerprint/LockoutTracker.cpp
+index 3589f09..7b73d66 100644
+--- a/aidl/fingerprint/LockoutTracker.cpp
++++ b/aidl/fingerprint/LockoutTracker.cpp
+@@ -15,6 +15,7 @@ using namespace ::android::fingerprint::xiaomi;
+ namespace aidl::android::hardware::biometrics::fingerprint {
+ 
+ void LockoutTracker::reset(bool clearAttemptCounter) {
++    std::lock_guard lock(mMutex);
+     if (clearAttemptCounter) {
+         mFailedCount = 0;
+     }
+@@ -23,6 +24,7 @@ void LockoutTracker::reset(bool clearAttemptCounter) {
+ }
+ 
+ void LockoutTracker::addFailedAttempt() {
++    std::lock_guard lock(mMutex);
+     mFailedCount++;
+     if (mFailedCount >= LOCKOUT_PERMANENT_THRESHOLD) {
+         mCurrentMode = LockoutMode::kPermanent;
+@@ -34,8 +36,9 @@ void LockoutTracker::addFailedAttempt() {
+     }
+ }
+ 
+-LockoutTracker::LockoutMode LockoutTracker::getMode() {
+-    if (mCurrentMode == LockoutMode::kTimed) {
++LockoutTracker::LockoutMode LockoutTracker::getMode(bool expireTimedLockout) {
++    std::lock_guard lock(mMutex);
++    if (expireTimedLockout && mCurrentMode == LockoutMode::kTimed) {
+         if (Util::hasElapsed(mLockoutTimedStart, LOCKOUT_TIMED_DURATION)) {
+             mCurrentMode = LockoutMode::kNone;
+             mLockoutTimedStart = 0;
+@@ -46,6 +49,7 @@ LockoutTracker::LockoutMode LockoutTracker::getMode() {
+ }
+ 
+ int64_t LockoutTracker::getLockoutTimeLeft() {
++    std::lock_guard lock(mMutex);
+     int64_t res = 0;
+ 
+     if (mLockoutTimedStart > 0) {
+diff --git a/aidl/fingerprint/LockoutTracker.h b/aidl/fingerprint/LockoutTracker.h
+index 73f11f7..ef9f143 100644
+--- a/aidl/fingerprint/LockoutTracker.h
++++ b/aidl/fingerprint/LockoutTracker.h
+@@ -9,6 +9,8 @@
+ 
+ #include <android/binder_to_string.h>
+ #include <stdint.h>
++#include <mutex>
++#include <sstream>
+ #include <string>
+ 
+ #define LOCKOUT_TIMED_THRESHOLD 5
+@@ -25,10 +27,13 @@ class LockoutTracker {
+     enum class LockoutMode : int8_t { kNone = 0, kTimed, kPermanent };
+ 
+     void reset(bool clearAttemptCounter);
+-    LockoutMode getMode();
++    // Session restoration must also observe an elapsed timed lockout so it can notify
++    // the framework cache. Other callers keep the existing automatic expiry behavior.
++    LockoutMode getMode(bool expireTimedLockout = true);
+     void addFailedAttempt();
+     int64_t getLockoutTimeLeft();
+     inline std::string toString() const {
++        std::lock_guard lock(mMutex);
+         std::ostringstream os;
+         os << "----- LockoutTracker:: -----" << std::endl;
+         os << "LockoutTracker::mFailedCount:" << mFailedCount;
+@@ -38,6 +43,9 @@ class LockoutTracker {
+     }
+ 
+   private:
++    // Sessions of the same user share one tracker, and a closing session's vendor callback
++    // can overlap the next session, so every access is serialized here.
++    mutable std::mutex mMutex;
+     int32_t mFailedCount;
+     int64_t mLockoutTimedStart = 0;
+     LockoutMode mCurrentMode = LockoutMode::kNone;
+diff --git a/aidl/fingerprint/Session.cpp b/aidl/fingerprint/Session.cpp
+index 3ae8a3f..b966c07 100644
+--- a/aidl/fingerprint/Session.cpp
++++ b/aidl/fingerprint/Session.cpp
+@@ -21,9 +21,9 @@ void onClientDeath(void* cookie) {
+ }
+ 
+ Session::Session(fingerprint_device_t* device, UdfpsHandler* udfpsHandler, int userId,
+-                 std::shared_ptr<ISessionCallback> cb, LockoutTracker lockoutTracker)
++                 std::shared_ptr<ISessionCallback> cb, std::shared_ptr<LockoutTracker> lockoutTracker)
+     : mDevice(device),
+-      mLockoutTracker(lockoutTracker),
++      mLockoutTracker(std::move(lockoutTracker)),
+       mUserId(userId),
+       mCb(cb),
+       mUdfpsHandler(udfpsHandler) {
+@@ -299,6 +299,15 @@ bool Session::isClosed() {
+     return mClosed;
+ }
+ 
++void Session::restoreLockoutTimer() {
++    std::lock_guard lock(mLockoutMutex);
++    if (mClosed || mLockoutTracker->getMode(false) != LockoutTracker::LockoutMode::kTimed) return;
++    // The framework refuses to authenticate while it caches a timed lockout, so only this
++    // timer can report its expiry after the session that started it was closed. Keep
++    // an already elapsed timed mode until the timer emits onLockoutCleared as well.
++    startLockoutTimer(mLockoutTracker->getLockoutTimeLeft());
++}
++
+ // Translate from errors returned by traditional HAL (see fingerprint.h) to
+ // AIDL-compliant Error
+ Error Session::VendorErrorFilter(int32_t error, int32_t* vendorCode) {
+@@ -364,7 +373,7 @@ AcquiredInfo Session::VendorAcquiredFilter(int32_t info, int32_t* vendorCode) {
+ bool Session::checkSensorLockout() {
+     std::lock_guard lock(mLockoutMutex);
+     if (mClosed) return true;
+-    LockoutTracker::LockoutMode lockoutMode = mLockoutTracker.getMode();
++    LockoutTracker::LockoutMode lockoutMode = mLockoutTracker->getMode();
+     if (lockoutMode == LockoutTracker::LockoutMode::kPermanent) {
+         ALOGE("Fail: lockout permanent");
+         mCb->onLockoutPermanent();
+@@ -373,7 +382,7 @@ bool Session::checkSensorLockout() {
+         return true;
+     }
+     if (lockoutMode == LockoutTracker::LockoutMode::kTimed) {
+-        int64_t timeLeft = mLockoutTracker.getLockoutTimeLeft();
++        int64_t timeLeft = mLockoutTracker->getLockoutTimeLeft();
+         ALOGE("Fail: lockout timed: %ld", timeLeft);
+         mCb->onLockoutTimed(timeLeft);
+         if (!mIsLockoutTimerStarted) startLockoutTimer(timeLeft);
+@@ -387,7 +396,7 @@ void Session::clearLockout(bool clearAttemptCounter) {
+     if (mClosed) return;
+     ++mLockoutTimerGeneration;
+     mIsLockoutTimerStarted = false;
+-    mLockoutTracker.reset(clearAttemptCounter);
++    mLockoutTracker->reset(clearAttemptCounter);
+     mCb->onLockoutCleared();
+ }
+ 
+@@ -482,14 +491,14 @@ void Session::notify(const fingerprint_msg_t* msg) {
+                 }
+                 mCb->onAuthenticationSucceeded(msg->data.authenticated.finger.fid, authToken);
+                 std::lock_guard lock(mLockoutMutex);
+-                mLockoutTracker.reset(true);
++                mLockoutTracker->reset(true);
+             } else {
+                 if (mUdfpsHandler) {
+                     mUdfpsHandler->onAuthenticationFailed();
+                 }
+                 mCb->onAuthenticationFailed();
+                 std::lock_guard lock(mLockoutMutex);
+-                mLockoutTracker.addFailedAttempt();
++                mLockoutTracker->addFailedAttempt();
+                 checkSensorLockout();
+             }
+         } break;
+diff --git a/aidl/fingerprint/Session.h b/aidl/fingerprint/Session.h
+index f50cf2d..34591f7 100644
+--- a/aidl/fingerprint/Session.h
++++ b/aidl/fingerprint/Session.h
+@@ -36,7 +36,7 @@ void onClientDeath(void* cookie);
+ class Session : public BnSession {
+   public:
+     Session(fingerprint_device_t* device, UdfpsHandler* udfpsHandler, int userId,
+-            std::shared_ptr<ISessionCallback> cb, LockoutTracker lockoutTracker);
++            std::shared_ptr<ISessionCallback> cb, std::shared_ptr<LockoutTracker> lockoutTracker);
+     ~Session() override;
+     ndk::ScopedAStatus generateChallenge() override;
+     ndk::ScopedAStatus revokeChallenge(int64_t challenge) override;
+@@ -70,12 +70,15 @@ class Session : public BnSession {
+ 
+     ndk::ScopedAStatus cancel();
+     binder_status_t linkToDeath(AIBinder* binder);
++    // Called once after creation: resume clearing a timed lockout started by an earlier session.
++    void restoreLockoutTimer();
+     bool isClosed();
+     void notify(const fingerprint_msg_t* msg);
+ 
+   private:
+     fingerprint_device_t* mDevice;
+-    LockoutTracker mLockoutTracker;
++    // Shared with later sessions of the same user; owned by Fingerprint.
++    std::shared_ptr<LockoutTracker> mLockoutTracker;
+     std::atomic<bool> mClosed{false};
+     std::mutex mDeathMutex;
+     std::recursive_mutex mLockoutMutex;

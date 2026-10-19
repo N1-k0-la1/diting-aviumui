@@ -59,7 +59,7 @@ public:
  std::atomic<bool> mClosed{false};std::mutex mDeathMutex,mEnrollmentsMutex;std::recursive_mutex mLockoutMutex;
  std::vector<int32_t> mEnumeratedEnrollments;bool mIsLockoutTimerStarted=false;uint64_t mLockoutTimerGeneration=0;
  AIBinder_DeathRecipient* mDeathRecipient;std::shared_ptr<Callback> mCb=std::make_shared<Callback>();
- Tracker mLockoutTracker;Device device;Device* mDevice=&device;Destruction destruction;int mUserId=0;
+ std::shared_ptr<Tracker> mLockoutTracker=std::make_shared<Tracker>();Device device;Device* mDevice=&device;Destruction destruction;int mUserId=0;
  Session(){mDeathRecipient=AIBinder_DeathRecipient_new(onClientDeath);
  AIBinder_DeathRecipient_setOnUnlinked(mDeathRecipient,[](void* c){delete static_cast<std::weak_ptr<Session>*>(c);});}
  template<class T>std::shared_ptr<T> ref(){return std::static_pointer_cast<T>(shared_from_this());}
@@ -74,7 +74,7 @@ public:
 };
 '''+methods+r'''
 int main(){
- {auto s=std::make_shared<Session>();s->mLockoutTracker.mode=Tracker::LockoutMode::kTimed;
+ {auto s=std::make_shared<Session>();s->mLockoutTracker->mode=Tracker::LockoutMode::kTimed;
  std::shared_ptr<ICancellationSignal> signal;s->authenticate(1,&signal);assert(s->device.auths==0&&s->mCb->timed==1);
  s->clearLockout(true);s->authenticate(1,&signal);assert(s->device.auths==1);s->close();
  s->authenticate(1,&signal);assert(s->device.auths==1);std::this_thread::sleep_for(std::chrono::milliseconds(30));}

@@ -1,0 +1,149 @@
+{
+  "batch_number": 29,
+  "version": "AviumUI 16.2.2 / Android 16",
+  "prepared_for_distribution": "2026-10-19",
+  "binary_upload_completion_confirmed": false,
+  "public_patch_count": 93,
+  "public_patch_series_sha256": "b0a1418fe558892c4fcab4460bcadabfa085fdc8ed6ea3125e8fc2557d41253d",
+  "source_manifest_sha256": "03f270e3a41221bc416641a0d3b1f8cec29b45e23d5d8865de4c2dc34547a2e1",
+  "source_identity": "Pinned public manifests, external-artifacts.json and these 93 ordered patches; the public patch-series hash identifies the exported source inputs.",
+  "variants": {
+    "gms": {
+      "batch_number": 29,
+      "build_id": "batch29-20261018-attempt1",
+      "attempt": 1,
+      "host_qualified": true,
+      "signing_identity_preserved": true,
+      "boot_is_original_from_own_signed_payload": true,
+      "files": [
+        {
+          "file": "AviumUI-16.2.2-diting-gms-user-batch29-20261018-attempt1.zip",
+          "sha256": "d18994aeee5c07fedeae56c353a0109f6b372804bc3b53b5d46ddee2d4ccc3b9",
+          "bytes": 3076452178,
+          "role": "full-ota",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/boot.img",
+          "sha256": "39f632d15da4c881fdd33b7e9edffd1bd924e43bda99775dd1173c474410c574",
+          "bytes": 201326592,
+          "role": "boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/dtbo.img",
+          "sha256": "2dc7e6dc165a4aec1cbbb072b8b63fb78f0aa1cf021b0b3dcd847a53899fd74e",
+          "bytes": 25165824,
+          "role": "dtbo",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vendor_boot.img",
+          "sha256": "5289897dd600e485320cdde1d5ca8798b275f93b1b0341de780a512afe8e7edf",
+          "bytes": 100663296,
+          "role": "vendor_boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/recovery.img",
+          "sha256": "6b74ac8123a119838d6d2eb13f037e4dd1cc4e23e9616eba12f82f9dc43cd494",
+          "bytes": 104857600,
+          "role": "recovery",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vbmeta.img",
+          "sha256": "834c7c73c1e4c93fcc1bf789a7aa4182e37d288090c56fe0b61ab7f2b084acce",
+          "bytes": 8192,
+          "role": "vbmeta",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vbmeta_system.img",
+          "sha256": "0e7a78beaf13db28341117d2484db2e27cbe1729965da2b904e149521cade47a",
+          "bytes": 4096,
+          "role": "vbmeta_system",
+          "matches_signed_payload": true
+        }
+      ]
+    },
+    "vanilla": {
+      "batch_number": 29,
+      "build_id": "batch29-20261019-attempt2",
+      "attempt": 2,
+      "host_qualified": true,
+      "signing_identity_preserved": true,
+      "boot_is_original_from_own_signed_payload": true,
+      "files": [
+        {
+          "file": "AviumUI-16.2.2-diting-vanilla-user-batch29-20261019-attempt2.zip",
+          "sha256": "b5517155be098c84c4a2c167877867f0db55f60fa6ee54547212fc9d3a481321",
+          "bytes": 2245104306,
+          "role": "full-ota",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/boot.img",
+          "sha256": "15a640ed241ce6ae3146c5c99786bc16534518d8e054bdd9ace43a447f86a57b",
+          "bytes": 201326592,
+          "role": "boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/dtbo.img",
+          "sha256": "9f86388b82ad83ab7e66aa7e09c7dcf05f501a66faca94cc4a99051a24b4e3ac",
+          "bytes": 25165824,
+          "role": "dtbo",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vendor_boot.img",
+          "sha256": "190094b29410b956f971089828bbba4d01c631835aa7de9b55a0b039e155b01d",
+          "bytes": 100663296,
+          "role": "vendor_boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/recovery.img",
+          "sha256": "4ecd85b66319f0e0b33f5cb4713560fcf33b4c0b26567d074582d92160d10a15",
+          "bytes": 104857600,
+          "role": "recovery",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vbmeta.img",
+          "sha256": "39a63836ae94d3bcfd8b426dd65445138cb4a5763aa0edafe53f10dbd2878e88",
+          "bytes": 8192,
+          "role": "vbmeta",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vbmeta_system.img",
+          "sha256": "24cb36d8e6c925b722a78c85badfda0131ef41b11fbb87e2613034329036cc7b",
+          "bytes": 4096,
+          "role": "vbmeta_system",
+          "matches_signed_payload": true
+        }
+      ]
+    }
+  },
+  "ofrp": {
+    "file": "OFRP/OrangeFox-diting-ditingp-20261016-review2.img",
+    "bytes": 104857600,
+    "sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+    "version": "20261016-review2",
+    "rebuilt_for_this_batch": false
+  },
+  "validation": {
+    "xiaomi_12t_pro_gms": "Maintainer reports no problems after the test checklist; individual tests not independently recorded.",
+    "vanilla_phone_acceptance": "not confirmed",
+    "redmi_k50_ultra_phone_acceptance": "not confirmed for this batch",
+    "lhdc_hardware_test": "not performed; suitable headset unavailable",
+    "apk_resolver_default_reset": "not independently confirmed"
+  },
+  "known_limitations": [
+    "CR-2 preserves failure counts only within the same HAL process; a HAL restart clears them.",
+    "CR-3 cancellation behavior unchanged; K50 Ultra enrollment root cause unconfirmed.",
+    "LHDC headset playback remains untested because suitable hardware is unavailable."
+  ]
+}

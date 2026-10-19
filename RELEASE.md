@@ -1,14 +1,19 @@
-# 当前已发布：round8fix20261016（历史总批次 27）
+# batch29 · 2026-10-19 · 发布准备
 
-GMS 已完成整包构建、发布签名、OTA/实际镜像核对和 Windows 回读，并获维护者刷入后 QQ 登录、快速返回桌面 UI 正常的反馈。
-Vanilla 已完成独立构建、发布签名、OTA/实际镜像核对与 Windows 回读；本批尚无实机刷入结果。
-OFRP review2 按本项目 diting 非官方正式版提供：维护者在 12T Pro 用同一镜像安装后续项目 ROM，刷入及 /sdcard 显示正常。
+本仓库已同步 batch29 的 93 份公开补丁、版本说明和二进制校验记录。两版完整成品已交付维护者供网盘分发，仓库尚未确认上传完成。
 
-- [当前两版文件清单、原版 boot、OFRP 与 SHA256](ROUND8-VARIANTS.json)
-- [ROM 安装](INSTALL.md) · [OFRP 安装](OFRP-INSTALL.md)
-- [最新功能及验证范围](README.md) · [详细验证记录](VALIDATION.json)
-- [历史 batch14 及更早说明](docs/history/HISTORY-RELEASE-BATCH14.md) · [历史媒体版](docs/history/MEDIA-RELEASE.md)
+## What's new
 
-本版由维护者通过网盘分发；仓库不托管 ROM 二进制。构建源码版本为 44ec6126bb2c74e922eed7b299f0c503d1eedcc0；当前文档提交可以更新实测范围，而不会改变既有二进制来源。
+- 修复 Telegram 等来源 APK 点击后出现两个“Android 系统”、选择后提示无应用可打开的问题。
+- 修复 dock 与桌面应用组成文件夹后，拖出应用导致桌面持续模糊。
+- 完善指纹 HAL 初始化、失败资源清理、会话同步和回调生命周期；共享同进程按用户锁定状态并衔接定时解除。
+- 修复蓝牙开发者选项在设备编解码能力信息缺失时的对话框崩溃。
 
-维护者实测设备为 12T Pro。K50 Ultra、LHDC 实际耳机、OFRP PIN 解密与各类 USB 模式等仍待对应验证，详见当前清单及审查报告。没有声称全面硬件、全部 QQ 授权组合或长期稳定性均通过。
+[文件名、各版原始 boot 与 SHA256](docs/releases/batch29-20261019/ARTIFACTS.json) · [本批校验清单](docs/releases/batch29-20261019/SHA256SUMS)
+
+GMS（20261018 attempt1）与 Vanilla（20261019 attempt2）源于同一冻结输入，分别完成构建、签名、实际镜像及 OTA/payload 审核、组件一致性与 Windows 回读。保持既有签名身份，每版镜像来自自己的 OTA/payload。
+维护者在验收清单后反馈 12T Pro GMS 没有问题；Vanilla、K50 Ultra 尚无本批实机验收记录。LHDC 缺设备未测。
+指纹 CR-2 只保持同一 HAL 进程内失败计数，重启该进程后仍会清零；CR-3 未改，K50 Ultra 录入失败根因未确认。
+OFRP 沿用 20261016-review2，本次没有更新；PIN 解密、扩展 USB 场景和 K50 Ultra 仍需分别验证。
+
+[ROM 安装](INSTALL.md) · [OFRP 安装](OFRP-INSTALL.md) · [详细验证记录](VALIDATION.json) · [历史 round8 清单](ROUND8-VARIANTS.json)

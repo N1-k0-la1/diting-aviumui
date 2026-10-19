@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 89,
+  "ordered_patches": 93,
   "round6_20261016": {
     "ordered_patches": 87,
     "immutable_approval_forward_result_fix": true,
@@ -292,5 +292,89 @@
     "both_native_windows_readbacks_passed": true,
     "matching_original_boots_verified": true,
     "public_candidate_record": "ROUND8-VARIANTS.json"
+  },
+  "folder_drag_20261017": {
+    "report": "FOLDER-DRAG-FIX-20261017.md",
+    "ordered_patches": 90,
+    "pre_fix_host_regression_failed": "closed folder retained blur",
+    "production_folder_methods_executed": [
+      "onDragStart",
+      "completeDragExit",
+      "handleClose",
+      "cancelRunningAnimations",
+      "animateClosed"
+    ],
+    "negative_controls_rejected": 2,
+    "host_regression_suites_passed": 5,
+    "android_views_and_animators": "host substitutes",
+    "component_build_status": "passed",
+    "full_rom_rebuilt": true,
+    "previous_89_patch_files_byte_identical": true,
+    "historical_binary_hashes_unchanged": true,
+    "public_tree_replay_projects": 31,
+    "public_tree_replay_patches": 90,
+    "public_tree_replay_passed": true,
+    "actual_compiled_dex_branch_verified": true,
+    "same_signer_component_hotfix_candidate_prepared": true,
+    "hotfix_gms_and_vanilla_signatures_and_resources_checked": true,
+    "hotfix_native_windows_sha256_and_crc_passed": true,
+    "included_in_batches": [
+      28,
+      29
+    ],
+    "phone_feedback_scope": "Maintainer reports no problems on batch29 12T Pro GMS; individual drag scenarios not independently recorded.",
+    "component_hotfix_separately_phone_tested": false
+  },
+  "batch28_20261018": {
+    "source_frozen": true,
+    "host_regressions_passed": true,
+    "fingerprint_host_asan_tests": 15,
+    "fingerprint_host_tsan_tests": 15,
+    "tsan_libcxx_control_block_suppression_used": true,
+    "bluetooth_controller_host_tests": 22,
+    "formal_build_pending": false,
+    "phone_acceptance_pending": true,
+    "published": false,
+    "both_variants_host_qualified": true,
+    "maintainer_gms_general_use_feedback": true,
+    "lhdc_hardware_tested": false,
+    "complete_phone_acceptance_claimed": false,
+    "known_apk_resolver_defect": true
+  },
+  "resolver_approval_20261018": {
+    "production_predicate_assertions": 34,
+    "negative_controls": 3,
+    "related_regression_suites": 5,
+    "actual_services_build_passed": true,
+    "public_patch_replay_passed": true,
+    "public_patch_count": 93,
+    "whole_rom_rebuilt": true,
+    "included_in_batch": 29,
+    "new_framework_phone_feedback": "Maintainer reports no problems after batch29 checklist on 12T Pro GMS.",
+    "individual_resolver_path_independently_verified": false,
+    "component_only_phone_tested_before_batch29": false,
+    "source_fix_published_in_batch29_series": true
+  },
+  "batch29_20261019": {
+    "public_patch_count": 93,
+    "both_variants_built_signed_and_host_qualified": true,
+    "actual_images_ota_payload_components_windows_readback_passed": true,
+    "gms_build_id": "batch29-20261018-attempt1",
+    "vanilla_build_id": "batch29-20261019-attempt2",
+    "same_frozen_source_inputs": true,
+    "matching_own_payload_boots_verified": true,
+    "maintainer_phone_feedback": {
+      "device": "Xiaomi 12T Pro",
+      "variant": "gms",
+      "date": "2026-10-19",
+      "result": "No problems reported after checklist",
+      "individual_cases_independently_recorded": false
+    },
+    "vanilla_phone_acceptance_confirmed": false,
+    "k50_ultra_phone_acceptance_confirmed": false,
+    "lhdc_hardware_tested": false,
+    "ofrp_rebuilt": false,
+    "artifact_record": "docs/releases/batch29-20261019/ARTIFACTS.json",
+    "binary_upload_completion_confirmed": false
   }
 }

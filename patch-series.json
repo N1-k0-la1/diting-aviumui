@@ -626,6 +626,34 @@
       "original_commit": "d4719f1176131d52f322b86be1b74e7911a1de25",
       "patch": "patches/round8-20261016/01_frameworks_base.patch",
       "sha256": "c9c140f55bb50ab37173a03a757b79a31d027f0f44436eef5d8e731a675e055a"
+    },
+    {
+      "project": "packages/apps/Launcher3",
+      "base": "fd0dc4d15f96428e2a5184e825b5e25ed97460e7",
+      "original_commit": "7e9b22915760d8fcbe565afa334e195b59187c27",
+      "patch": "patches/folder-drag-20261017/01_packages_apps_Launcher3.patch",
+      "sha256": "52a2f1158f297b00972279b6c48ccaa3430e0754bfe7025ebe63a2816601a805"
+    },
+    {
+      "project": "hardware/xiaomi",
+      "base": "ed735d3665089ce46773580bda869ade551130ea",
+      "original_commit": "0c50ffbe256700bb1ff2aa275c7b97e2be877f95",
+      "patch": "patches/batch28-20261018/01_hardware_xiaomi.patch",
+      "sha256": "59bfedb091075141c3aa1c020213bbbd46f20c1665422bed05725808ca581905"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "e608c646295f033f3f31d07a11ffac387f6ccb2f",
+      "original_commit": "623617188de8735d4529b4ace81a91253ab9fb72",
+      "patch": "patches/batch28-20261018/02_packages_apps_Settings.patch",
+      "sha256": "66f283b531d1ed0d061e6b0c670d90113c6c096201b667f991aeb9e23c792e16"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "d4719f1176131d52f322b86be1b74e7911a1de25",
+      "original_commit": "0a997792bbe31ef09a20e318439e2ba64d21e40b",
+      "patch": "patches/resolver-approval-20261018/01_frameworks_base.patch",
+      "sha256": "b1494782bb796f98c4dcdb2441dfbdda8ca700210e4db90b7d6f7df2671cef1e"
     }
   ],
   "upstream_bases": {
@@ -711,17 +739,17 @@
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "d4719f1176131d52f322b86be1b74e7911a1de25",
+    "frameworks/base": "0a997792bbe31ef09a20e318439e2ba64d21e40b",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
     "device/xiaomi/sm8450-common": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
     "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
     "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
-    "packages/apps/Settings": "e608c646295f033f3f31d07a11ffac387f6ccb2f",
+    "packages/apps/Settings": "623617188de8735d4529b4ace81a91253ab9fb72",
     "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
     "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
     "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
-    "hardware/xiaomi": "ed735d3665089ce46773580bda869ade551130ea",
+    "hardware/xiaomi": "0c50ffbe256700bb1ff2aa275c7b97e2be877f95",
     "frameworks/av": "590c7ae662372afae401c1938adbcd60c6eb51b7",
     "packages/modules/adb": "8f870a67852cdcaac6aa1667de676986978c03d9",
     "build/make": "f3cca5c48565d68e78147c7e7e1948dc9147a59d",
@@ -733,14 +761,9 @@
     "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
     "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
     "system/core": "65a63fbc746effe234458b53061e7a0977e27882",
-    "packages/apps/Launcher3": "fd0dc4d15f96428e2a5184e825b5e25ed97460e7"
+    "packages/apps/Launcher3": "7e9b22915760d8fcbe565afa334e195b59187c27"
   },
-  "latest_source_update": {
-    "date": "2026-10-14",
-    "report": "FULL-REVIEW-20261014.md",
-    "patch_count": 6,
-    "released_artifacts_rebuilt": false
-  },
+  "latest_source_update": "2026-10-18 batch28 preparation, local source only; not published",
   "round2_corrections": {
     "date": "2026-10-14",
     "report": "ROUND2-REVIEW-20261014.md",
@@ -800,5 +823,33 @@
     "vanilla_phone_acceptance_pending": true,
     "phone_evidence": "maintainer reported GMS QQ login and rapid BACK desktop UI",
     "all_authorization_combinations_claimed": false
+  },
+  "folder_drag_correction_20261017": {
+    "date": "2026-10-17",
+    "patch_count": 1,
+    "report": "FOLDER-DRAG-FIX-20261017.md",
+    "single_icon_close_resets_folder_depth": true,
+    "interrupted_open_cancelled_before_reset": true,
+    "full_rom_rebuilt": false,
+    "new_launcher_phone_tested": false
+  },
+  "batch28_fixes_20261018": {
+    "fixes": [
+      "CR-1",
+      "CR-2 in-process per-user persistence including expired-before-reopen notification",
+      "CR-4",
+      "CR-5"
+    ],
+    "cr3_cancel_unchanged": true,
+    "phone_acceptance_pending": true,
+    "published": false
+  },
+  "resolver_approval_fix_20261018": {
+    "report": "RESOLVER-APPROVAL-FIX-20261018.md",
+    "fallback_resolver_exempted_by_resolved_component": true,
+    "source_framework_installed_on_phone": false,
+    "phone_apk_default_recovery_verified": true,
+    "whole_rom_rebuilt": false,
+    "published": false
   }
 }

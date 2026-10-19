@@ -1,0 +1,85 @@
+diff --git a/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
+index 5258093..1cae99f 100644
+--- a/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
+@@ -199,7 +199,8 @@ public abstract class AbstractBluetoothDialogPreferenceController extends
+     /**
+      * To get the selectable A2DP config by codec type.
+      *
+-     * @return {@link BluetoothCodecConfig}.
++     * @return {@link BluetoothCodecConfig}, or {@code null} if the capabilities are unavailable,
++     * for example while the device disconnects or the active device changes.
+      */
+     protected BluetoothCodecConfig getSelectableByCodecType(int codecTypeValue) {
+         BluetoothDevice activeDevice = getA2dpActiveDevice();
+@@ -208,6 +209,10 @@ public abstract class AbstractBluetoothDialogPreferenceController extends
+             return null;
+         }
+         final List<BluetoothCodecConfig> configs = getSelectableConfigs(activeDevice);
++        if (configs == null) {
++            Log.d(TAG, "Unable to get selectable config. Codec status is unavailable.");
++            return null;
++        }
+         for (BluetoothCodecConfig config : configs) {
+             if (config.getCodecType() == codecTypeValue) {
+                 return config;
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
+index 078707e..0d9c255 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
+@@ -97,9 +97,12 @@ public class BluetoothBitPerSampleDialogPreferenceController extends
+         List<Integer> selectableIndex = new ArrayList<>();
+         selectableIndex.add(getDefaultIndex());
+         final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+-        if (currentConfig != null) {
+-            final int configs =
+-                    getSelectableByCodecType(currentConfig.getCodecType()).getBitsPerSample();
++        // Capabilities are queried separately and may vanish while the device disconnects;
++        // then only the default entry stays selectable, as when there is no current config.
++        final BluetoothCodecConfig selectableConfig = currentConfig == null
++                ? null : getSelectableByCodecType(currentConfig.getCodecType());
++        if (selectableConfig != null) {
++            final int configs = selectableConfig.getBitsPerSample();
+             for (int i = 0; i < BITS_PER_SAMPLES.length; i++) {
+                 if ((configs & BITS_PER_SAMPLES[i]) != 0) {
+                     selectableIndex.add(convertCfgToBtnIndex(BITS_PER_SAMPLES[i]));
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
+index d6ba430..70b9a40 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
+@@ -94,9 +94,12 @@ public class BluetoothChannelModeDialogPreferenceController extends
+         List<Integer> selectableIndex = new ArrayList<>();
+         selectableIndex.add(getDefaultIndex());
+         final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+-        if (currentConfig != null) {
+-            final int configs =
+-                    getSelectableByCodecType(currentConfig.getCodecType()).getChannelMode();
++        // Capabilities are queried separately and may vanish while the device disconnects;
++        // then only the default entry stays selectable, as when there is no current config.
++        final BluetoothCodecConfig selectableConfig = currentConfig == null
++                ? null : getSelectableByCodecType(currentConfig.getCodecType());
++        if (selectableConfig != null) {
++            final int configs = selectableConfig.getChannelMode();
+             for (int i = 0; i < CHANNEL_MODES.length; i++) {
+                 if ((configs & CHANNEL_MODES[i]) != 0) {
+                     selectableIndex.add(convertCfgToBtnIndex(CHANNEL_MODES[i]));
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
+index 05c0be8..bb1cc03 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
+@@ -110,9 +110,12 @@ public class BluetoothSampleRateDialogPreferenceController extends
+         List<Integer> selectableIndex = new ArrayList<>();
+         selectableIndex.add(getDefaultIndex());
+         final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+-        if (currentConfig != null) {
+-            final int configs =
+-                    getSelectableByCodecType(currentConfig.getCodecType()).getSampleRate();
++        // Capabilities are queried separately and may vanish while the device disconnects;
++        // then only the default entry stays selectable, as when there is no current config.
++        final BluetoothCodecConfig selectableConfig = currentConfig == null
++                ? null : getSelectableByCodecType(currentConfig.getCodecType());
++        if (selectableConfig != null) {
++            final int configs = selectableConfig.getSampleRate();
+             int codecType = currentConfig.getCodecType();
+             long codecSpecific1Value = currentConfig.getCodecSpecific1();
+             for (int sampleRate : SAMPLE_RATES) {

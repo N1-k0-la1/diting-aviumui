@@ -1,0 +1,18 @@
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index b9b2851e4..484eab285 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -381,6 +381,13 @@ class ActivityStartInterceptor {
+         // Use the configured controller, including modular/vendor implementations.
+         if (pkg != null && pkg.equals(permissionController)) return true;
+         if (!platformSigned) return false;
++        // The fallback resolver is a system-owned mediation surface, not the selected app.
++        // Binding its incoming implicit intent to package "android" discards every real
++        // handler (for example PackageInstaller) and creates a broken space chooser.
++        // Match the resolved component and trusted installation/signature, never the
++        // caller-controlled action, MIME type or an arbitrary activity in package android.
++        if ("android".equals(pkg)
++                && "com.android.internal.app.ResolverActivity".equals(target.name)) return true;
+         return "com.android.settings".equals(pkg)
+                 || "com.android.systemui".equals(pkg)
+                 || "com.android.documentsui".equals(pkg)

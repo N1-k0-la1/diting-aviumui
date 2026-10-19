@@ -1,8 +1,9 @@
-# 当前公开构建输入：round8fix20261016
+# 当前公开构建输入：batch29 · 2026-10-19
 
-本仓库当前公开 89 份有序补丁，对应已发布的 round8fix20261016（历史总批次27）；冻结源码为 `44ec6126bb2c74e922eed7b299f0c503d1eedcc0`。
-维护端后续修复尚未作为新的公开源码版本提供，不应根据本仓库构建说明推断能复现未公开候选。
-GMS/Vanilla 两版均已独立构建、签名并通过主机产物核对；GMS 在12T Pro 有限的 QQ/桌面验收反馈不代替 Vanilla、K50 Ultra 或全部硬件验收。
+本仓库公开 93 份有序补丁。batch29 的 GMS 与 Vanilla 均完成正式构建、签名、实际镜像/OTA/payload/组件审核及 Windows 回读。
+GMS 保留 20261018 attempt1，Vanilla 为 20261019 attempt2；同一源码冻结，签名身份不变。输入身份与实际文件哈希见 [本批清单](docs/releases/batch29-20261019/ARTIFACTS.json)。
+前 89 份 round8 补丁保持原样；追加文件夹拖出修复、指纹/蓝牙修复及系统 Resolver 审批修复。上游清单、外部输入和 93 份补丁共同标识公开源码，后续文档提交不改变成品来源。
+维护者反馈 12T Pro GMS 验收后没有问题，不代替 Vanilla、K50 Ultra 或全部专项硬件验收。LHDC 仍缺对应耳机实测。
 
 软件 LHDC、相机修复和按区域启用的 eSIM 已纳入补丁；不启用 RAW 或未经验证的 Qualcomm DSP offload。
 源码默认关闭 Dolby Vision；维护者公开媒体成品使用 `TARGET_DITING_DOLBY_VISION=true`。按需求明确设置，不把开关启用等同于实机解码验收。
@@ -65,9 +66,9 @@ m target-files-package otatools -j4
 
 以下 batch13/batch14 记录保留其历史范围；当前公开89补丁版本状态以本文顶部和 README 为准。
 
-前 48 份补丁对应已构建的 batch13 功能源代码链，最后 2 份是 batch14 的区域 eSIM 与内核命名改动，两种 flavour 已完成维护者现有 checkout 的构建与主机产物核对。GMS 已在 12T Pro 完成首次启动和部分功能验收；Vanilla／K50 及完整硬件与长期回归尚待进行。公开清单固定上游基础版本，再按顺序恢复变更。
-公开导出不包含 Via 二进制补丁，只包含 README 元数据和精确 APK 的独立输入要求。
-从固定上游独立获取的 79 个原始文件已按顺序应用全部 50 份公开补丁。全新全量 repo sync / 构建仍需验证；这不等同于第二次完整构建。
+当前 93 份有序补丁已在 31 个定制项目的临时 Git 索引中按序重放，与公开目标树精确一致；1190 个项目包括 1187 个基础项目及 3 个可选 GMS 项目。
+维护者现有 checkout 的两版正式整包已通过构建和主机产物审核。精确补丁重放不等于从零同步后再完成第二轮完整构建，也不等于全面设备验收。
+Via APK 与媒体 ELF 是独立输入，均需满足固定来源和 SHA256；仓库不分发这些专有二进制。
 
 ## English
 
@@ -123,3 +124,5 @@ python3 tests/global-font-device-regressions.py /path/to/patched/android --adb /
 第五轮核实、修复与未成立的审查项见 [ROUND5-REVIEW-20261015.md](ROUND5-REVIEW-20261015.md)。已交付测试包不含本轮追加补丁。
 
 单独运行指纹生命周期/guest guard 主机回归：`python3 tests/session-lifecycle-regressions.py /path/to/patched/android`；该套件也由 fingerprint-mistouch-regressions.py 调用。
+
+Resolver 主机回归：`python3 tests/resolver-approval-regressions.py /path/to/patched/android`。正式手机验收与主机 API 替身测试分别记录。

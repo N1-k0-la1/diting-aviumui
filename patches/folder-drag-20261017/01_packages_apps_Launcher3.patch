@@ -1,0 +1,15 @@
+diff --git a/src/com/android/launcher3/folder/Folder.java b/src/com/android/launcher3/folder/Folder.java
+index 6731d04605efdeecf26dc12b7880233644513198..f70e043bb4750a12045591c0a7347d92b96f1af4 100644
+--- a/src/com/android/launcher3/folder/Folder.java
++++ b/src/com/android/launcher3/folder/Folder.java
+@@ -936,6 +936,10 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
+         int size = getIconsInReadingOrder().size();
+         if (size <= 1) {
+             Log.d(TAG, "Couldn't animate folder closed because there's " + size + " icons");
++            // No close animator will reset depth on this drag-out/dissolve path.
++            // Stop a pending open animator before it can write the folder blur back.
++            cancelRunningAnimations();
++            AviumFolderDepthAnimator.setDepth(mActivityContext, 0f);
+             closeComplete(false);
+             post(this::announceAccessibilityChanges);
+             return;
