@@ -5,7 +5,7 @@
 
 ## 当前公开源码与成品
 
-当前为 **batch29**，公开 **93 份有序补丁**。完整成品已准备供维护者网盘分发，上传完成状态尚未确认。
+当前已发布 **AVIUMUI-diting-UNOFFICIAL-261019（batch29）**，公开 **93 份有序补丁**。维护者已确认通过酷安发布，GMS 与 Vanilla 成品已上传网盘。
 本批合入 APK 打开流程、文件夹拖出模糊、指纹 HAL 和蓝牙开发者选项修复，见 [更新说明](docs/releases/batch29-20261019/README.md)。
 
 | 成品 | 主机验证 | 已有手机实测范围 |
@@ -20,6 +20,13 @@
 成品由维护者通过网盘分发。本仓库提供源码补丁、说明和校验记录，不托管完整 ROM。
 请按完整文件名、SHA256 和成品随附的 `MANIFEST.json` 核对版本，**每版使用它自己的原始 boot**。
 本批 GMS 与 Vanilla 使用同一源码冻结，日期/attempt 不同是串行构建及同源恢复记录，不能据文件日期混用配套镜像。
+
+## 下载
+
+- [夸克网盘](https://pan.quark.cn/s/50c002f7af5d?pwd=XTcx)，提取码：`XTcx`
+- [Google Drive](https://drive.google.com/drive/folders/16n1umX8_nvy8ADYls8SkH9TVBS_wKAEl?usp=drive_link)
+
+Vanilla / GMS 按需选择，核对完整文件名和 SHA256；每版使用各自对应的原始 boot。刷法见 [ROM 安装](INSTALL.md) 与 [OFRP 安装](OFRP-INSTALL.md)。
 
 ## 常用入口
 
@@ -62,8 +69,8 @@
 ## English
 
 Unofficial AviumUI 16.2.2 / Android 16 for Xiaomi 12T Pro and Redmi K50 Ultra (diting/ditingp).
-This checkout publishes **93 ordered patches for batch29**: APK resolver approval, folder drag-out blur, fingerprint HAL lifecycle/lockout and Bluetooth dialog fixes.
+The released version is **AVIUMUI-diting-UNOFFICIAL-261019 (batch29)**, with **93 ordered patches**: APK resolver approval, folder drag-out blur, fingerprint HAL lifecycle/lockout and Bluetooth dialog fixes.
 Both GMS (20261018 attempt1) and Vanilla (20261019 attempt2) passed full builds, signing and independent host artifact qualification from the same frozen source inputs.
 The maintainer reports no problems on 12T Pro GMS after the test checklist; individual cases were not independently recorded. Vanilla, K50 Ultra, LHDC headset playback and extended Recovery scenarios require their own acceptance.
-OFRP remains the existing 20261016-review2 image. ROM binaries are distributed separately by the maintainer; upload completion has not been confirmed here.
+OFRP remains the existing 20261016-review2 image. The maintainer has confirmed publication and cloud distribution. Download from [Quark](https://pan.quark.cn/s/50c002f7af5d?pwd=XTcx) (code: XTcx) or [Google Drive](https://drive.google.com/drive/folders/16n1umX8_nvy8ADYls8SkH9TVBS_wKAEl?usp=drive_link).
 See [batch29 artifacts](docs/releases/batch29-20261019/ARTIFACTS.json), [Build](BUILD.md), [Install](INSTALL.md), [Licensing](LICENSES.md) and the [documentation index](docs/README.md).

@@ -15,4 +15,9 @@ Vanilla、K50 Ultra 尚无本批实机验收记录，LHDC 缺少对应耳机未�
 
 每版 boot 与另外五张配套镜像均来自自己的已签名 OTA/payload；原始 boot 未经 root 修补。不要混用变体、旧 boot 或旧修补镜像。
 OFRP 沿用 20261016-review2，本批没有重编或更新。recovery.img 是 ROM 配套的 Avium Recovery。
-完整 ROM 由维护者通过网盘分发；本记录尚未确认网盘上传完成。仓库仅更新源码、说明和校验记录。
+维护者已确认发布 **AVIUMUI-diting-UNOFFICIAL-261019（batch29）**，两版完整 ROM 已上传网盘：
+
+- [夸克](https://pan.quark.cn/s/50c002f7af5d?pwd=XTcx)，提取码：`XTcx`
+- [Google Drive](https://drive.google.com/drive/folders/16n1umX8_nvy8ADYls8SkH9TVBS_wKAEl?usp=drive_link)
+
+本仓库提供源码、说明和校验记录。下载后按本批完整文件名及 SHA256 核对，实测范围仍按上文分别记录。

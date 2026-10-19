@@ -375,6 +375,9 @@
     "lhdc_hardware_tested": false,
     "ofrp_rebuilt": false,
     "artifact_record": "docs/releases/batch29-20261019/ARTIFACTS.json",
-    "binary_upload_completion_confirmed": false
+    "binary_upload_completion_confirmed": true,
+    "published": true,
+    "release_date": "2026-10-19",
+    "publication_confirmation": "maintainer report with Coolapk announcement and cloud links"
   }
 }

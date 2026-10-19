@@ -2,7 +2,7 @@
   "batch_number": 29,
   "version": "AviumUI 16.2.2 / Android 16",
   "prepared_for_distribution": "2026-10-19",
-  "binary_upload_completion_confirmed": false,
+  "binary_upload_completion_confirmed": true,
   "public_patch_count": 93,
   "public_patch_series_sha256": "b0a1418fe558892c4fcab4460bcadabfa085fdc8ed6ea3125e8fc2557d41253d",
   "source_manifest_sha256": "03f270e3a41221bc416641a0d3b1f8cec29b45e23d5d8865de4c2dc34547a2e1",
@@ -145,5 +145,18 @@
     "CR-2 preserves failure counts only within the same HAL process; a HAL restart clears them.",
     "CR-3 cancellation behavior unchanged; K50 Ultra enrollment root cause unconfirmed.",
     "LHDC headset playback remains untested because suitable hardware is unavailable."
-  ]
+  ],
+  "release_name": "AVIUMUI-diting-UNOFFICIAL-261019",
+  "published": true,
+  "release_date": "2026-10-19",
+  "publication_confirmation": "Maintainer confirmed the release and cloud uploads and supplied the Coolapk announcement text; cloud contents were not independently re-audited.",
+  "downloads": {
+    "quark": {
+      "url": "https://pan.quark.cn/s/50c002f7af5d?pwd=XTcx",
+      "extraction_code": "XTcx"
+    },
+    "google_drive": {
+      "url": "https://drive.google.com/drive/folders/16n1umX8_nvy8ADYls8SkH9TVBS_wKAEl?usp=drive_link"
+    }
+  }
 }

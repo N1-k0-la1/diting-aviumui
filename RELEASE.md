@@ -1,6 +1,13 @@
-# batch29 · 2026-10-19 · 发布准备
+# batch29 · 2026-10-19 · 已发布
 
-本仓库已同步 batch29 的 93 份公开补丁、版本说明和二进制校验记录。两版完整成品已交付维护者供网盘分发，仓库尚未确认上传完成。
+发布名称：**AVIUMUI-diting-UNOFFICIAL-261019**。维护者已确认通过酷安发布，两版完整成品已上传网盘。本仓库同步 93 份公开补丁、版本说明和二进制校验记录。
+
+## 下载
+
+- [夸克网盘](https://pan.quark.cn/s/50c002f7af5d?pwd=XTcx)，提取码：`XTcx`
+- [Google Drive](https://drive.google.com/drive/folders/16n1umX8_nvy8ADYls8SkH9TVBS_wKAEl?usp=drive_link)
+
+Vanilla / GMS 按需选择，核对完整文件名和 SHA256；每版使用各自对应的原始 boot。刷法见 [ROM 安装](INSTALL.md) 与 [OFRP 安装](OFRP-INSTALL.md)。
 
 ## What's new
 
