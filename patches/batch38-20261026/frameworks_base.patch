@@ -1,0 +1,114 @@
+diff --git a/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml b/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml
+index 383915393..339cfbbf8 100644
+--- a/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml
++++ b/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <!-- SPDX-License-Identifier: Apache-2.0 -->
+ <resources>
+-    <string name="message_install_failed_frp">设备保护仍处于激活状态，系统暂时禁止安装应用。请通过受支持的系统流程完成机主身份验证；若没有验证入口，请联系 ROM 维护者。</string>
++    <string name="message_install_failed_protection_active">安装被安全检查拒绝。设备保护当前处于激活状态，但本次失败也可能由其他权限或安装会话问题导致。请通过系统支持的流程完成所需的机主身份验证；若已验证或没有验证入口，请联系 ROM 维护者。</string>
+ </resources>
+diff --git a/packages/PackageInstaller/res/values/frp_install.xml b/packages/PackageInstaller/res/values/frp_install.xml
+index 8bbfbceff..248342c2b 100644
+--- a/packages/PackageInstaller/res/values/frp_install.xml
++++ b/packages/PackageInstaller/res/values/frp_install.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <!-- SPDX-License-Identifier: Apache-2.0 -->
+ <resources>
+-    <string name="message_install_failed_frp">Device protection is still active and is blocking app installation. Complete device-owner verification through a supported system flow. If no verification option is available, contact the ROM maintainer.</string>
++    <string name="message_install_failed_protection_active">Installation was rejected by a security check. Device protection is currently active, but another permission or session check may also have caused this failure. Complete any required device-owner verification through a supported system flow. If verification is complete or unavailable, contact the ROM maintainer.</string>
+ </resources>
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+index 39ce57966..1ec4fe17a 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+@@ -1131,9 +1131,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+ 
+     private fun handleSessionFailure(installId: Int, failure: Exception) {
+         Log.e(LOG_TAG, "Session $stagedSessionId could not be committed", failure)
+-        // Classify only a real security rejection while the framework confirms protection is active.
+-        // Never infer it from exception text, a GMS setting or setup-completion flags.
+-        val frpBlocked = failure is SecurityException && isFactoryResetProtectionActive()
++        // Record protection state as context for a security rejection, not as its cause.
++        // Ownership and session checks may fail before FRP enforcement. Do not preempt
++        // commit or infer the cause from exception text, GMS or setup-completion flags.
++        val deviceProtectionActive = failure is SecurityException && isFactoryResetProtectionActive()
+         try {
+             InstallEventReceiver.removeObserver(context, installId)
+         } catch (cleanupFailure: RuntimeException) {
+@@ -1147,12 +1148,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+             Log.w(LOG_TAG, "Could not abandon failed installation session", cleanupFailure)
+         }
+         setStageBasedOnResult(
+-            if (frpBlocked) PackageInstaller.STATUS_FAILURE_BLOCKED else PackageInstaller.STATUS_FAILURE,
++            if (deviceProtectionActive) PackageInstaller.STATUS_FAILURE_BLOCKED else PackageInstaller.STATUS_FAILURE,
+             // Preserve the legacy result of a synchronous commit exception. The system SDK does
+-            // not expose a dedicated FRP legacy code; the public status and typed UI reason do.
++            // not expose a dedicated FRP legacy code. The UI supplies protection-state
++            // context without claiming which security check rejected this attempt.
+             PackageManager.INSTALL_FAILED_INTERNAL_ERROR,
+             null,
+-            frpBlocked
++            deviceProtectionActive
+         )
+     }
+ 
+@@ -1160,7 +1162,7 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+         statusCode: Int,
+         legacyStatus: Int,
+         message: String?,
+-        frpBlocked: Boolean = false,
++        deviceProtectionActive: Boolean = false,
+     ) {
+         if (localLogv) {
+             Log.i(
+@@ -1205,14 +1207,14 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+                     statusCode = statusCode,
+                     shouldReturnResult = true,
+                     resultIntent = resultIntent,
+-                    factoryResetProtectionBlocked = frpBlocked
++                    deviceProtectionActive = deviceProtectionActive
+                 )
+             } else if (userDenied) {
+                 _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+             } else {
+                 _installResult.value = InstallFailed(
+                     appSnippet, legacyStatus, statusCode, message,
+-                    factoryResetProtectionBlocked = frpBlocked
++                    deviceProtectionActive = deviceProtectionActive
+                 )
+             }
+         }
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
+index ab3cf6159..6bc4f55ef 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
+@@ -127,8 +127,9 @@ data class InstallFailed(
+      * [Intent.EXTRA_INSTALL_RESULT] set to the [PackageInstaller.EXTRA_LEGACY_STATUS].
+      */
+     val resultIntent: Intent? = null,
+-    // Set only by this installer after a framework FRP state query, never by an incoming Intent.
+-    val factoryResetProtectionBlocked: Boolean = false
++    // Context only: framework-reported protection state, not proof of the rejection cause.
++    // Set only by this installer after a security failure, never by an incoming Intent.
++    val deviceProtectionActive: Boolean = false
+ ) : InstallStage(STAGE_FAILED) {
+ 
+     val appIcon: Drawable?
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java b/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
+index 75f7738b5..5c61de807 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
+@@ -302,8 +302,8 @@ public class InstallationFragment extends DialogFragment {
+ 
+         switch (installStage.getStatusCode()) {
+             case PackageInstaller.STATUS_FAILURE_BLOCKED -> {
+-                mCustomMessageTextView.setText(installStage.getFactoryResetProtectionBlocked()
+-                        ? R.string.message_install_failed_frp
++                mCustomMessageTextView.setText(installStage.getDeviceProtectionActive()
++                        ? R.string.message_install_failed_protection_active
+                         : R.string.message_install_failed_blocked);
+                 titleResId = R.string.title_install_failed_blocked;
+             }

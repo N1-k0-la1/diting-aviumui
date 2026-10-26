@@ -1,4 +1,6 @@
-# 安装说明
+# 安装说明 · batch38 / 20261026
+
+[当前文件/哈希](docs/releases/batch38-20261026/ARTIFACTS.json) · [版本说明](docs/releases/batch38-20261026/README.md)
 
 本说明以维护者网盘成品目录为工作目录，该目录包含完整 ROM、配套镜像和本批 `MANIFEST.json`。
 GitHub 仓库根目录的 `MANIFEST.json` 是 batch14 历史资料，不能替代本批成品目录随附的清单。
@@ -29,3 +31,5 @@ GMS/Vanilla 跨系列保留数据切换未验证，不按普通同系列升级�
 GMS 用 gms/boot.img，Vanilla 用 vanilla/boot.img，均取自该 ZIP 的已签名 payload，未经 root 修补。
 另外五个镜像也只对应同目录版本；其中 recovery.img 是 Avium Recovery，不是 OFRP。
 确认正常启动后才用本批 boot 修补 root。不要使用另一版本或旧包的 boot。
+
+升级后若曾安装过旧版“设置”覆盖APK，界面可能继续来自覆盖版本；请先核对设置应用版本和安装来源，再反馈处理，保留原数据。

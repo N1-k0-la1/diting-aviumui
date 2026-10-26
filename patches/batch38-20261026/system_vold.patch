@@ -1,0 +1,16 @@
+diff --git a/FsCrypt.cpp b/FsCrypt.cpp
+index 520a1cd..38168e2 100644
+--- a/FsCrypt.cpp
++++ b/FsCrypt.cpp
+@@ -948,7 +948,10 @@ static bool prepare_subdirs(const std::string& action, const std::string& volume
+     if (status != 0) {
+         LOG(ERROR) << "vold_prepare_subdirs failed, status: " << status;
+         if (error != nullptr) {
+-            *error = "prepare-subdirs/" + std::string(PrepareSubdirsErrorName(status))
++            // Negative errno values also cover invocation/wait failures. ForkExecvp
++            // collapses non-normal termination to -ECHILD; this is not a signal number.
++            const char* stage = status < 0 ? "subprocess-error" : PrepareSubdirsErrorName(status);
++            *error = "prepare-subdirs/" + std::string(stage)
+                     + ":status=" + std::to_string(status);
+         }
+         return false;

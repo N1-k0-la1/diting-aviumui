@@ -1,0 +1,661 @@
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+index b291e9daa..39ce57966 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+@@ -1102,11 +1102,19 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+             context, installId, broadcastIntent,
+             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+         )
++        var commitReturned = false
+         try {
+-            val session = packageInstaller.openSession(stagedSessionId)
+-            session.commit(pendingIntent.intentSender)
++            packageInstaller.openSession(stagedSessionId).use { session ->
++                session.commit(pendingIntent.intentSender)
++                commitReturned = true
++            }
+         } catch (e: Exception) {
+-            handleSessionFailure(installId, e)
++            if (commitReturned) {
++                // A close failure cannot turn an accepted asynchronous commit into a failure.
++                Log.w(LOG_TAG, "Could not close committed installation session", e)
++            } else {
++                handleSessionFailure(installId, e)
++            }
+         }
+     }
+ 
+@@ -1131,8 +1139,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+         } catch (cleanupFailure: RuntimeException) {
+             Log.w(LOG_TAG, "Could not remove failed installation observer", cleanupFailure)
+         }
++        val failedSessionId = stagedSessionId
++        stagedSessionId = 0
+         try {
+-            packageInstaller.abandonSession(stagedSessionId)
++            packageInstaller.abandonSession(failedSessionId)
+         } catch (cleanupFailure: RuntimeException) {
+             Log.w(LOG_TAG, "Could not abandon failed installation session", cleanupFailure)
+         }
+diff --git a/services/core/java/com/android/server/pdb/PersistentDataBlockService.java b/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
+index da6aa27a5..84e16e06f 100644
+--- a/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
++++ b/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
+@@ -206,7 +206,7 @@ public class PersistentDataBlockService extends SystemService {
+      * that case we block any updates of the persistent data block.  To exit active state, it's
+      * necessary for some caller to provide the FRP secret.
+      */
+-    private boolean mFrpActive = true;
++    private volatile boolean mFrpActive = true;
+ 
+     // Non-secret results survive log rotation for the lifetime of this service. These describe
+     // the last automatic attempt, which can also be requested after boot; they never store keys.
+@@ -601,46 +601,56 @@ public class PersistentDataBlockService extends SystemService {
+             mLastAutoDeactivationResult = "in-progress";
+             mPrimarySecretReadResult = "not-attempted";
+             mBackupSecretReadResult = "not-attempted";
+-            if (deactivateFrpWithFileSecret(mFrpSecretFile)) {
+-                mLastAutoDeactivationResult = "primary-secret";
+-                return true;
+-            }
++            try {
++                if (deactivateFrpWithFileSecret(mFrpSecretFile)) {
++                    mLastAutoDeactivationResult = "primary-secret";
++                    return true;
++                }
+ 
+-            Slog.w(TAG, "Failed to deactivate with primary secret file, trying backup.");
+-            if (deactivateFrpWithFileSecret(mFrpSecretTmpFile)) {
+-                mLastAutoDeactivationResult = "backup-secret";
+-                // The backup file has the FRP secret, make it the primary file.
+-                moveFrpTempFileToPrimary();
+-                return true;
+-            }
++                Slog.w(TAG, "Failed to deactivate with primary secret file, trying backup.");
++                if (deactivateFrpWithFileSecret(mFrpSecretTmpFile)) {
++                    mLastAutoDeactivationResult = "backup-secret";
++                    // The backup file has the FRP secret, make it the primary file.
++                    moveFrpTempFileToPrimary();
++                    return true;
++                }
+ 
+-            Slog.w(TAG, "Failed to deactivate with backup secret file, trying default secret.");
+-            if (deactivateFrp(new byte[FRP_SECRET_SIZE])) {
+-                mLastAutoDeactivationResult = "default-secret";
+-                return true;
+-            }
++                Slog.w(TAG, "Failed to deactivate with backup secret file, trying default secret.");
++                if (deactivateFrp(new byte[FRP_SECRET_SIZE])) {
++                    mLastAutoDeactivationResult = "default-secret";
++                    return true;
++                }
+ 
+-            // We could not deactivate FRP.  It's possible that we have hit an obscure corner case,
+-            // a device that once ran a version of Android that set the FRP magic and a secret,
+-            // then downgraded to a version that did not know about FRP, wiping the FRP secrets
+-            // files, then upgraded to a version (the current one) that does know about FRP,
+-            // potentially leaving the user unable to deactivate FRP because all copies of the
+-            // secret are gone.
+-            //
+-            // To handle this case, we check to see if we have recently upgraded from a pre-V
+-            // version.  If so, we deactivate FRP and set the secret to the default value.
+-            if (isUpgradingFromPreVRelease()) {
+-                mLastAutoDeactivationResult = "pre-v-upgrade";
+-                Slog.w(TAG, "Upgrading from Android 14 or lower, defaulting FRP secret");
+-                writeFrpMagicAndDefaultSecret();
+-                mFrpActive = false;
+-                setOldSettingForBackworkCompatibility(mFrpActive);
+-                return true;
+-            }
++                // We could not deactivate FRP.  It's possible that we have hit an obscure corner case,
++                // a device that once ran a version of Android that set the FRP magic and a secret,
++                // then downgraded to a version that did not know about FRP, wiping the FRP secrets
++                // files, then upgraded to a version (the current one) that does know about FRP,
++                // potentially leaving the user unable to deactivate FRP because all copies of the
++                // secret are gone.
++                //
++                // To handle this case, we check to see if we have recently upgraded from a pre-V
++                // version.  If so, we deactivate FRP and set the secret to the default value.
++                if (isUpgradingFromPreVRelease()) {
++                    mLastAutoDeactivationResult = "pre-v-upgrade";
++                    Slog.w(TAG, "Upgrading from Android 14 or lower, defaulting FRP secret");
++                    writeFrpMagicAndDefaultSecret();
++                    mFrpActive = false;
++                    setOldSettingForBackworkCompatibility(mFrpActive);
++                    return true;
++                }
+ 
+-            mLastAutoDeactivationResult = "not-deactivated";
+-            Slog.e(TAG, "Did not find valid FRP secret, FRP remains active.");
+-            return false;
++                mLastAutoDeactivationResult = "not-deactivated";
++                Slog.e(TAG, "Did not find valid FRP secret, FRP remains active.");
++                return false;
++            } catch (IllegalStateException e) {
++                if (!(e.getCause() instanceof IOException)) throw e;
++                // Unreadable protection state must remain active; do not try default/upgrade
++                // authentication after a partition read failure or prevent service startup.
++                mFrpActive = true;
++                mLastAutoDeactivationResult = "pdb-error";
++                Slog.e(TAG, "Persistent partition unavailable during automatic FRP validation");
++                return false;
++            }
+         }
+     }
+ 
+@@ -651,6 +661,10 @@ public class PersistentDataBlockService extends SystemService {
+             recordFrpSecretReadResult(frpSecretFile, secret.length != FRP_SECRET_SIZE
+                     ? "invalid-length" : accepted ? "accepted" : "not-matched");
+             return accepted;
++        } catch (IllegalStateException e) {
++            if (!(e.getCause() instanceof IOException)) throw e;
++            recordFrpSecretReadResult(frpSecretFile, "pdb-error");
++            throw e;
+         } catch (IOException e) {
+             recordFrpSecretReadResult(frpSecretFile,
+                     e instanceof java.nio.file.NoSuchFileException ? "not-found"
+@@ -755,23 +769,23 @@ public class PersistentDataBlockService extends SystemService {
+                 Slog.i(TAG, "No FRP secret magic, system must have been upgraded.");
+                 writeFrpMagicAndDefaultSecret();
+             }
+-        }
+ 
+-        final byte[] partitionSecret = getFrpSecret();
+-        if (partitionSecret == null || partitionSecret.length != FRP_SECRET_SIZE) {
+-            Slog.e(TAG, "Failed to read FRP secret from persistent data partition");
+-            return false;
+-        }
++            final byte[] partitionSecret = getFrpSecret();
++            if (partitionSecret == null || partitionSecret.length != FRP_SECRET_SIZE) {
++                Slog.e(TAG, "Failed to read FRP secret from persistent data partition");
++                return false;
++            }
+ 
+-        // MessageDigest.isEqual is constant-time, to protect secret deduction by timing attack.
+-        if (MessageDigest.isEqual(secret, partitionSecret)) {
+-            mFrpActive = false;
+-            Slog.i(TAG, "FRP secret matched, FRP deactivated.");
+-            setOldSettingForBackworkCompatibility(mFrpActive);
+-            return true;
+-        } else {
+-            Slog.e(TAG, "FRP deactivation failed: secret did not match.");
+-            return false;
++            // MessageDigest.isEqual is constant-time, to protect secret deduction by timing attack.
++            if (MessageDigest.isEqual(secret, partitionSecret)) {
++                mFrpActive = false;
++                Slog.i(TAG, "FRP secret matched, FRP deactivated.");
++                setOldSettingForBackworkCompatibility(mFrpActive);
++                return true;
++            } else {
++                Slog.e(TAG, "FRP deactivation failed: secret did not match.");
++                return false;
++            }
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index 810168f7f..187bf046e 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -424,7 +424,8 @@ class ActivityStartInterceptor {
+             // Verify the actual provider in the destination user, including module updates.
+             final android.content.pm.ProviderInfo media =
+                     context.getPackageManager().resolveContentProviderAsUser(
+-                            android.provider.MediaStore.AUTHORITY, 0, userId);
++                            android.provider.MediaStore.AUTHORITY,
++                            android.content.pm.PackageManager.MATCH_SYSTEM_ONLY, userId);
+             return media != null && media.applicationInfo != null
+                     && pkg.equals(media.packageName)
+                     && target.applicationInfo.uid == media.applicationInfo.uid;
+@@ -533,7 +534,12 @@ class ActivityStartInterceptor {
+                 // Immutable PendingIntents ignore flags supplied by the sender. Freeze the
+                 // forwarding flag here so the approval activity can hand the original
+                 // caller/result target to the chosen activity without changing attribution.
+-                candidate.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
++                if (profile.id == sourceUser
++                        && (candidate.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
++                    candidate.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
++                } else {
++                    candidate.removeFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
++                }
+                 candidate.setPackage(targetPackage);
+                 candidate.setComponent(new android.content.ComponentName(targetPackage,
+                         resolved.activityInfo.name));
+diff --git a/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java b/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
+index 163166beb..3887f2ec5 100644
+--- a/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
++++ b/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
+@@ -238,13 +238,14 @@ class MiniWindowEdgeBarHelper {
+         mTaskWindowSurfaceInfo.setWindowSurfaceScale(scale);
+         mTaskWindowSurfaceInfo.setWindowSurfaceScaleFactor(scaleFactor);
+ 
+-        SurfaceControl.Transaction t = mTask.getSyncTransaction();
+         SurfaceControl leash = mTask.mSurfaceControl;
+         if (leash != null && leash.isValid()) {
+             float realScale = mTaskWindowSurfaceInfo.getWindowSurfaceRealScale();
+-            t.setPosition(leash, pos.x, pos.y)
+-             .setScale(leash, realScale, realScale)
+-             .apply();
++            try (SurfaceControl.Transaction t = mTask.mWmService.mTransactionFactory.get()) {
++                t.setPosition(leash, pos.x, pos.y)
++                        .setScale(leash, realScale, realScale)
++                        .apply();
++            }
+         }
+ 
+         final int displayRotation = displayContent.getRotation();
+@@ -269,31 +270,29 @@ class MiniWindowEdgeBarHelper {
+ 
+             case MotionEvent.ACTION_UP:
+                 if (!mGestureActive) return false;
+-                try {
+-                    if (mScrolling) handleDragEnd();
+-                } finally {
+-                    resetGestureState();
+-                }
++                final boolean finishDrag = mScrolling;
++                final int dragScaleType = mDragScaleType;
++                // Expire drag frames before completion queues its final bounds update.
++                resetGestureState();
++                if (finishDrag) handleDragEnd(dragScaleType);
+                 return true;
+ 
+             case MotionEvent.ACTION_CANCEL:
+                 if (!mGestureActive) return false;
+-                try {
+-                    if (mScrolling) restoreOriginalState();
+-                } finally {
+-                    resetGestureState();
+-                }
++                final boolean cancelDrag = mScrolling;
++                resetGestureState();
++                if (cancelDrag) restoreOriginalState();
+                 return true;
+         }
+         return false;
+     }
+ 
+-    private void handleDragEnd() {
++    private void handleDragEnd(int dragScaleType) {
+         if (mTask == null || mTask.mDisplayContent == null) {
+             return;
+         }
+ 
+-        switch (mDragScaleType) {
++        switch (dragScaleType) {
+             case DRAG_SCALE_TYPE_TO_PINNED:
+                 PopUpWindowController.getInstance().enterPinnedWindowingMode(mTask);
+                 break;
+diff --git a/services/core/java/com/android/server/wm/PopUpAnimationController.java b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+index 67417ed61..5ff3695bc 100644
+--- a/services/core/java/com/android/server/wm/PopUpAnimationController.java
++++ b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+@@ -55,6 +55,12 @@ class PopUpAnimationController {
+     private final Handler mAnimationThreadHandler = AnimationThread.getHandler();
+ 
+     private boolean mApplyScheduled;
++    private final Runnable mApplyTransaction = () -> {
++        synchronized (mLock) {
++            if (!this.mIsCancelling && this.mFrameTransaction != null) this.mFrameTransaction.apply();
++            mApplyScheduled = false;
++        }
++    };
+     private int mBoundHeight;
+     private int mBoundWidth;
+     private Rect mBounds;
+@@ -85,7 +91,11 @@ class PopUpAnimationController {
+     // Guarded by mLock; invalidates late callbacks from canceled/replaced resize animations.
+     private int mResizeAnimationGeneration;
+     private boolean mIsAnimating;
+-    private boolean mIsCancelling;
++    private volatile boolean mIsCancelling;
++    // Invalidates queued commands, not just animator frame callbacks. Guarded by mLock.
++    private int mAnimationCommandGeneration;
++    private boolean mPendingAnimationCommand;
++    private ValueAnimator mResizeAnimator;
+     private boolean mIsFromLeaveButton;
+     private float mLastAnimatingScale;
+     private int mRunningSpringAnimations;
+@@ -115,34 +125,7 @@ class PopUpAnimationController {
+         mFrameCrossOverCallback = frameTimeNanos -> {
+             startCrossOverAnimation();
+         };
+-        mFrameCancelCallback = frameTimeNanos -> {
+-            if (isAnimating()) {
+-                if (DEBUG_POP_UP) {
+-                    Slog.d(TAG, "cancelAnimation()");
+-                }
+-                if (mSpringAnimationX != null) {
+-                    mSpringAnimationX.cancel();
+-                }
+-                if (mSpringAnimationY != null) {
+-                    mSpringAnimationY.cancel();
+-                }
+-                if (mWindowExitAnimator != null) {
+-                    mWindowExitAnimator.cancel();
+-                }
+-                if (mToggleResizeAnimator != null) {
+-                    mToggleResizeAnimator.cancel();
+-                }
+-                if (mCrossOverAnimator != null) {
+-                    mCrossOverAnimator.cancel();
+-                }
+-                if (mDockAnimator != null) {
+-                    mDockAnimator.cancel();
+-                }
+-                synchronized (mCancelLock) {
+-                    mIsCancelling = false;
+-                }
+-            }
+-        };
++        mFrameCancelCallback = frameTimeNanos -> cancelAnimationsOnAnimationThread();
+         mService = wms;
+         mBounds = new Rect();
+         mLastAnimatingScale = -1.0f;
+@@ -179,10 +162,7 @@ class PopUpAnimationController {
+     private void scheduleApplyTransaction() {
+         if (!mApplyScheduled && mFrameTransaction != null) {
+             mChoreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL,
+-                    () -> {
+-                        mFrameTransaction.apply();
+-                        mApplyScheduled = false;
+-                    }, null);
++                    mApplyTransaction, null);
+             mApplyScheduled = true;
+         }
+     }
+@@ -260,7 +240,10 @@ class PopUpAnimationController {
+     }
+ 
+     void playExitAnimation(boolean isFromLeaveButton, float startScale, OnAnimationEndCallback callback) {
+-        cancelAnimation();
++        runAnimationCommand(() -> playExitAnimationOnAnimationThread(isFromLeaveButton, startScale, callback));
++    }
++
++    private void playExitAnimationOnAnimationThread(boolean isFromLeaveButton, float startScale, OnAnimationEndCallback callback) {
+         if (DEBUG_POP_UP) {
+             Slog.d(TAG, "playExitAnimation");
+         }
+@@ -332,11 +315,7 @@ class PopUpAnimationController {
+                                 mFrameTransaction.setScale(leash, endScale, endScale);
+                             }
+                         }
+-                        mService.mAnimationHandler.post(() -> {
+-                            if (mCallback != null) {
+-                                mCallback.onAnimationEnded();
+-                            }
+-                        });
++                        postAnimationEndedCallback();
+                     }
+                 }
+                 scheduleApplyTransaction();
+@@ -352,7 +331,13 @@ class PopUpAnimationController {
+ 
+     void playToggleResizeWindowAnimation(Point startPos, Point endPos,
+             float startWinScale, float endWinScale, OnAnimationEndCallback callback) {
+-        cancelAnimation();
++        final Point from = new Point(startPos.x, startPos.y);
++        final Point to = new Point(endPos.x, endPos.y);
++        runAnimationCommand(() -> playToggleResizeWindowAnimationOnAnimationThread(from, to, startWinScale, endWinScale, callback));
++    }
++
++    private void playToggleResizeWindowAnimationOnAnimationThread(Point startPos, Point endPos,
++            float startWinScale, float endWinScale, OnAnimationEndCallback callback) {
+         if (DEBUG_POP_UP) {
+             Slog.d(TAG, "playToggleResizeWindowAnimation");
+         }
+@@ -418,11 +403,7 @@ class PopUpAnimationController {
+                                 mFrameTransaction.setCornerRadius(leash, cornerRadius);
+                             }
+                         }
+-                        mService.mAnimationHandler.post(() -> {
+-                            if (mCallback != null) {
+-                                mCallback.onAnimationEnded();
+-                            }
+-                        });
++                        postAnimationEndedCallback();
+                     }
+                 }
+                 scheduleApplyTransaction();
+@@ -440,11 +421,22 @@ class PopUpAnimationController {
+             int boundWidth, int boundHeight,
+             float startWinScale, float endWinScale,
+             Rect displayBound, boolean isLandscape, TaskWindowSurfaceInfo info) {
++        final Point from = new Point(startPos.x, startPos.y);
++        final Point to = new Point(endPos.x, endPos.y);
++        final Rect display = new Rect(displayBound);
++        runAnimationCommand(() -> playResizeAnimationOnAnimationThread(from, to, boundWidth, boundHeight, startWinScale, endWinScale, display, isLandscape, info));
++    }
++
++    private void playResizeAnimationOnAnimationThread(Point startPos, Point endPos,
++            int boundWidth, int boundHeight,
++            float startWinScale, float endWinScale,
++            Rect displayBound, boolean isLandscape, TaskWindowSurfaceInfo info) {
+         final int resizeGeneration;
+         synchronized (mLock) {
+             resizeGeneration = ++mResizeAnimationGeneration;
+         }
+         final ValueAnimator windowScaleAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
++        mResizeAnimator = windowScaleAnimator;
+         windowScaleAnimator.addUpdateListener(animation -> {
+             synchronized (mLock) {
+                 if (resizeGeneration != mResizeAnimationGeneration || !mIsAnimating) {
+@@ -501,6 +493,14 @@ class PopUpAnimationController {
+     void playSpringAnimation(Point startPos, Point endPos,
+             int boundWidth, int boundHeight, float winScale, float velX, float velY,
+             OnAnimationEndCallback callback) {
++        final Point from = new Point(startPos.x, startPos.y);
++        final Point to = new Point(endPos.x, endPos.y);
++        runAnimationCommand(() -> playSpringAnimationOnAnimationThread(from, to, boundWidth, boundHeight, winScale, velX, velY, callback));
++    }
++
++    private void playSpringAnimationOnAnimationThread(Point startPos, Point endPos,
++            int boundWidth, int boundHeight, float winScale, float velX, float velY,
++            OnAnimationEndCallback callback) {
+         if (DEBUG_POP_UP) {
+             Slog.d(TAG, "playSpringAnimation");
+         }
+@@ -591,7 +591,7 @@ class PopUpAnimationController {
+                         final OnAnimationEndCallback cb = mCallback;
+                         mIsAnimating = false;
+                         if (!mIsCancelling && !canceled && cb != null) {
+-                            mService.mAnimationHandler.post(cb::onAnimationEnded);
++                            postAnimationEndedCallback();
+                         }
+                     }
+                     if (!mIsCancelling && !canceled) {
+@@ -623,7 +623,7 @@ class PopUpAnimationController {
+ 
+     boolean isAnimating() {
+         synchronized (mLock) {
+-            if (mIsAnimating || mIsCancelling) {
++            if (mPendingAnimationCommand || mIsAnimating || mIsCancelling) {
+                 return true;
+             }
+             if (mSpringAnimationX != null && mSpringAnimationX.isRunning()) {
+@@ -651,6 +651,12 @@ class PopUpAnimationController {
+     void playDockAnimation(int startX, int startY, int endX, int endY,
+             int startCropW, int startCropH, int endCropW, int endCropH,
+             float startAlpha, float endAlpha, float scale, Task task, TaskWindowSurfaceInfo info) {
++        runAnimationCommand(() -> playDockAnimationOnAnimationThread(startX, startY, endX, endY, startCropW, startCropH, endCropW, endCropH, startAlpha, endAlpha, scale, task, info));
++    }
++
++    private void playDockAnimationOnAnimationThread(int startX, int startY, int endX, int endY,
++            int startCropW, int startCropH, int endCropW, int endCropH,
++            float startAlpha, float endAlpha, float scale, Task task, TaskWindowSurfaceInfo info) {
+         mIsAnimating = true;
+         mDockAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+         mDockAnimator.addUpdateListener(animation -> {
+@@ -709,6 +715,13 @@ class PopUpAnimationController {
+             int startCropW, int startCropH, int endCropW, int endCropH,
+             float startAlpha, float endAlpha, float scale, float cornerRadius,
+             Task task, TaskWindowSurfaceInfo info) {
++        runAnimationCommand(() -> playRestoreAnimationOnAnimationThread(startX, startY, endX, endY, startCropW, startCropH, endCropW, endCropH, startAlpha, endAlpha, scale, cornerRadius, task, info));
++    }
++
++    private void playRestoreAnimationOnAnimationThread(int startX, int startY, int endX, int endY,
++            int startCropW, int startCropH, int endCropW, int endCropH,
++            float startAlpha, float endAlpha, float scale, float cornerRadius,
++            Task task, TaskWindowSurfaceInfo info) {
+         mIsAnimating = true;
+         mDockAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+         mDockAnimator.addUpdateListener(animation -> {
+@@ -763,37 +776,115 @@ class PopUpAnimationController {
+         mDockAnimator.start();
+     }
+ 
++    /** Never wait for SurfaceAnimationThread while a caller may hold the WM lock. */
++    private void runAnimationCommand(Runnable action) {
++        final int generation;
++        final Task task;
++        synchronized (mLock) {
++            generation = ++mAnimationCommandGeneration;
++            mResizeAnimationGeneration++;
++            mPendingAnimationCommand = true;
++            mIsCancelling = true;
++            task = mTask;
++        }
++        final Runnable command = () -> {
++            synchronized (mLock) {
++                if (generation != mAnimationCommandGeneration) return;
++                mPendingAnimationCommand = false;
++                cancelAnimationsOnAnimationThread();
++                if (mTask != task || task == null) return;
++                mIsAnimating = true;
++                action.run();
++            }
++        };
++        if (mSurfaceAnimationHandler.getLooper().isCurrentThread()) {
++            command.run();
++        } else {
++            mSurfaceAnimationHandler.post(command);
++        }
++    }
++
++    private void postAnimationEndedCallback() {
++        final OnAnimationEndCallback callback = mCallback;
++        final int generation = mAnimationCommandGeneration;
++        mService.mAnimationHandler.post(() -> {
++            synchronized (mLock) {
++                if (generation != mAnimationCommandGeneration) return;
++            }
++            if (callback != null) callback.onAnimationEnded();
++        });
++    }
++
++    private void cancelAnimationsOnAnimationThread() {
++        mChoreographer.removeFrameCallback(mFrameCallback);
++        mChoreographer.removeFrameCallback(mFrameExitCallback);
++        mChoreographer.removeFrameCallback(mFrameToggleResizeCallback);
++        mChoreographer.removeFrameCallback(mFrameCrossOverCallback);
++        mChoreographer.removeFrameCallback(mFrameCancelCallback);
++        mChoreographer.removeCallbacks(Choreographer.CALLBACK_TRAVERSAL,
++                mApplyTransaction, null);
++        mApplyScheduled = false;
++        mResizeAnimationGeneration++;
++        mIsCancelling = true;
++        try {
++            if (mSpringAnimationX != null) mSpringAnimationX.cancel();
++            if (mSpringAnimationY != null) mSpringAnimationY.cancel();
++            if (mWindowExitAnimator != null) mWindowExitAnimator.cancel();
++            if (mToggleResizeAnimator != null) mToggleResizeAnimator.cancel();
++            if (mCrossOverAnimator != null) mCrossOverAnimator.cancel();
++            if (mDockAnimator != null) mDockAnimator.cancel();
++            if (mResizeAnimator != null) mResizeAnimator.cancel();
++        } finally {
++            mIsAnimating = false;
++            mIsCancelling = false;
++            // cancel() invokes end listeners synchronously; those may schedule a traversal.
++            mChoreographer.removeCallbacks(Choreographer.CALLBACK_TRAVERSAL,
++                    mApplyTransaction, null);
++            mApplyScheduled = false;
++            // Drop un-applied operations from the cancelled animation's private buffer.
++            if (mFrameTransaction != null) mFrameTransaction.close();
++            mFrameTransaction = mTask == null ? null : mService.mTransactionFactory.get();
++        }
++    }
++
+     boolean cancelAnimation() {
++        final boolean wasAnimating;
++        final int generation;
+         synchronized (mLock) {
+-            // Pending starts do not necessarily set mIsAnimating yet. Remove them even when
+-            // no animator is running, so cancel/replacement cannot start an obsolete animation.
+-            mChoreographer.removeFrameCallback(mFrameCallback);
+-            mChoreographer.removeFrameCallback(mFrameExitCallback);
+-            mChoreographer.removeFrameCallback(mFrameToggleResizeCallback);
+-            // A resize animator is local to its start call. Reject its late callbacks even
+-            // before start or after another animation has already cleared mIsAnimating.
++            wasAnimating = isAnimating();
++            generation = ++mAnimationCommandGeneration;
+             mResizeAnimationGeneration++;
+-            if (isAnimating()) {
+-                mIsAnimating = false;
+-                synchronized (mCancelLock) {
+-                    mIsCancelling = true;
++            mPendingAnimationCommand = false;
++            mIsAnimating = false;
++            mIsCancelling = wasAnimating;
++        }
++        final Runnable cancel = () -> {
++            synchronized (mLock) {
++                // A replacement command performs its own cancellation before starting.
++                if (generation == mAnimationCommandGeneration) {
++                    cancelAnimationsOnAnimationThread();
+                 }
+-                mChoreographer.postFrameCallback(mFrameCancelCallback);
+-                return true;
+             }
+-            return false;
+-        }
++        };
++        if (mSurfaceAnimationHandler.getLooper().isCurrentThread()) cancel.run();
++        else mSurfaceAnimationHandler.post(cancel);
++        return wasAnimating;
+     }
+ 
+     private void doWindowTransition(int x, int y, float scale, int boundWidth, int boundHeight) {
+-        final SurfaceControl leash = mTask.mSurfaceControl;
++        final Task task = mTask;
++        if (task == null) return;
++        final SurfaceControl leash = task.mSurfaceControl;
+         if (leash != null && leash.isValid()) {
+-            final float cornerRadius = mTask.mWindowContainerExt.getTaskWindowSurfaceInfo().getCornerRadius();
+-            mTask.getSyncTransaction().setPosition(leash, x, y)
+-                    .setWindowCrop(leash, boundWidth, boundHeight)
+-                    .setScale(leash, scale, scale)
+-                    .setCornerRadius(leash, cornerRadius)
+-                    .show(leash).apply();
++            final float cornerRadius = task.mWindowContainerExt.getTaskWindowSurfaceInfo().getCornerRadius();
++            // Do not apply a task's BLAST sync transaction from an animator callback.
++            try (SurfaceControl.Transaction transaction = mService.mTransactionFactory.get()) {
++                transaction.setPosition(leash, x, y)
++                        .setWindowCrop(leash, boundWidth, boundHeight)
++                        .setScale(leash, scale, scale)
++                        .setCornerRadius(leash, cornerRadius)
++                        .show(leash).apply();
++            }
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/TaskFragment.java b/services/core/java/com/android/server/wm/TaskFragment.java
+index c8b4ce7f3..36491cfcf 100644
+--- a/services/core/java/com/android/server/wm/TaskFragment.java
++++ b/services/core/java/com/android/server/wm/TaskFragment.java
+@@ -2690,12 +2690,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
+                 // For floating tasks and app bubbles, calculate the smallest width from the bounds
+                 // of the task, because they should not be affected by insets.
+                 boolean shouldUseTaskBounds = WindowConfiguration.isFloating(windowingMode);
+-                if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
+-                    final Task task = getTask();
+-                    if (task != null) {
+-                        // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
+-                        shouldUseTaskBounds |= task.mLaunchNextToBubble;
+-                    }
++                final Task task = getTask();
++                if (task != null) {
++                    // TaskView bubbles exist independently of the shell creation feature flag.
++                    shouldUseTaskBounds |= task.mLaunchNextToBubble;
+                 }
+                 if (shouldUseTaskBounds && !inPipTransition) {
+                     // For floating tasks, calculate the smallest width from the bounds of the

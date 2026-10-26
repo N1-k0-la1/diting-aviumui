@@ -1,0 +1,13 @@
+diff --git a/app/src/main/java/org/exthm/featuresettings/CategorySettingsFragment.kt b/app/src/main/java/org/exthm/featuresettings/CategorySettingsFragment.kt
+index a87fb74..47fccc5 100644
+--- a/app/src/main/java/org/exthm/featuresettings/CategorySettingsFragment.kt
++++ b/app/src/main/java/org/exthm/featuresettings/CategorySettingsFragment.kt
+@@ -280,7 +280,7 @@ class CategorySettingsFragment : SettingsBasePreferenceFragment() {
+             KEY_GMS_ENABLED,
+             GMS_ENABLED_KEY,
+             SettingTable.SECURE,
+-            0
++            if (SystemPropertiesHelper.getBoolean("ro.avium.gms_status", false)) 1 else 0
+         )
+ 
+         val teePref = findPreference<Preference>(KEY_TEE_SOFT_DEBUG)

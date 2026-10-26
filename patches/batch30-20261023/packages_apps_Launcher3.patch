@@ -1,0 +1,34 @@
+diff --git a/src/com/android/launcher3/Launcher.java b/src/com/android/launcher3/Launcher.java
+index d7728b2..bc335b1 100644
+--- a/src/com/android/launcher3/Launcher.java
++++ b/src/com/android/launcher3/Launcher.java
+@@ -2673,6 +2673,9 @@ public class Launcher extends StatefulActivity<LauncherState>
+     }
+ 
+     private void updateDisallowBack() {
++        if (mEdgeSwipeController != null) {
++            mEdgeSwipeController.updateSystemGestureExclusion();
++        }
+         LauncherRootView rv = getRootView();
+         if (rv != null) {
+             boolean isSplitSelectionEnabled = isSplitSelectionActive();
+diff --git a/src/org/avium/launcher/EdgeSwipeController.java b/src/org/avium/launcher/EdgeSwipeController.java
+index 1249d2c..d863786 100644
+--- a/src/org/avium/launcher/EdgeSwipeController.java
++++ b/src/org/avium/launcher/EdgeSwipeController.java
+@@ -72,7 +72,14 @@ public class EdgeSwipeController implements TouchController {
+                 updateSystemGestureExclusion();
+             };
+ 
+-    private void updateSystemGestureExclusion() {
++    public void updateSystemGestureExclusion() {
++        // The app index only handles touches on the workspace. Keeping its exclusions
++        // in Overview/All Apps would swallow system back without handling the gesture.
++        if (!mLauncher.isInState(LauncherState.NORMAL)
++                || AbstractFloatingView.getTopOpenView(mLauncher) != null) {
++            clearSystemGestureExclusion();
++            return;
++        }
+         View dragLayer = mLauncher.getDragLayer();
+         int height = dragLayer.getHeight();
+         int width = dragLayer.getWidth();

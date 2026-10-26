@@ -1,0 +1,375 @@
+diff --git a/service/ServiceWifiResources/res/values/config.xml b/service/ServiceWifiResources/res/values/config.xml
+index 200320a..d7cc25f 100644
+--- a/service/ServiceWifiResources/res/values/config.xml
++++ b/service/ServiceWifiResources/res/values/config.xml
+@@ -1432,4 +1432,6 @@
+     <integer translatable="false" name="config_internalScorerType">1</integer>
+     <!-- Configure if the external scorer should take priority over the internal scorer. -->
+     <bool translatable="false" name="config_prioritizeExternalScorer">true</bool>
++    <!-- Device opt-in: manage one opposite-band request in DBS_AP mode. -->
++    <bool translatable="false" name="config_wifiMultiInternetAutomaticConnectionEnabled">false</bool>
+ </resources>
+diff --git a/service/ServiceWifiResources/res/values/overlayable.xml b/service/ServiceWifiResources/res/values/overlayable.xml
+index fb5bf4b..025ed3c 100644
+--- a/service/ServiceWifiResources/res/values/overlayable.xml
++++ b/service/ServiceWifiResources/res/values/overlayable.xml
+@@ -252,6 +252,7 @@
+           <item type="bool" name="config_wifiMultiStaLocalOnlyConcurrencyEnabled" />
+           <item type="bool" name="config_wifiMultiStaRestrictedConcurrencyEnabled" />
+           <item type="bool" name="config_wifiMultiStaMultiInternetConcurrencyEnabled" />
++          <item type="bool" name="config_wifiMultiInternetAutomaticConnectionEnabled" />
+           <item type="bool" name="config_wifiDefaultCoexAlgorithmEnabled"/>
+           <item type="bool" name="config_wifiCoexForGpsL1"/>
+           <item type="integer" name="config_wifiCoexGpsL1ThresholdKhz"/>
+diff --git a/service/java/com/android/server/wifi/DualBandInternetController.java b/service/java/com/android/server/wifi/DualBandInternetController.java
+new file mode 100644
+index 0000000..415ab3d
+--- /dev/null
++++ b/service/java/com/android/server/wifi/DualBandInternetController.java
+@@ -0,0 +1,245 @@
++/*
++ * Copyright (C) 2026 The AviumUI Project
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.server.wifi;
++
++import static com.android.server.wifi.ActiveModeManager.ROLE_CLIENT_PRIMARY;
++
++import android.content.Context;
++import android.net.ConnectivityManager;
++import android.net.IpConfiguration.IpAssignment;
++import android.net.Network;
++import android.net.NetworkCapabilities;
++import android.net.NetworkRequest;
++import android.net.wifi.ScanResult;
++import android.net.wifi.WifiConfiguration;
++import android.net.wifi.WifiInfo;
++import android.net.wifi.WifiManager;
++import android.net.wifi.WifiNetworkSpecifier;
++import android.os.Handler;
++import android.util.Log;
++
++import java.io.PrintWriter;
++import java.util.function.IntSupplier;
++import java.util.function.IntPredicate;
++
++/** Owns one optional opposite-band request. All state is confined to the Wi-Fi handler. */
++final class DualBandInternetController {
++    private static final String TAG = "WifiDualBandInternet";
++    private static final long RETRY_DELAY_MS = 30_000;
++
++    private final Context mContext;
++    private final ActiveModeWarden mWarden;
++    private final ClientModeImplMonitor mMonitor;
++    private final Handler mHandler;
++    private final Clock mClock;
++    private final IntSupplier mMode;
++    private final Runnable mUpdate = this::update;
++    private ConnectivityManager mConnectivity;
++    private boolean mStarted;
++    private IntPredicate mHasBandRequest;
++    private ConcreteClientModeManager mUnvalidatedPrimary;
++    private ConnectivityManager.NetworkCallback mRequestCallback;
++    private Network mRequestPrimary;
++    private int mRequestNetworkId = -1;
++    private int mRequestBand = ScanResult.UNSPECIFIED;
++    private long mRetryAfterMillis;
++
++    DualBandInternetController(Context context, ActiveModeWarden warden,
++            ClientModeImplMonitor monitor, Handler handler, Clock clock, IntSupplier mode) {
++        mContext = context;
++        mWarden = warden;
++        mMonitor = monitor;
++        mHandler = handler;
++        mClock = clock;
++        mMode = mode;
++    }
++
++    /** Called after the network factories register, never from WifiInjector construction. */
++    void start(IntPredicate hasBandRequest) {
++        if (mStarted) return;
++        mHasBandRequest = hasBandRequest;
++        mConnectivity = mContext.getSystemService(ConnectivityManager.class);
++        if (mConnectivity == null) return;
++        try {
++            mConnectivity.registerNetworkCallback(new NetworkRequest.Builder()
++                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
++                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
++                    new ConnectivityManager.NetworkCallback() {
++                        @Override
++                        public void onCapabilitiesChanged(Network network,
++                                NetworkCapabilities capabilities) {
++                            scheduleUpdate();
++                        }
++
++                        @Override
++                        public void onLost(Network network) {
++                            scheduleUpdate();
++                        }
++                    }, mHandler);
++        } catch (RuntimeException exception) {
++            Log.e(TAG, "Cannot observe Wi-Fi networks", exception);
++            return;
++        }
++        mStarted = true;
++        mWarden.registerModeChangeCallback(new ActiveModeWarden.ModeChangeCallback() {
++            @Override
++            public void onActiveModeManagerAdded(ActiveModeManager manager) {
++                scheduleUpdate();
++            }
++
++            @Override
++            public void onActiveModeManagerRemoved(ActiveModeManager manager) {
++                scheduleUpdate();
++            }
++
++            @Override
++            public void onActiveModeManagerRoleChanged(ActiveModeManager manager) {
++                scheduleUpdate();
++            }
++        });
++        mMonitor.registerListener(new ClientModeImplListener() {
++            private void invalidatePrimary(ConcreteClientModeManager manager) {
++                if (manager.getRole() == ROLE_CLIENT_PRIMARY) {
++                    // Do not resurrect a request using the old NetworkAgent's cached validation.
++                    mUnvalidatedPrimary = manager;
++                    releaseRequest();
++                    scheduleUpdate();
++                }
++            }
++
++            @Override
++            public void onConnectionStart(ConcreteClientModeManager manager) {
++                invalidatePrimary(manager);
++            }
++
++            @Override
++            public void onConnectionEnd(ConcreteClientModeManager manager) {
++                invalidatePrimary(manager);
++            }
++
++            @Override
++            public void onInternetValidationFailed(ConcreteClientModeManager manager,
++                    boolean captivePortal) {
++                invalidatePrimary(manager);
++            }
++
++            @Override
++            public void onCaptivePortalDetected(ConcreteClientModeManager manager) {
++                invalidatePrimary(manager);
++            }
++
++            @Override
++            public void onInternetValidated(ConcreteClientModeManager manager) {
++                if (manager.getRole() == ROLE_CLIENT_PRIMARY) {
++                    mUnvalidatedPrimary = null;
++                    scheduleUpdate();
++                }
++            }
++        });
++        scheduleUpdate();
++    }
++
++    void scheduleUpdate() {
++        if (!mStarted) return;
++        mHandler.removeCallbacks(mUpdate);
++        mHandler.post(mUpdate);
++    }
++
++    private void update() {
++        ConcreteClientModeManager primary = mWarden.getPrimaryClientModeManagerNullable();
++        Network network = primary == null ? null : primary.getCurrentNetwork();
++        WifiInfo info = primary == null ? null : primary.getConnectionInfo();
++        WifiConfiguration config = primary == null ? null : primary.getConnectedWifiConfiguration();
++        NetworkCapabilities capabilities = network == null ? null
++                : mConnectivity.getNetworkCapabilities(network);
++        boolean softApActive = false;
++        for (ActiveModeManager manager : mWarden.getActiveModeManagers()) {
++            if (manager instanceof SoftApManager) softApActive = true;
++        }
++        int band = info == null ? ScanResult.UNSPECIFIED : ScanResult.toBand(info.getFrequency());
++        int opposite = band == ScanResult.WIFI_BAND_24_GHZ ? ScanResult.WIFI_BAND_5_GHZ
++                : band == ScanResult.WIFI_BAND_5_GHZ ? ScanResult.WIFI_BAND_24_GHZ
++                : ScanResult.UNSPECIFIED;
++        boolean eligible = mMode.getAsInt() == WifiManager.WIFI_MULTI_INTERNET_MODE_DBS_AP
++                && mWarden.isStaStaConcurrencySupportedForMultiInternet()
++                && primary != null && primary != mUnvalidatedPrimary && primary.isConnected()
++                && info != null && info.getNetworkId() >= 0 && !info.isRestricted()
++                && !info.isOemPaid() && !info.isOemPrivate()
++                && config != null && config.getIpAssignment() != IpAssignment.STATIC
++                && capabilities != null
++                && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
++                && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
++                && !softApActive && opposite != ScanResult.UNSPECIFIED;
++        if (!eligible) {
++            releaseRequest();
++            mRetryAfterMillis = 0;
++            return;
++        }
++        if (mRequestCallback != null && network.equals(mRequestPrimary)
++                && info.getNetworkId() == mRequestNetworkId && opposite == mRequestBand) {
++            return;
++        }
++        releaseRequest();
++        // Existing explicit system requests retain their band/BSSID/WorkSource policy.
++        if (mHasBandRequest.test(opposite)) return;
++        long delay = mRetryAfterMillis - mClock.getElapsedSinceBootMillis();
++        if (delay > 0) {
++            mHandler.postDelayed(mUpdate, delay);
++            return;
++        }
++        ConnectivityManager.NetworkCallback callback = new ConnectivityManager.NetworkCallback() {
++            @Override
++            public void onUnavailable() {
++                if (mRequestCallback != this) return;
++                // ConnectivityService already released an unavailable request.
++                clearRequest();
++                mRetryAfterMillis = mClock.getElapsedSinceBootMillis() + RETRY_DELAY_MS;
++                scheduleUpdate();
++            }
++        };
++        mRequestCallback = callback;
++        mRequestPrimary = network;
++        mRequestNetworkId = info.getNetworkId();
++        mRequestBand = opposite;
++        try {
++            mConnectivity.requestNetwork(new NetworkRequest.Builder()
++                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
++                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
++                    .setNetworkSpecifier(new WifiNetworkSpecifier.Builder().setBand(opposite).build())
++                    .build(), callback, mHandler);
++            mRetryAfterMillis = 0;
++        } catch (RuntimeException exception) {
++            clearRequest();
++            mRetryAfterMillis = mClock.getElapsedSinceBootMillis() + RETRY_DELAY_MS;
++            mHandler.postDelayed(mUpdate, RETRY_DELAY_MS);
++            Log.w(TAG, "Cannot request second Wi-Fi network", exception);
++        }
++    }
++
++    private void releaseRequest() {
++        ConnectivityManager.NetworkCallback callback = mRequestCallback;
++        // Late callback delivery must not touch a replacement request.
++        clearRequest();
++        if (callback != null) {
++            try {
++                mConnectivity.unregisterNetworkCallback(callback);
++            } catch (IllegalArgumentException exception) {
++                Log.w(TAG, "Second Wi-Fi request already released", exception);
++            }
++        }
++    }
++
++    private void clearRequest() {
++        mRequestCallback = null;
++        mRequestPrimary = null;
++        mRequestNetworkId = -1;
++        mRequestBand = ScanResult.UNSPECIFIED;
++    }
++
++    void dump(PrintWriter writer) {
++        writer.println("Automatic dual-band: started=" + mStarted
++                + " request=" + (mRequestCallback != null) + " band=" + mRequestBand);
++    }
++}
+diff --git a/service/java/com/android/server/wifi/MultiInternetManager.java b/service/java/com/android/server/wifi/MultiInternetManager.java
+index 6afdde7..adad829 100644
+--- a/service/java/com/android/server/wifi/MultiInternetManager.java
++++ b/service/java/com/android/server/wifi/MultiInternetManager.java
+@@ -55,6 +55,7 @@ public class MultiInternetManager {
+     private final WifiSettingsStore mSettingsStore;
+     private final Handler mEventHandler;
+     private final Clock mClock;
++    private final DualBandInternetController mDualBandController;
+     private int mStaConcurrencyMultiInternetMode = WifiManager.WIFI_MULTI_INTERNET_MODE_DISABLED;
+     @MultiInternetState
+     private int mMultiInternetConnectionState = MULTI_INTERNET_STATE_NONE;
+@@ -323,16 +324,22 @@ public class MultiInternetManager {
+         mSettingsStore = settingsStore;
+         mEventHandler = handler;
+         mClock = clock;
++        mDualBandController = new DualBandInternetController(context, activeModeWarden,
++                cmiMonitor, handler, clock, () -> mStaConcurrencyMultiInternetMode);
+         mActiveModeWarden.registerModeChangeCallback(new ModeChangeCallback());
+         cmiMonitor.registerListener(new ClientModeListenerInternal());
+         mStaConcurrencyMultiInternetMode = mSettingsStore.getWifiMultiInternetMode();
+     }
+ 
+-    /**
+-     * Check if Wi-Fi multi internet use case is enabled.
+-     *
+-     * @return true if Wi-Fi multi internet use case is enabled.
+-     */
++    /** Start after network factories have registered; only device opt-ins create requests. */
++    public void startAutomaticDualBand(java.util.function.IntPredicate hasBandRequest) {
++        if (mContext.getResources().getBoolean(com.android.wifi.resources.R.bool
++                .config_wifiMultiInternetAutomaticConnectionEnabled)) {
++            mDualBandController.start(hasBandRequest);
++        }
++    }
++
++    /** Whether the persisted multi-internet mode is enabled. */
+     public boolean isStaConcurrencyForMultiInternetEnabled() {
+         return mStaConcurrencyMultiInternetMode
+             != WifiManager.WIFI_MULTI_INTERNET_MODE_DISABLED;
+@@ -372,6 +379,7 @@ public class MultiInternetManager {
+         }
+ 
+         if (mode == mStaConcurrencyMultiInternetMode) {
++            mDualBandController.scheduleUpdate();
+             return true;
+         }
+         mStaConcurrencyMultiInternetMode = mode;
+@@ -395,6 +403,7 @@ public class MultiInternetManager {
+         }
+ 
+         mSettingsStore.handleWifiMultiInternetMode(mode);
++        mDualBandController.scheduleUpdate();
+         // Check if there is already multi internet request then start scan for connection.
+         if (hasPendingConnectionRequests()) {
+             startConnectivityScan();
+@@ -549,6 +558,7 @@ public class MultiInternetManager {
+      */
+     public void setMultiInternetConnectionWorksource(int band, String targetBssid,
+             WorkSource requestorWs) {
++        mDualBandController.scheduleUpdate();
+         if (!isStaConcurrencyForMultiInternetEnabled()) {
+             Log.w(TAG, "MultInternet is not enabled.");
+             return;
+@@ -671,6 +681,7 @@ public class MultiInternetManager {
+     /** Dump the internal states of MultiInternetManager */
+     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
+         pw.println("Dump of MultiInternetManager");
++        mDualBandController.dump(pw);
+         pw.println(TAG + ": mStaConcurrencyMultiInternetMode "
+                 + mStaConcurrencyMultiInternetMode);
+         for (int i = 0; i < mNetworkConnectionStates.size(); i++) {
+diff --git a/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java b/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
+index 88aa3c6..714112d 100644
+--- a/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
++++ b/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
+@@ -230,6 +230,11 @@ public class MultiInternetWifiNetworkFactory extends NetworkFactory {
+         mConnectionReqCount.put(band, reqCount - 1);
+     }
+ 
++    /** Whether a live client already owns a request for this band. Wi-Fi thread only. */
++    boolean hasConnectionRequestForBand(int band) {
++        return mConnectionReqCount.get(band, 0) > 0;
++    }
++
+     @Override
+     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
+         super.dump(fd, pw, args);
+diff --git a/service/java/com/android/server/wifi/WifiServiceImpl.java b/service/java/com/android/server/wifi/WifiServiceImpl.java
+index 32817c2..e89884b 100644
+--- a/service/java/com/android/server/wifi/WifiServiceImpl.java
++++ b/service/java/com/android/server/wifi/WifiServiceImpl.java
+@@ -1140,6 +1140,8 @@ public class WifiServiceImpl extends IWifiManager.Stub {
+             mWifiInjector.getRestrictedWifiNetworkFactory().register();
+             mWifiInjector.getOemWifiNetworkFactory().register();
+             mWifiInjector.getMultiInternetWifiNetworkFactory().register();
++            mMultiInternetManager.startAutomaticDualBand(mWifiInjector
++                    .getMultiInternetWifiNetworkFactory()::hasConnectionRequestForBand);
+             mWifiInjector.getWifiP2pConnection().handleBootCompleted();
+             // Start to listen country code change to avoid query supported channels causes boot
+             // time increased.

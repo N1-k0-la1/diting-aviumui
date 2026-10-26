@@ -1,0 +1,123 @@
+diff --git a/res/values-zh-rCN/wifi_dual_band.xml b/res/values-zh-rCN/wifi_dual_band.xml
+new file mode 100644
+index 0000000..45f162c
+--- /dev/null
++++ b/res/values-zh-rCN/wifi_dual_band.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 The AviumUI Project. SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="wifi_dual_band_title">双频 Wi-Fi 连接</string>
++    <string name="wifi_dual_band_summary">在条件允许时，同时连接同一 Wi-Fi 的 2.4GHz 和 5GHz。可能增加耗电，提速效果取决于应用支持。</string>
++</resources>
+diff --git a/res/values/wifi_dual_band.xml b/res/values/wifi_dual_band.xml
+new file mode 100644
+index 0000000..37f4a44
+--- /dev/null
++++ b/res/values/wifi_dual_band.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2026 The AviumUI Project. SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <bool name="config_show_wifi_dual_band">false</bool>
++    <string name="wifi_dual_band_title">Dual-band Wi-Fi connection</string>
++    <string name="wifi_dual_band_summary">Connect to both 2.4 GHz and 5 GHz on the same Wi-Fi network when available. May use more battery. Speed gains depend on app support.</string>
++</resources>
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index c78fb09..2a53ab9 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -45,6 +45,12 @@
+         android:summary="@string/wifi_cellular_data_fallback_summary"
+         settings:controller="com.android.settings.wifi.CellularFallbackPreferenceController" />
+ 
++    <SwitchPreferenceCompat
++        android:key="wifi_dual_band"
++        android:title="@string/wifi_dual_band_title"
++        android:summary="@string/wifi_dual_band_summary"
++        settings:controller="com.android.settings.wifi.DualBandWifiPreferenceController" />
++
+     <Preference
+         android:key="install_credentials"
+         android:title="@string/wifi_install_credentials"/>
+diff --git a/src/com/android/settings/wifi/DualBandWifiPreferenceController.java b/src/com/android/settings/wifi/DualBandWifiPreferenceController.java
+new file mode 100644
+index 0000000..46cfec4
+--- /dev/null
++++ b/src/com/android/settings/wifi/DualBandWifiPreferenceController.java
+@@ -0,0 +1,75 @@
++/*
++ * Copyright (C) 2026 The AviumUI Project
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.settings.wifi;
++
++import android.content.Context;
++import android.net.wifi.WifiManager;
++import android.os.UserManager;
++import android.util.Log;
++
++import com.android.settings.R;
++import com.android.settings.core.TogglePreferenceController;
++
++/** Uses the Wi-Fi service's existing persisted mode, with no duplicate settings value. */
++public class DualBandWifiPreferenceController extends TogglePreferenceController {
++    private static final String TAG = "DualBandWifiPreference";
++    private final WifiManager mWifiManager;
++    private final UserManager mUserManager;
++
++    public DualBandWifiPreferenceController(Context context, String key) {
++        super(context, key);
++        mWifiManager = context.getSystemService(WifiManager.class);
++        mUserManager = context.getSystemService(UserManager.class);
++    }
++
++    @Override
++    public int getAvailabilityStatus() {
++        if (!mContext.getResources().getBoolean(R.bool.config_show_wifi_dual_band)
++                || mWifiManager == null || mUserManager == null) {
++            return UNSUPPORTED_ON_DEVICE;
++        }
++        if (!mUserManager.isAdminUser()
++                || mUserManager.hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI)) {
++            return DISABLED_FOR_USER;
++        }
++        try {
++            return mWifiManager.isStaConcurrencyForMultiInternetSupported()
++                    ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        } catch (RuntimeException exception) {
++            Log.w(TAG, "Cannot query dual-band support", exception);
++            return UNSUPPORTED_ON_DEVICE;
++        }
++    }
++
++    @Override
++    public boolean isChecked() {
++        if (mWifiManager == null) return false;
++        try {
++            return mWifiManager.getStaConcurrencyForMultiInternetMode()
++                    == WifiManager.WIFI_MULTI_INTERNET_MODE_DBS_AP;
++        } catch (RuntimeException exception) {
++            Log.w(TAG, "Cannot read dual-band mode", exception);
++            return false;
++        }
++    }
++
++    @Override
++    public boolean setChecked(boolean checked) {
++        if (getAvailabilityStatus() != AVAILABLE) return false;
++        try {
++            return mWifiManager.setStaConcurrencyForMultiInternetMode(checked
++                    ? WifiManager.WIFI_MULTI_INTERNET_MODE_DBS_AP
++                    : WifiManager.WIFI_MULTI_INTERNET_MODE_DISABLED);
++        } catch (RuntimeException exception) {
++            Log.w(TAG, "Cannot change dual-band mode", exception);
++            return false;
++        }
++    }
++
++    @Override
++    public int getSliceHighlightMenuRes() {
++        return R.string.menu_key_network;
++    }
++}

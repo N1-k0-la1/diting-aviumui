@@ -1,0 +1,514 @@
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+index 89697c328..5217207df 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+@@ -191,20 +191,15 @@ public class BubbleController implements ConfigurationChangeListener,
+ 
+     //Ext add
+     private BubbleExt mBubbleExt;
+-    private final Set<String> mRetryingPackages = new HashSet<>();
+-    // Only retry a task that was actually removed. A task-moved callback also fires while
+-    // TaskView is opening a bubble; treating that callback as a fullscreen request races the
+-    // bubble transition and leaves the embedded app with no surface.
++    // Task removal may close the matching bubble, but must never reopen an app.
++    // In particular, another task finishing is not a failed bubble launch.
+     private final android.app.TaskStackListener mBubbleTaskListener = new android.app.TaskStackListener() {
+         @Override
+         public void onTaskRemoved(int taskId) {
+-            mMainExecutor.execute(() -> handleTaskRemoved(taskId));
++            handleTaskRemoved(taskId);
+         }
+ 
+     };
+-    private String mLastRequestPackage = null;
+-    private UserHandle mLastRequestUser;
+-    private long mLastRequestTime = 0;
+ 
+     private static final String TAG = TAG_WITH_CLASS_NAME ? "BubbleController" : TAG_BUBBLES;
+ 
+@@ -3712,7 +3707,6 @@ public class BubbleController implements ConfigurationChangeListener,
+                         mBackgroundExecutor);
+                 // A notification can target a different conversation than an existing app bubble.
+                 // Replace its TaskView so the original notification PendingIntent is delivered.
+-                mLastRequestPackage = null;
+                 removeBubble(bubble.getKey(), DISMISS_INVALID_INTENT);
+                 bubble.setShouldAutoExpand(true);
+                 inflateAndAdd(bubble, true, false);
+@@ -4009,6 +4003,24 @@ public class BubbleController implements ConfigurationChangeListener,
+         public void setTaskBounds(TaskViewTaskController taskView, Rect boundsOnScreen) {
+             mBaseTransitions.setTaskBounds(taskView, boundsOnScreen);
+         }
++
++        @Override
++        public int getTaskDensityDpi(TaskViewTaskController taskView, Rect boundsOnScreen) {
++            final TaskInfo task = taskView.getTaskInfo();
++            final Bubble bubble = task == null ? null
++                    : mBubbleData.getBubbleInStackWithTaskId(task.taskId);
++            if (task == null || (!task.isAppBubble && (bubble == null || !bubble.isAppBubble()))
++                    || task.getWindowingMode()
++                            != android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
++                    || !mBubblePositioner.isLandscape()
++                    || mBubblePositioner.getCurrentConfig().isLargeScreen()
++                    || boundsOnScreen.width() >= boundsOnScreen.height()) {
++                return -1;
++            }
++            final Rect screen = mBubblePositioner.getScreenRect();
++            return BubblePositioner.getPortraitTaskDensity(taskView.getUnscaledTaskDensityDpi(),
++                    boundsOnScreen.width(), Math.min(screen.width(), screen.height()));
++        }
+     }
+ 
+     void onAppBubbleProfileUnavailable(UserHandle user) {
+@@ -4020,7 +4032,6 @@ public class BubbleController implements ConfigurationChangeListener,
+                     mBubbleData.dismissBubbleWithKey(bubble.getKey(), Bubbles.DISMISS_USER_CHANGED);
+                 }
+             }
+-            if (user.equals(mLastRequestUser)) mLastRequestPackage = null;
+         });
+     }
+ 
+@@ -4038,17 +4049,6 @@ public class BubbleController implements ConfigurationChangeListener,
+                 expandStackAndSelectBubble(existing);
+                 return;
+             }
+-            mLastRequestPackage = packageName;
+-            mLastRequestUser = user;
+-            mLastRequestTime = System.currentTimeMillis();
+-
+-            if (mRetryingPackages.contains(user.getIdentifier() + ":" + packageName)) {
+-                ActivityManager am = mContext.getSystemService(ActivityManager.class);
+-                if (am != null) {
+-                    am.forceStopPackageAsUser(packageName, user.getIdentifier());
+-                }
+-            }
+-
+             PackageManager pm = mContext.createContextAsUser(user, 0).getPackageManager();
+             Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
+             
+@@ -4076,34 +4076,9 @@ public class BubbleController implements ConfigurationChangeListener,
+ 
+     private void handleTaskRemoved(int taskId) {
+         mMainExecutor.execute(() -> {
+-            String packageToRetry = null;
+-            UserHandle userToRetry = null;
+             Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
+             if (bubble != null && bubble.isAppBubble()) {
+-                packageToRetry = bubble.getPackageName();
+-                userToRetry = bubble.getUser();
+-                mBubbleData.dismissBubbleWithKey(bubble.getKey(), Bubbles.DISMISS_USER_GESTURE);
+-            } 
+-            else {
+-                long timeDiff = System.currentTimeMillis() - mLastRequestTime;
+-                if (mLastRequestPackage != null && timeDiff < 1000) {
+-                    packageToRetry = mLastRequestPackage;
+-                    userToRetry = mLastRequestUser;
+-                }
+-            }
+-            if (packageToRetry != null && userToRetry != null) {
+-                final String pkg = packageToRetry;
+-                final UserHandle user = userToRetry;
+-                final String retryKey = user.getIdentifier() + ":" + pkg;
+-                if (!mRetryingPackages.contains(retryKey)) {
+-                    mRetryingPackages.add(retryKey);
+-                    mMainExecutor.executeDelayed(() -> {
+-                        showOrUpdateAppBubble(pkg, user);
+-                    }, 500);
+-                } else {
+-                    mRetryingPackages.remove(retryKey);
+-                    mLastRequestPackage = null;
+-                }
++                mBubbleData.dismissBubbleWithKey(bubble.getKey(), Bubbles.DISMISS_TASK_FINISHED);
+             }
+         });
+     }
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
+index ab2affec4..1f92007b5 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
+@@ -17,6 +17,8 @@
+ package com.android.wm.shell.bubbles;
+ 
+ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
++import static android.content.pm.ActivityInfo.isFixedOrientationLandscape;
++import static android.content.pm.ActivityInfo.isFixedOrientationPortrait;
+ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+ 
+@@ -78,6 +80,8 @@ import java.io.PrintWriter;
+ public class BubbleExpandedView extends LinearLayout {
+     private static final String TAG = TAG_WITH_CLASS_NAME ? "BubbleExpandedView" : TAG_BUBBLES;
+ 
++    private boolean mIsFixedOrientationPortrait;
++
+     /** {@link IntProperty} for updating bottom clip */
+     public static final IntProperty<BubbleExpandedView> BOTTOM_CLIP_PROPERTY =
+             new IntProperty<BubbleExpandedView>("bottomClip") {
+@@ -337,6 +341,7 @@ public class BubbleExpandedView extends LinearLayout {
+                             mTaskId = listener != null
+                                     ? listener.getTaskId()
+                                     : bubbleTaskView.getTaskId();
++                            updateTaskOrientation(mTaskView.getTaskInfo());
+                             setContentVisibility(true);
+                         }
+ 
+@@ -357,7 +362,7 @@ public class BubbleExpandedView extends LinearLayout {
+ 
+                         @Override
+                         public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
+-                            // nothing to do / handled in listener.
++                            updateTaskOrientation(taskInfo);
+                         }
+                     });
+ 
+@@ -373,6 +378,35 @@ public class BubbleExpandedView extends LinearLayout {
+         }
+     }
+ 
++    private void updateTaskOrientation(@Nullable RunningTaskInfo taskInfo) {
++        if (taskInfo == null || taskInfo.topActivityInfo == null) {
++            return;
++        }
++        final int orientation = taskInfo.topActivityInfo.screenOrientation;
++        if (!isFixedOrientationPortrait(orientation)
++                && !isFixedOrientationLandscape(orientation)) {
++            // Splash/redirect activities often leave orientation unspecified. Retain the
++            // last stable shape instead of resizing and recreating the app in a loop.
++            return;
++        }
++        boolean portrait = isFixedOrientationPortrait(orientation);
++        // The activity may request landscape at runtime (for example, a video player)
++        // without changing its manifest ActivityInfo. Follow its actual app bounds then.
++        final Rect appBounds = taskInfo.appCompatTaskInfo.topActivityAppBounds;
++        if (portrait && !appBounds.isEmpty()) {
++            portrait = appBounds.width() <= appBounds.height();
++        }
++        if (mIsFixedOrientationPortrait != portrait) {
++            mIsFixedOrientationPortrait = portrait;
++            // Only the selected bubble determines the shared positioner's geometry.
++            post(() -> mStackView.updateExpandedView());
++        }
++    }
++
++    boolean isTaskFixedOrientationPortrait() {
++        return mIsFixedOrientationPortrait;
++    }
++
+     void updateDimensions() {
+         Resources res = getResources();
+         updateFontSize();
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubblePositioner.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubblePositioner.java
+index e746f87e6..6a055a70e 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubblePositioner.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubblePositioner.java
+@@ -89,6 +89,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
+ 
+     private int mExpandedViewMinHeight;
+     private int mExpandedViewLargeScreenWidth;
++    private boolean mExpandedViewIsFixedPortrait;
+     private int mExpandedViewLargeScreenInsetClosestEdge;
+     private int mExpandedViewLargeScreenInsetFurthestEdge;
+     private int mExpandedViewBubbleBarWidth;
+@@ -385,6 +386,11 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
+         return mExpandedViewLargeScreenInsetFurthestEdge;
+     }
+ 
++    /** Sets the orientation of the selected expanded task, not the host display. */
++    void setExpandedViewIsFixedPortrait(boolean fixedPortrait) {
++        mExpandedViewIsFixedPortrait = fixedPortrait;
++    }
++
+     /**
+      * Calculates the padding for the bubble expanded view.
+      *
+@@ -433,6 +439,20 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
+                             : 0;
+                 }
+             }
++            if (isLandscape() && !isOverflow && mExpandedViewIsFixedPortrait) {
++                // A phone rotated for the host game must not give a portrait app a
++                // display-wide task. Keep the pointer edge anchored to the bubble stack.
++                final int availableWidth = Math.max(0, mScreenRect.width()
++                        - leftPadding - rightPadding - pointerTotalHeight);
++                final int portraitWidth = getPortraitExpandedViewWidth(
++                        availableWidth, getMaxExpandedViewHeight(false),
++                        mScreenRect.width(), mScreenRect.height());
++                if (onLeft) {
++                    rightPadding += availableWidth - portraitWidth;
++                } else {
++                    leftPadding += availableWidth - portraitWidth;
++                }
++            }
+             // [left, top, right, bottom]
+             paddings[0] = leftPadding;
+             paddings[1] = showBubblesVertically() ? 0 : mPointerMargin;
+@@ -442,6 +462,28 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
+         }
+     }
+ 
++    @VisibleForTesting
++    static int getPortraitExpandedViewWidth(int availableWidth, int availableHeight,
++            int screenWidth, int screenHeight) {
++        if (availableWidth <= 0 || availableHeight <= 0 || screenWidth <= 0 || screenHeight <= 0) {
++            return Math.max(0, availableWidth);
++        }
++        final float portraitAspectRatio = (float) Math.min(screenWidth, screenHeight)
++                / Math.max(screenWidth, screenHeight);
++        return Math.min(availableWidth, Math.max(1,
++                Math.round(availableHeight * portraitAspectRatio)));
++    }
++
++    /** Keeps a phone-sized logical viewport when a portrait app is embedded in landscape. */
++    @VisibleForTesting
++    static int getPortraitTaskDensity(int baseDensity, int taskWidth, int naturalPhoneWidth) {
++        if (baseDensity <= 0 || taskWidth <= 0 || naturalPhoneWidth <= 0) {
++            return -1;
++        }
++        return Math.min(baseDensity, Math.max(android.util.DisplayMetrics.DENSITY_LOW,
++                Math.round((float) baseDensity * taskWidth / naturalPhoneWidth)));
++    }
++
+     /** Returns the width of the task view content. */
+     public int getTaskViewContentWidth(boolean onLeft) {
+         int[] paddings = getExpandedViewContainerPadding(onLeft, /* isOverflow = */ false);
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleStackView.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleStackView.java
+index 2ba73e56e..7c1619fb4 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleStackView.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleStackView.java
+@@ -4005,12 +4005,14 @@ public class BubbleStackView extends FrameLayout
+     }
+ 
+     void updateExpandedView() {
++        BubbleExpandedView expandedView = getExpandedView();
++        mPositioner.setExpandedViewIsFixedPortrait(expandedView != null
++                && expandedView.isTaskFixedOrientationPortrait());
+         boolean isOverflowExpanded = mExpandedBubble != null
+                 && BubbleOverflow.KEY.equals(mExpandedBubble.getKey());
+         int[] paddings = mPositioner.getExpandedViewContainerPadding(
+                 mStackAnimationController.isStackOnLeftSide(), isOverflowExpanded);
+         mExpandedViewContainer.setPadding(paddings[0], paddings[1], paddings[2], paddings[3]);
+-        BubbleExpandedView expandedView = getExpandedView();
+         if (expandedView != null) {
+             PointF p = mPositioner.getExpandedBubbleXY(getBubbleIndex(mExpandedBubble),
+                     getState());
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTaskViewListener.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTaskViewListener.java
+index ead7c8a88..a11281a05 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTaskViewListener.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTaskViewListener.java
+@@ -233,6 +233,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
+         final WindowContainerTransaction wct = getEnterBubbleTransaction(
+                 tvc.getTaskToken(), mExpandedViewManager.getAppBubbleRootTaskToken(), launchBounds,
+                 isAppBubble);
++        tvc.prepareTaskConfiguration(wct, launchBounds);
+         tvc.getTaskOrganizer().applyTransaction(wct);
+ 
+         // With the task org, the taskAppeared callback will only happen once the task has
+@@ -259,6 +260,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
+                     && mExpandedViewManager.shouldBeAppBubble(taskInfo)) {
+                 final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
+                         mTaskView.getCaptionInsetsOwner());
++                tvc.resetTaskDensity(wct);
+                 tvc.getTaskOrganizer().applyTransaction(wct);
+             }
+             mTaskView.release();
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTransitions.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTransitions.java
+index ce12642d4..af307a5dd 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTransitions.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleTransitions.java
+@@ -1714,6 +1714,7 @@ public class BubbleTransitions {
+             final Binder captionInsetsOwner = mBubble.getTaskView().getCaptionInsetsOwner();
+             final WindowContainerTransaction wct =
+                     getExitBubbleTransaction(token, captionInsetsOwner);
++            mBubble.getTaskView().getController().resetTaskDensity(wct);
+             mTaskViewTransitions.enqueueExternal(
+                     mBubble.getTaskView().getController(),
+                     () -> {
+@@ -1874,6 +1875,7 @@ public class BubbleTransitions {
+             final Binder captionInsetsOwner = bubble.getTaskView().getCaptionInsetsOwner();
+             final WindowContainerTransaction wct =
+                     getExitBubbleTransaction(token, captionInsetsOwner);
++            mBubble.getTaskView().getController().resetTaskDensity(wct);
+             wct.reorder(token, /* onTop= */ true);
+             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
+                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/popupview/PopUpViewTransitionAnimationAdapter.java b/libs/WindowManager/Shell/src/com/android/wm/shell/popupview/PopUpViewTransitionAnimationAdapter.java
+index 3f24fc1ec..d18ddd84e 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/popupview/PopUpViewTransitionAnimationAdapter.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/popupview/PopUpViewTransitionAnimationAdapter.java
+@@ -5,6 +5,8 @@
+ 
+ package com.android.wm.shell.popupview;
+ 
++import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
++
+ import static org.rising.DebugConstants.DEBUG_POP_UP;
+ 
+ import android.graphics.Point;
+@@ -88,6 +90,14 @@ class PopUpViewTransitionAnimationAdapter {
+ 
+     void onAnimationEnd(SurfaceControl.Transaction t) {
+         onAnimationUpdate(t, mAnimation.getDuration());
++        if (!mHasSnapshot && mChange.getTaskInfo() != null
++                && mChange.getTaskInfo().getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
++            // The pop-up crop was captured before the display rotated back to the game.
++            // Do not leave that portrait crop on the live fullscreen task: organized
++            // tasks may not get another WM crop update after Shell finishes this transition.
++            t.setWindowCrop(mLeash, null);
++            t.setCornerRadius(mLeash, 0);
++        }
+     }
+ 
+     long getDurationHint() {
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewController.java
+index 5c3a9cc40..bb2dc1b40 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewController.java
+@@ -127,4 +127,9 @@ public interface TaskViewController {
+      * @param boundsOnScreen the on screen bounds of the surface view.
+      */
+     void setTaskBounds(TaskViewTaskController taskView, Rect boundsOnScreen);
++
++    /** Returns a task-local density, or -1 to leave the task's configuration unchanged. */
++    default int getTaskDensityDpi(TaskViewTaskController taskView, Rect boundsOnScreen) {
++        return -1;
++    }
+ }
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTaskController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTaskController.java
+index 2aa495ca1..87c8eb267 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTaskController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTaskController.java
+@@ -88,6 +88,9 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
+     private TaskView.Listener mListener;
+     private Executor mListenerExecutor;
+     private Rect mCaptionInsets;
++    // -1 until this container owns a density override; 0 means inherit the display.
++    private int mOriginalTaskDensityDpi = -1;
++    private boolean mTaskDensityManaged;
+ 
+     public TaskViewTaskController(Context context, @NonNull ShellTaskOrganizer organizer,
+             TaskViewController taskViewController, SyncTransactionQueue syncQueue) {
+@@ -216,6 +219,15 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
+     }
+ 
+     private void resetTaskInfo() {
++        // Also cover external promotion/reparenting and failed/vanished tasks, which
++        // need not go through the normal Bubble exit transition.
++        final WindowContainerTransaction densityReset = new WindowContainerTransaction();
++        resetTaskDensity(densityReset);
++        if (!densityReset.isEmpty()) {
++            mTaskOrganizer.applyTransaction(densityReset);
++        }
++        mOriginalTaskDensityDpi = -1;
++        mTaskDensityManaged = false;
+         mTaskInfo = null;
+         mTaskToken = null;
+         if (mTaskLeash != null) {
+@@ -226,6 +238,48 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
+         mTaskNotFound = false;
+     }
+ 
++    /** Returns the original effective density, never a previously scaled density. */
++    public int getUnscaledTaskDensityDpi() {
++        if (mOriginalTaskDensityDpi > 0) {
++            return mOriginalTaskDensityDpi;
++        }
++        final int displayDensity = mContext.getResources().getDisplayMetrics().densityDpi;
++        if (mOriginalTaskDensityDpi == 0 || mTaskInfo == null
++                || mTaskInfo.configuration.densityDpi <= 0) {
++            return displayDensity;
++        }
++        return mTaskInfo.configuration.densityDpi;
++    }
++
++    // Called on the Shell executor, alongside the bounds update in the same WCT.
++    public void prepareTaskConfiguration(WindowContainerTransaction wct, Rect boundsOnScreen) {
++        if (mTaskInfo == null || mTaskToken == null || mTaskViewController == null) {
++            return;
++        }
++        final int density = mTaskViewController.getTaskDensityDpi(this, boundsOnScreen);
++        if (density > 0) {
++            if (mOriginalTaskDensityDpi < 0) {
++                final int displayDensity = mContext.getResources().getDisplayMetrics().densityDpi;
++                final int originalDensity = getUnscaledTaskDensityDpi();
++                mOriginalTaskDensityDpi = originalDensity == displayDensity ? 0 : originalDensity;
++            }
++            wct.setDensityDpi(mTaskToken, density);
++            mTaskDensityManaged = true;
++        } else {
++            resetTaskDensity(wct);
++        }
++    }
++
++    /** Appends restoration only when this container owns a task-local density override. */
++    public void resetTaskDensity(WindowContainerTransaction wct) {
++        if (mTaskDensityManaged && mTaskToken != null) {
++            wct.setDensityDpi(mTaskToken, mOriginalTaskDensityDpi);
++        }
++        // Retain ownership until detach: a queued exit transaction may be cancelled.
++        // Repeating the same restoration is safe; forgetting it could leave a fullscreen
++        // task scaled. TaskInfo may also still carry the old density while reset is in flight.
++    }
++
+     /** This method shouldn't be called when shell transitions are enabled. */
+     private void updateTaskVisibility() {
+         boolean visible = mSurfaceCreated;
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTransitions.java b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTransitions.java
+index 5ceb4cb65..ca5e70a31 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTransitions.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/taskview/TaskViewTransitions.java
+@@ -428,6 +428,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
+                 taskView.hashCode());
+         final WindowContainerTransaction wct =
+                 getExitBubbleTransaction(taskToken, taskView.getCaptionInsetsOwner());
++        taskView.resetTaskDensity(wct);
+         mShellExecutor.execute(() -> {
+             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
+             startNextTransition();
+@@ -497,6 +498,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
+         } else {
+             wct = new WindowContainerTransaction();
+             wct.setBounds(taskView.getTaskInfo().token, state.mBounds);
++            taskView.prepareTaskConfiguration(wct, state.mBounds);
+             if (reorder && !syncHiddenWithVisibilityOnReorder) {
+                 // Reset hidden state to fix corner case where surface was destroyed before task
+                 // appeared in #prepareOpenAnimation.
+@@ -601,6 +603,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
+         final WindowContainerTransaction wct = mPendingRedirectTransition != null
+                 ? mPendingRedirectTransition.takePendingWct() : new WindowContainerTransaction();
+         wct.setBounds(taskView.getTaskInfo().token, boundsOnScreen);
++        taskView.prepareTaskConfiguration(wct, boundsOnScreen);
+         mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
+         startNextTransition();
+     }
+@@ -1172,6 +1175,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
+         updateBoundsState(taskView, boundsOnScreen);
+         updateVisibilityState(taskView, true /* visible */);
+         wct.setBounds(taskInfo.token, boundsOnScreen);
++        taskView.prepareTaskConfiguration(wct, boundsOnScreen);
+         taskView.applyCaptionInsetsIfNeeded();
+     }
+ 
+diff --git a/services/core/java/ink/kaleidoscope/server/GmsManagerService.java b/services/core/java/ink/kaleidoscope/server/GmsManagerService.java
+index 10ec53db9..ec4de93f6 100644
+--- a/services/core/java/ink/kaleidoscope/server/GmsManagerService.java
++++ b/services/core/java/ink/kaleidoscope/server/GmsManagerService.java
+@@ -36,6 +36,7 @@ import android.os.Handler;
+ import android.os.IUserManager;
+ import android.os.RemoteException;
+ import android.os.ServiceManager;
++import android.os.SystemProperties;
+ import android.provider.Settings;
+ 
+ import com.android.server.ServiceThread;
+@@ -126,7 +127,11 @@ public final class GmsManagerService extends SystemService {
+     }
+ 
+     private void updateStateForUser(int userId) {
+-        boolean enabled = Settings.Secure.getIntForUser(mResolver, GMS_ENABLED, 0, userId) == 1;
++        // Missing per-user preferences follow the installed ROM variant. Never overwrite an
++        // explicit choice: users of a GMS build may intentionally turn Google services off.
++        final int defaultEnabled = SystemProperties.getBoolean("ro.avium.gms_status", false) ? 1 : 0;
++        boolean enabled = Settings.Secure.getIntForUser(
++                mResolver, GMS_ENABLED, defaultEnabled, userId) == 1;
+         sCachedSettings.put(userId, enabled);
+ 
+         try {

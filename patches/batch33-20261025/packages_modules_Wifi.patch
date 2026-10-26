@@ -1,0 +1,253 @@
+diff --git a/service/java/com/android/server/wifi/DualBandInternetController.java b/service/java/com/android/server/wifi/DualBandInternetController.java
+index 415ab3d..f03ff8a 100644
+--- a/service/java/com/android/server/wifi/DualBandInternetController.java
++++ b/service/java/com/android/server/wifi/DualBandInternetController.java
+@@ -22,7 +22,7 @@ import android.util.Log;
+ 
+ import java.io.PrintWriter;
+ import java.util.function.IntSupplier;
+-import java.util.function.IntPredicate;
++import java.util.function.IntUnaryOperator;
+ 
+ /** Owns one optional opposite-band request. All state is confined to the Wi-Fi handler. */
+ final class DualBandInternetController {
+@@ -38,7 +38,7 @@ final class DualBandInternetController {
+     private final Runnable mUpdate = this::update;
+     private ConnectivityManager mConnectivity;
+     private boolean mStarted;
+-    private IntPredicate mHasBandRequest;
++    private IntUnaryOperator mBandRequestCount;
+     private ConcreteClientModeManager mUnvalidatedPrimary;
+     private ConnectivityManager.NetworkCallback mRequestCallback;
+     private Network mRequestPrimary;
+@@ -57,9 +57,9 @@ final class DualBandInternetController {
+     }
+ 
+     /** Called after the network factories register, never from WifiInjector construction. */
+-    void start(IntPredicate hasBandRequest) {
++    void start(IntUnaryOperator bandRequestCount) {
+         if (mStarted) return;
+-        mHasBandRequest = hasBandRequest;
++        mBandRequestCount = bandRequestCount;
+         mConnectivity = mContext.getSystemService(ConnectivityManager.class);
+         if (mConnectivity == null) return;
+         try {
+@@ -177,13 +177,22 @@ final class DualBandInternetController {
+             mRetryAfterMillis = 0;
+             return;
+         }
++        // A live automatic request consumes one factory slot. More than one slot
++        // means another request is present, even if it shares system_server's UID.
++        // Do this before the idempotent return so a late explicit request can win.
++        if (mRequestCallback != null && mBandRequestCount.applyAsInt(opposite) > 1) {
++            releaseRequest();
++            return;
++        }
+         if (mRequestCallback != null && network.equals(mRequestPrimary)
+                 && info.getNetworkId() == mRequestNetworkId && opposite == mRequestBand) {
+             return;
+         }
+         releaseRequest();
+-        // Existing explicit system requests retain their band/BSSID/WorkSource policy.
+-        if (mHasBandRequest.test(opposite)) return;
++        // unregisterNetworkCallback drains asynchronously. Wait for the factory's
++        // release notification before creating a replacement, rather than guessing
++        // ownership from UID/package names or counting a draining request as new.
++        if (mBandRequestCount.applyAsInt(opposite) > 0) return;
+         long delay = mRetryAfterMillis - mClock.getElapsedSinceBootMillis();
+         if (delay > 0) {
+             mHandler.postDelayed(mUpdate, delay);
+diff --git a/service/java/com/android/server/wifi/MultiInternetManager.java b/service/java/com/android/server/wifi/MultiInternetManager.java
+index adad829..d67622e 100644
+--- a/service/java/com/android/server/wifi/MultiInternetManager.java
++++ b/service/java/com/android/server/wifi/MultiInternetManager.java
+@@ -332,10 +332,10 @@ public class MultiInternetManager {
+     }
+ 
+     /** Start after network factories have registered; only device opt-ins create requests. */
+-    public void startAutomaticDualBand(java.util.function.IntPredicate hasBandRequest) {
++    public void startAutomaticDualBand(java.util.function.IntUnaryOperator bandRequestCount) {
+         if (mContext.getResources().getBoolean(com.android.wifi.resources.R.bool
+                 .config_wifiMultiInternetAutomaticConnectionEnabled)) {
+-            mDualBandController.start(hasBandRequest);
++            mDualBandController.start(bandRequestCount);
+         }
+     }
+ 
+@@ -559,7 +559,7 @@ public class MultiInternetManager {
+     public void setMultiInternetConnectionWorksource(int band, String targetBssid,
+             WorkSource requestorWs) {
+         mDualBandController.scheduleUpdate();
+-        if (!isStaConcurrencyForMultiInternetEnabled()) {
++        if (requestorWs != null && !isStaConcurrencyForMultiInternetEnabled()) {
+             Log.w(TAG, "MultInternet is not enabled.");
+             return;
+         }
+@@ -568,8 +568,11 @@ public class MultiInternetManager {
+                     + targetBssid + ", requestorWs=" + requestorWs);
+         }
+         if (requestorWs == null) {
+-            // Disconnect secondary network if the request is removed.
+-            if (band == getSecondaryConnectedNetworkBand()) {
++            // A CMM can still be associating and have no connected band. Once
++            // the final request is gone it must not finish an orphan connection.
++            mNetworkConnectionStates.remove(band);
++            if (mNetworkConnectionStates.size() == 0
++                    || band == getSecondaryConnectedNetworkBand()) {
+                 for (ConcreteClientModeManager cmm : mActiveModeWarden.getClientModeManagersInRoles(
+                         ROLE_CLIENT_SECONDARY_LONG_LIVED)) {
+                     if (cmm.isSecondaryInternet()) {
+@@ -577,14 +580,14 @@ public class MultiInternetManager {
+                     }
+                 }
+             }
+-            mNetworkConnectionStates.remove(band);
+             updateNetworkConnectionStates();
+             return;
+         }
+         if (mNetworkConnectionStates.contains(band)) {
+             Log.w(TAG, "band " + band + " already requested.");
+             if (TextUtils.equals(mNetworkConnectionStates.get(band).bssid, targetBssid)) {
+-                // No change in BSSID field, so early return to avoid unnecessary scanning.
++                // Preserve connection timing but transfer attribution to the live owner.
++                mNetworkConnectionStates.get(band).requestorWorkSource = requestorWs;
+                 return;
+             }
+             disconnectSecondaryIfNeeded(band, targetBssid);
+diff --git a/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java b/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
+index 714112d..3f65e60 100644
+--- a/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
++++ b/service/java/com/android/server/wifi/MultiInternetWifiNetworkFactory.java
+@@ -33,6 +33,7 @@ import com.android.server.wifi.util.WifiPermissionsUtil;
+ 
+ import java.io.FileDescriptor;
+ import java.io.PrintWriter;
++import java.util.LinkedHashMap;
+ 
+ /**
+  * Network factory to handle multi internet wifi network requests.
+@@ -53,6 +54,10 @@ public class MultiInternetWifiNetworkFactory extends NetworkFactory {
+     private boolean mVerboseLoggingEnabled = false;
+     // Connection request state per each band.
+     private SparseArray<NetworkRequestState> mNetworkRequestStates = new SparseArray<>();
++    // Track exact accepted requests, not just a band count. Releasing the selected
++    // request must restore a remaining request's BSSID and WorkSource.
++    private final LinkedHashMap<NetworkRequest, NetworkRequestState> mRequests =
++            new LinkedHashMap<>();
+     // Connection request count per each band.
+     private SparseArray<Integer> mConnectionReqCount = new SparseArray<>();
+ 
+@@ -167,7 +172,9 @@ public class MultiInternetWifiNetworkFactory extends NetworkFactory {
+     @Override
+     protected void needNetworkFor(NetworkRequest networkRequest) {
+         boolean isFromSetting = mWifiPermissionsUtil.checkNetworkSettingsPermission(
+-                networkRequest.getRequestorUid());
++                networkRequest.getRequestorUid())
++                || mWifiPermissionsUtil.checkNetworkSetupWizardPermission(
++                        networkRequest.getRequestorUid());
+         if (!mMultiInternetManager.isStaConcurrencyForMultiInternetEnabled()
+                 || !isWifiMultiInternetRequest(networkRequest, isFromSetting)) {
+             return;
+@@ -187,52 +194,53 @@ public class MultiInternetWifiNetworkFactory extends NetworkFactory {
+                 isFromSetting,
+                 isFromForegroundApp,
+                 isFromForegroundAppOrService);
+-        mNetworkRequestStates.put(band, nrs);
+-        // If multi internet is requested, without specifying SSID or BSSID,
+-        // The WifiConnectivityManager will perform network selection to choose a candidate.
+-        // Create a worksource using the caller's UID.
+-        WorkSource workSource = new WorkSource(networkRequest.getRequestorUid());
+-        int reqCount = 0;
+-        if (mConnectionReqCount.contains(band)) {
+-            reqCount = mConnectionReqCount.get(band);
+-        }
+-        if (reqCount == 0 || isFromSetting) {
+-            localLog("Need network : Uid " + networkRequest.getRequestorUid() + " PackageName "
+-                    + networkRequest.getRequestorPackageName() + " for band " + band
+-                    + " is rom Setting " + isFromSetting + " ForegroundApp " + isFromForegroundApp
+-                    + " ForegroundAppOrService " + isFromForegroundApp);
+-            mMultiInternetManager.setMultiInternetConnectionWorksource(
+-                    band, wns.wifiConfiguration.BSSID,
+-                    new WorkSource(networkRequest.getRequestorUid(),
+-                    networkRequest.getRequestorPackageName()));
+-        }
+-        mConnectionReqCount.put(band, reqCount + 1);
++        if (mRequests.containsKey(networkRequest)) return;
++        mRequests.put(networkRequest, nrs);
++        updateBandRequest(band);
+     }
+ 
+     @Override
+     protected void releaseNetworkFor(NetworkRequest networkRequest) {
+-        boolean isFromSetting = mWifiPermissionsUtil.checkNetworkSettingsPermission(
+-                networkRequest.getRequestorUid());
+-        if (!isWifiMultiInternetRequest(networkRequest, isFromSetting)) {
+-            return;
+-        }
+-        localLog("releaseNetworkFor " + networkRequest);
+-        final int band = ((WifiNetworkSpecifier) networkRequest.getNetworkSpecifier()).getBand();
+-        int reqCount = mConnectionReqCount.contains(band)
+-                ? mConnectionReqCount.get(band) : 0;
+-        if (reqCount == 0) {
+-            Log.e(TAG, "No valid network request to release");
+-            return;
++        final NetworkRequestState removed = mRequests.remove(networkRequest);
++        if (removed == null) return;
++        updateBandRequest(removed.networkRequestSpecifier.getBand());
++    }
++
++    private void updateBandRequest(int band) {
++        NetworkRequestState selected = null;
++        int count = 0;
++        for (NetworkRequestState state : mRequests.values()) {
++            if (state.networkRequestSpecifier.getBand() != band) continue;
++            count++;
++            // Keep an explicit BSSID over a generic band request. Otherwise the
++            // newest request may take over, including a NETWORK_STACK request.
++            if (selected == null || state.networkRequestSpecifier.wifiConfiguration.BSSID != null
++                    || selected.networkRequestSpecifier.wifiConfiguration.BSSID == null) {
++                selected = state;
++            }
+         }
+-        if (reqCount == 1) {
++        mConnectionReqCount.put(band, count);
++        if (selected == null) {
++            mConnectionReqCount.remove(band);
++            mNetworkRequestStates.remove(band);
+             mMultiInternetManager.setMultiInternetConnectionWorksource(band, null, null);
++        } else {
++            mNetworkRequestStates.put(band, selected);
++            mMultiInternetManager.setMultiInternetConnectionWorksource(band,
++                    selected.networkRequestSpecifier.wifiConfiguration.BSSID,
++                    new WorkSource(selected.networkRequest.getRequestorUid(),
++                            selected.networkRequest.getRequestorPackageName()));
+         }
+-        mConnectionReqCount.put(band, reqCount - 1);
+     }
+ 
+-    /** Whether a live client already owns a request for this band. Wi-Fi thread only. */
++    /** Exact live factory count, including an automatic request while it drains. */
++    int getConnectionRequestCountForBand(int band) {
++        return mConnectionReqCount.get(band, 0);
++    }
++
++    /** Retained for clients that only need to check whether the band is owned. */
+     boolean hasConnectionRequestForBand(int band) {
+-        return mConnectionReqCount.get(band, 0) > 0;
++        return getConnectionRequestCountForBand(band) > 0;
+     }
+ 
+     @Override
+diff --git a/service/java/com/android/server/wifi/WifiServiceImpl.java b/service/java/com/android/server/wifi/WifiServiceImpl.java
+index e89884b..9689543 100644
+--- a/service/java/com/android/server/wifi/WifiServiceImpl.java
++++ b/service/java/com/android/server/wifi/WifiServiceImpl.java
+@@ -1141,7 +1141,7 @@ public class WifiServiceImpl extends IWifiManager.Stub {
+             mWifiInjector.getOemWifiNetworkFactory().register();
+             mWifiInjector.getMultiInternetWifiNetworkFactory().register();
+             mMultiInternetManager.startAutomaticDualBand(mWifiInjector
+-                    .getMultiInternetWifiNetworkFactory()::hasConnectionRequestForBand);
++                    .getMultiInternetWifiNetworkFactory()::getConnectionRequestCountForBand);
+             mWifiInjector.getWifiP2pConnection().handleBootCompleted();
+             // Start to listen country code change to avoid query supported channels causes boot
+             // time increased.

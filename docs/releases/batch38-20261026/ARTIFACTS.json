@@ -1,0 +1,163 @@
+{
+  "batch_number": 38,
+  "version": "AviumUI 16.2.2 / Android 16",
+  "release_date": "2026-10-26",
+  "distribution": "Maintainer cloud distribution; identify downloads by exact filename and SHA256.",
+  "public_patch_count": 113,
+  "public_patch_series_sha256": "3dacfb8a80e02d58f51b8c050908f173ea7fc8129916fed0254439db1c26bc92",
+  "source_manifest_sha256": "2a27c87bed07ba256fd02a2450950cb07e203e53172e3b0098e3f708b6391e43",
+  "source_identity": "Pinned upstream manifests, exact external inputs, and public source-input record containing the exact 113 ordered patch entries and public base/target revisions from the build freeze. Descriptive publication metadata is recorded separately.",
+  "variants": {
+    "gms": {
+      "build_id": "batch38-20261026-attempt1",
+      "batch_number": 38,
+      "attempt": 1,
+      "host_qualified": true,
+      "signing_identity_preserved": true,
+      "boot_is_original_from_own_signed_payload": true,
+      "files": [
+        {
+          "file": "AviumUI-16.2.2-diting-gms-user-batch38-20261026-attempt1.zip",
+          "sha256": "386999423ad4abaa6d9835f2002b3a2499136b4f823e26a6e600fa77b8537fde",
+          "bytes": 3076439840,
+          "role": "full-ota",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/boot.img",
+          "sha256": "5f3cbaf07f1dd1c3274adb2f9e52541bb3a3944f7d27e387792d474273cebb6f",
+          "bytes": 201326592,
+          "role": "boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/dtbo.img",
+          "sha256": "61b482d927e238a72cf6b3d44e5c4a717aa3c8ad7d29ad02dc5a29502216bc30",
+          "bytes": 25165824,
+          "role": "dtbo",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vendor_boot.img",
+          "sha256": "28ef6d67d1c33f920c38a37dfd32faa48f09562dc98d1e0778f43d717f153f5f",
+          "bytes": 100663296,
+          "role": "vendor_boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/recovery.img",
+          "sha256": "dc846c6ce4c5a5627ae0d3e4e219cfd5c70e689a04c5355a9ac8638959bfbc3c",
+          "bytes": 104857600,
+          "role": "recovery",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vbmeta.img",
+          "sha256": "3bdb840fef4d29137b051210ea94015b9ff1c814cae18de8dd452419e2d18899",
+          "bytes": 8192,
+          "role": "vbmeta",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "gms/vbmeta_system.img",
+          "sha256": "47327df45d1090ac417b8e73873276d49ad956f2765ae54c0d52b5902711a64d",
+          "bytes": 4096,
+          "role": "vbmeta_system",
+          "matches_signed_payload": true
+        }
+      ]
+    },
+    "vanilla": {
+      "build_id": "batch38-20261026-attempt1",
+      "batch_number": 38,
+      "attempt": 1,
+      "host_qualified": true,
+      "signing_identity_preserved": true,
+      "boot_is_original_from_own_signed_payload": true,
+      "files": [
+        {
+          "file": "AviumUI-16.2.2-diting-vanilla-user-batch38-20261026-attempt1.zip",
+          "sha256": "65d51a86d0547e9bed1c882c0f8580053b00063792bc8fc7175ad7784441e26a",
+          "bytes": 2245058428,
+          "role": "full-ota",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/boot.img",
+          "sha256": "f7c6f7a8993f67ed0b3f76d585b8d9b1f0c534c9e583c5f6b84f5171d14e6367",
+          "bytes": 201326592,
+          "role": "boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/dtbo.img",
+          "sha256": "61de45c5c171bbae64fc5e9635d1dfb6c575ae4fb71d9af6c59f13e115573a1c",
+          "bytes": 25165824,
+          "role": "dtbo",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vendor_boot.img",
+          "sha256": "61b7ccd9f8dd4536bd1d0b3ff3e836c78b9c2924d83958d0678faa4db517ccfb",
+          "bytes": 100663296,
+          "role": "vendor_boot",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/recovery.img",
+          "sha256": "166000cca6190ddfdf410e8220191eb64ae166fdab6c5d20bd7e4816a38a84d4",
+          "bytes": 104857600,
+          "role": "recovery",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vbmeta.img",
+          "sha256": "37cbfe714942f17e368a637327dd0c7f4c4b9869a5ad32fd095a6636bc545c62",
+          "bytes": 8192,
+          "role": "vbmeta",
+          "matches_signed_payload": true
+        },
+        {
+          "file": "vanilla/vbmeta_system.img",
+          "sha256": "ac793121ad7e1f52211de429edd8f0b60c6b119f3a3968712571080c367c707a",
+          "bytes": 4096,
+          "role": "vbmeta_system",
+          "matches_signed_payload": true
+        }
+      ]
+    }
+  },
+  "ofrp": {
+    "file": "OFRP/OrangeFox-diting-ditingp-20261016-review2.img",
+    "bytes": 104857600,
+    "sha256": "275ca57628e65f8877b6b286feeb1991df2e95c7b02212835ab728e5e59453ba",
+    "version": "20261016-review2",
+    "rebuilt_for_this_batch": false
+  },
+  "ofrp_rebuilt": false,
+  "validation": {
+    "both_variants_built_signed_and_host_qualified": true,
+    "actual_images_ota_payload_components_windows_readback_passed": true,
+    "maintainer_phone_feedback": {
+      "device": "Xiaomi 12T Pro",
+      "variant": "gms",
+      "date": "2026-10-26",
+      "result": "No current issues reported after testing",
+      "individual_steps_independently_verified": false
+    },
+    "vanilla_phone_tested": false,
+    "k50_ultra_phone_tested": false,
+    "lhdc_headset_tested": false
+  },
+  "confirmed_limitations": [
+    "Dual-band Wi-Fi is opt-in and does not automatically aggregate ordinary-app traffic or a single connection. Reverse-primary-band and long-term coexistence tests are not covered.",
+    "Fingerprint failure counts persist across sessions within one HAL process; HAL process restart clears them.",
+    "A hidden navigation handle still reserves a bottom gesture touch region; controls within that region may be affected.",
+    "GMS inclusion does not guarantee Google certification or Play Integrity.",
+    "Custom application fonts and image text are outside system-font replacement.",
+    "K50 Ultra, Vanilla phone acceptance, compatible LHDC headphones and extended OFRP scenarios have not been independently validated for this release."
+  ],
+  "build_time_patch_series_sha256": "f2dc76bd592f5eec1a92ce46dc9a8e459a450de5044df8646b2558179a700d04",
+  "source_input_record": "SOURCE-PATCH-SERIES.json",
+  "source_input_record_sha256": "7f054cc195570c280e8ed4854a2baf886bcc77304764cd89b3df4779f845fc11"
+}

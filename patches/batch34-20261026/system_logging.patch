@@ -1,0 +1,34 @@
+diff --git a/logd/LogAudit.cpp b/logd/LogAudit.cpp
+index c7d7501..3cd3889 100644
+--- a/logd/LogAudit.cpp
++++ b/logd/LogAudit.cpp
+@@ -325,6 +325,11 @@ int LogAudit::logPrint(const char* fmt, ...) {
+         now = log_time(CLOCK_REALTIME);
+     }
+ 
++    // Kernel audit records belong to logd, not to the process that triggered a denial.
++    // Keep the subject PID and app metadata for privileged diagnostics, but do not
++    // make kernel policy/path details readable through an app's own-UID log access.
++    // Both buffers use AID_LOGD below; no denial is dropped or rewritten.
++
+     // log to events
+ 
+     size_t str_len = strnlen(str, LOGGER_ENTRY_MAX_PAYLOAD);
+@@ -349,7 +354,7 @@ int LogAudit::logPrint(const char* fmt, ...) {
+         memcpy(event->data + str_len - denial_metadata.length(),
+                denial_metadata.c_str(), denial_metadata.length());
+ 
+-        rc = logbuf->Log(LOG_ID_EVENTS, now, uid, pid, tid, reinterpret_cast<char*>(event),
++        rc = logbuf->Log(LOG_ID_EVENTS, now, AID_LOGD, pid, tid, reinterpret_cast<char*>(event),
+                          (message_len <= UINT16_MAX) ? (uint16_t)message_len : UINT16_MAX);
+         if (rc >= 0) {
+             notify |= 1 << LOG_ID_EVENTS;
+@@ -402,7 +407,7 @@ int LogAudit::logPrint(const char* fmt, ...) {
+         strncpy(newstr + 1 + str_len + prefix_len + suffix_len,
+                 denial_metadata.c_str(), denial_metadata.length());
+ 
+-        rc = logbuf->Log(LOG_ID_MAIN, now, uid, pid, tid, newstr,
++        rc = logbuf->Log(LOG_ID_MAIN, now, AID_LOGD, pid, tid, newstr,
+                          (message_len <= UINT16_MAX) ? (uint16_t)message_len : UINT16_MAX);
+ 
+         if (rc >= 0) {

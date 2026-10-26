@@ -1,0 +1,22 @@
+diff --git a/overlay/Settings/res/values/config.xml b/overlay/Settings/res/values/config.xml
+index 354b8e5..b416c18 100644
+--- a/overlay/Settings/res/values/config.xml
++++ b/overlay/Settings/res/values/config.xml
+@@ -6,4 +6,5 @@
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+     <!-- The radius of the enrollment progress bar, in dp -->
+     <integer name="config_udfpsEnrollProgressBar" translatable="false">119</integer>
++    <bool name="config_show_wifi_dual_band">true</bool>
+ </resources>
+diff --git a/overlay/Wifi/res/values/config.xml b/overlay/Wifi/res/values/config.xml
+index 77772e1..fbd5e0b 100644
+--- a/overlay/Wifi/res/values/config.xml
++++ b/overlay/Wifi/res/values/config.xml
+@@ -6,4 +6,7 @@
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+     <!-- Do not translate. Default access point SSID used for tethering -->
+     <string name="wifi_tether_configure_ssid_default" translatable="false">Xiaomi 12T Pro</string>
++    <!-- Default mode stays disabled until the user opts in. -->
++    <bool name="config_wifiMultiStaMultiInternetConcurrencyEnabled" translatable="false">true</bool>
++    <bool name="config_wifiMultiInternetAutomaticConnectionEnabled" translatable="false">true</bool>
+ </resources>

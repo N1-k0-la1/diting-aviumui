@@ -1,0 +1,114 @@
+diff --git a/dolby-vision/Android.bp b/dolby-vision/Android.bp
+index 14433a1..076c0a7 100644
+--- a/dolby-vision/Android.bp
++++ b/dolby-vision/Android.bp
+@@ -368,39 +368,28 @@ cc_prebuilt_library_shared {
+     soc_specific: true,
+ }
+ 
+-cc_prebuilt_binary {
++// Build the HIDL wrapper with the platform headers: ComponentStore is not a stable
++// C++ ABI and the donor executable embeds an older object size/virtual-base layout.
++cc_binary {
+     name: "dolbycodec2",
+     owner: "xiaomi",
+-    target: {
+-        android_arm64: {
+-            srcs: [
+-                "proprietary/vendor/bin/hw/dolbycodec2",
+-            ],
+-            shared_libs: [
+-                "libbase",
+-                "liblog",
+-                "libcodec2",
+-                "libcodec2_vndk",
+-                "libutils",
+-                "android.hardware.media.c2@1.0",
+-                "libcodec2_hidl@1.0",
+-                "libavservices_minijail_vendor",
+-                "libbinder",
+-                "libhidlbase",
+-                "c2.dolby.store",
+-                "libcutils",
+-                "libc++",
+-                "libc",
+-                "libm",
+-                "libdl",
+-            ],
+-        },
++    srcs: ["service.cpp"],
++    shared_libs: [
++        "liblog",
++        "libcodec2",
++        "libcodec2_vndk",
++        "libutils",
++        "android.hardware.media.c2@1.0",
++        "libcodec2_hidl@1.0",
++        "libbinder",
++        "libhidlbase",
++        "c2.dolby.store",
++    ],
++    cflags: ["-Wall", "-Werror"],
++    sanitize: {
++        cfi: true,
+     },
+     compile_multilib: "64",
+-    strip: {
+-        none: true,
+-    },
+-    prefer: true,
+     relative_install_path: "hw",
+     soc_specific: true,
+ }
+diff --git a/dolby-vision/service.cpp b/dolby-vision/service.cpp
+new file mode 100644
+index 0000000..9025777
+--- /dev/null
++++ b/dolby-vision/service.cpp
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: Apache-2.0
++// Construct the platform HIDL wrapper locally; retain the vendor codec store.
++#define LOG_TAG "dolbycodec2"
++
++#include <csignal>
++#include <cstdlib>
++#include <memory>
++
++#include <binder/ProcessState.h>
++#include <codec2/hidl/1.0/ComponentStore.h>
++#include <hidl/HidlTransportSupport.h>
++#include <log/log.h>
++
++namespace android {
++std::shared_ptr<C2ComponentStore> GetCodec2DolbyComponentStore();
++}
++
++int main() {
++    using namespace android;
++    using HidlComponentStore = hardware::media::c2::V1_0::utils::ComponentStore;
++
++    std::signal(SIGPIPE, SIG_IGN);
++    ProcessState::initWithDriver("/dev/vndbinder");
++    ProcessState::self()->startThreadPool();
++    hardware::configureRpcThreadpool(8, true /* callerWillJoin */);
++
++    auto codecStore = GetCodec2DolbyComponentStore();
++    if (!codecStore) {
++        ALOGE("Cannot create Dolby Codec2 store");
++        return EXIT_FAILURE;
++    }
++    // sizeof/virtual-base offsets must match this build's libcodec2_hidl@1.0.
++    auto service = sp<HidlComponentStore>::make(codecStore);
++    if (service->status() != C2_OK) {
++        ALOGE("Cannot initialize Dolby HIDL store: %d", service->status());
++        return EXIT_FAILURE;
++    }
++    const status_t result = service->registerAsService("dolby");
++    if (result != OK) {
++        ALOGE("Cannot register Dolby HIDL store: %d", result);
++        return EXIT_FAILURE;
++    }
++    ALOGI("Dolby Codec2 store registered");
++    hardware::joinRpcThreadpool();
++    return EXIT_FAILURE;  // A service thread pool must not return normally.
++}

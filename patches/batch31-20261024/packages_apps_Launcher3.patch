@@ -1,0 +1,155 @@
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java b/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
+index 3ff0bf3..984a51a 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarActivityContext.java
+@@ -791,8 +791,13 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
+      * @param title The window title to pass to the created WindowManager.LayoutParams.
+      */
+     public WindowManager.LayoutParams createDefaultWindowLayoutParams(int type, String title) {
+-        int windowFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+-                | WindowManager.LayoutParams.FLAG_SLIPPERY;
++        int windowFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
++        // A hidden phone gesture strip overlaps app controls. Sliding its touch stream
++        // into the app synthesizes a new DOWN before Quickstep can pilfer the gesture.
++        if (!isPhoneGestureNavMode()
++                || SettingsCache.INSTANCE.get(this).getValue(NAVIGATION_BAR_HINT_URI)) {
++            windowFlags |= WindowManager.LayoutParams.FLAG_SLIPPERY;
++        }
+         boolean watchOutside = isTransientTaskbar() || isThreeButtonNav();
+         if (watchOutside && !isRunningInTestHarness()) {
+             windowFlags |= WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+@@ -1467,7 +1472,10 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
+     public int getDefaultTaskbarWindowSize() {
+         Resources resources = getResources();
+ 
+-        if (isGestureNav() && !SettingsCache.INSTANCE.get(this).getValue(NAVIGATION_BAR_HINT_URI)) {
++        // Hiding the phone handle must not remove the window that shields navigation
++        // gestures from app controls which react to ACTION_DOWN.
++        if (isGestureNav() && !isPhoneMode()
++                && !SettingsCache.INSTANCE.get(this).getValue(NAVIGATION_BAR_HINT_URI)) {
+             return 0;
+         }
+ 
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarInsetsController.kt b/quickstep/src/com/android/launcher3/taskbar/TaskbarInsetsController.kt
+index 0c83260..74b9ee0 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarInsetsController.kt
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarInsetsController.kt
+@@ -159,11 +159,15 @@ class TaskbarInsetsController(val context: TaskbarActivityContext) : LoggableTas
+                 }
+             }
+             if (
+-                taskbarStashController.isInApp ||
++                // Phone gesture input must not depend on tablet-only launcher state updates.
++                (context.isPhoneGestureNavMode &&
++                    context.isUserSetupComplete &&
++                    taskbarStashController.stashedHeight == 0) ||
++                    taskbarStashController.isInApp ||
+                     controllers.uiController.isInOverviewUi ||
+                     context.showLockedTaskbarOnHome()
+             ) {
+-                // only add the taskbar touch region if not on home
++                // Phone gestures retain their bottom strip on home as well as in apps.
+                 val bottom = windowLayoutParams.height
+                 val top = bottom - taskbarTouchableHeight
+                 val right = context.deviceProfile.deviceProperties.widthPx
+@@ -371,7 +375,14 @@ class TaskbarInsetsController(val context: TaskbarActivityContext) : LoggableTas
+             debugTouchableRegion.lastSetTouchableReason = FULLSCREEN_TASKBAR_WINDOW
+             context.dragLayer.getBoundsInWindow(debugTouchableRegion.lastSetTouchableBounds, false)
+         } else if (
+-            controllers.taskbarViewController.areIconsVisible() ||
++            // Keep the invisible phone gesture strip touchable even when FLAG_IN_APP is
++            // unset: phone-mode launcher state animations do not maintain that tablet flag.
++            // Otherwise apps receive the initial touch stream before Quickstep pilfers it.
++            (context.isPhoneGestureNavMode &&
++                context.isUserSetupComplete &&
++                !isImeVisible &&
++                controllers.taskbarStashController.stashedHeight == 0) ||
++                controllers.taskbarViewController.areIconsVisible() ||
+                 context.isNavBarKidsModeActive ||
+                 includeBubbleBarBounds()
+         ) {
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarStashController.java b/quickstep/src/com/android/launcher3/taskbar/TaskbarStashController.java
+index d619668..ead8810 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarStashController.java
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarStashController.java
+@@ -579,6 +579,11 @@ public class TaskbarStashController implements TaskbarControllers.LoggableTaskba
+      * Returns the height that taskbar will be touchable.
+      */
+     public int getTouchableHeight() {
++        if (mActivity.isPhoneGestureNavMode()
++                && mActivity.isUserSetupComplete()) {
++            // Keep a touch shield even when the handle and navigation bar inset are hidden.
++            return mActivity.getResources().getDimensionPixelSize(R.dimen.taskbar_stashed_size);
++        }
+         return mIsStashed
+                 ? mStashedHeight
+                 : (mUnstashedHeight
+diff --git a/quickstep/src/com/android/quickstep/RecentsAnimationCallbacks.java b/quickstep/src/com/android/quickstep/RecentsAnimationCallbacks.java
+index 4d9f352..631f24f 100644
+--- a/quickstep/src/com/android/quickstep/RecentsAnimationCallbacks.java
++++ b/quickstep/src/com/android/quickstep/RecentsAnimationCallbacks.java
+@@ -62,7 +62,7 @@ public class RecentsAnimationCallbacks implements
+     // TODO(141886704): Remove these references when they are no longer needed
+     private RecentsAnimationController mController;
+ 
+-    private boolean mCancelled;
++    private volatile boolean mCancelled;
+ 
+     public RecentsAnimationCallbacks(RecentsViewContainer container) {
+         mIsContainerRecentsWindowManager = container instanceof RecentsWindowManager;
+@@ -115,12 +115,13 @@ public class RecentsAnimationCallbacks implements
+             return;
+         }
+ 
+-        mController = new RecentsAnimationController(animationController,
+-                this::onAnimationFinished);
++        final RecentsAnimationController controller = new RecentsAnimationController(
++                animationController, this::onAnimationFinished);
++        mController = controller;
+         if (mCancelled) {
+             Utilities.postAsyncCallback(
+                     MAIN_EXECUTOR.getHandler(),
+-                    () -> mController.finishAnimationToApp(new ActiveGestureLog.CompoundString(
++                    () -> controller.finishAnimationToApp(new ActiveGestureLog.CompoundString(
+                             "RecentsAnimationCallback.onAnimationStart: mCancelled=true")));
+         } else {
+             RemoteAnimationTarget[] nonAppTargets;
+@@ -136,9 +137,17 @@ public class RecentsAnimationCallbacks implements
+                     wallpaperTargets, nonAppTargets, homeContentInsets, extras);
+ 
+             Utilities.postAsyncCallback(MAIN_EXECUTOR.getHandler(), () -> {
++                // Cancellation can happen after the Binder callback has queued this dispatch.
++                // Recheck on the UI thread before delivering a now-abandoned animation.
++                if (mCancelled) {
++                    controller.finishAnimationToApp(new ActiveGestureLog.CompoundString(
++                            "RecentsAnimationCallback.onAnimationStart: canceled before dispatch"));
++                    targets.release();
++                    return;
++                }
+                 ActiveGestureProtoLogProxy.logOnRecentsAnimationStart(targets.apps.length);
+                 for (RecentsAnimationListener listener : getListeners()) {
+-                    listener.onRecentsAnimationStart(mController, targets, transitionInfo);
++                    listener.onRecentsAnimationStart(controller, targets, transitionInfo);
+                 }
+             });
+         }
+diff --git a/quickstep/src/com/android/quickstep/TaskAnimationManager.java b/quickstep/src/com/android/quickstep/TaskAnimationManager.java
+index 1bdd9bb..8d59840 100644
+--- a/quickstep/src/com/android/quickstep/TaskAnimationManager.java
++++ b/quickstep/src/com/android/quickstep/TaskAnimationManager.java
+@@ -270,11 +270,14 @@ public class TaskAnimationManager implements RecentsAnimationCallbacks.RecentsAn
+         mCallbacks = newCallbacks;
+         mLauncherDestroyCallbackSet = false;
+         final Runnable recentsAnimationStartTimeoutCallback = () -> {
+-            if (!mRecentsAnimationStartPending) return;
++            if (mCallbacks != newCallbacks || !mRecentsAnimationStartPending) return;
+             mRecentsAnimationStartPending = false;
+             Log.wtf(TAG, "Recents animation start has been pending for over "
+                     + RECENTS_ANIMATION_START_TIMEOUT_MS + "ms");
+             ActiveGestureProtoLogProxy.logRecentsAnimationStartTimedOut();
++            // A late start must finish its remote controller instead of leaving Shell's input
++            // consumer active after all local listeners have been removed.
++            newCallbacks.notifyAnimationCanceled();
+             cleanUpRecentsAnimation(newCallbacks);
+         };
+         mCallbacks.addListener(new RecentsAnimationCallbacks.RecentsAnimationListener() {

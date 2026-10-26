@@ -1,0 +1,200 @@
+diff --git a/core/java/android/view/ImeBackAnimationController.java b/core/java/android/view/ImeBackAnimationController.java
+index ba5a66c38..3a10171a2 100644
+--- a/core/java/android/view/ImeBackAnimationController.java
++++ b/core/java/android/view/ImeBackAnimationController.java
+@@ -250,8 +250,13 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+ 
+     private boolean isBackAnimationAllowed() {
+ 
+-        if (mViewRoot.mContext.getResources().getConfiguration().windowConfiguration
+-                .getWindowingMode() == WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW) {
++        final int windowingMode = mViewRoot.mContext.getResources().getConfiguration()
++                .windowConfiguration.getWindowingMode();
++        if (windowingMode == WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
++                || WindowConfiguration.isPopUpWindowMode(windowingMode)) {
++            // Pop-up tasks have transformed app surfaces and a remote IME control target.
++            // Commit back with the regular hide request instead of waiting for an app-owned
++            // animation leash that will never arrive.
+             // TODO(b/346726115) enable predictive back animation in multi-window mode in
+             //  DisplayImeController
+             return false;
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+index 00d581a52..bc572d2b8 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+@@ -4053,9 +4053,17 @@ public class BubbleController implements ConfigurationChangeListener,
+                 options.setLaunchWindowingMode(
+                         android.app.WindowConfiguration.WINDOWING_MODE_MINI_WINDOW_EXT);
+                 options.setLaunchDisplayId(mContext.getDisplayId());
+-                ActivityManager.RunningTaskInfo task = findSidebarTask(
+-                        mTaskOrganizer.getRunningTasks(), packageName,
++                TaskInfo task = findSidebarTask(mTaskOrganizer.getRunningTasks(), packageName,
+                         user.getIdentifier(), mContext.getDisplayId());
++                if (task == null) {
++                    // A stopped process may still have a valid task in recents. Reattach it
++                    // instead of creating another document with MULTIPLE_TASK on every launch.
++                    task = findSidebarTask(ActivityTaskManager.getService().getRecentTasks(
++                                    ActivityTaskManager.getMaxRecentTasksStatic(),
++                                    ActivityManager.RECENT_IGNORE_UNAVAILABLE,
++                                    user.getIdentifier()).getList(),
++                            packageName, user.getIdentifier(), mContext.getDisplayId());
++                }
+                 mBubbleData.setExpanded(false);
+                 if (task != null) {
+                     // Resume the current activity stack rather than relaunching its root.
+@@ -4075,11 +4083,10 @@ public class BubbleController implements ConfigurationChangeListener,
+     }
+ 
+     @VisibleForTesting
+-    static ActivityManager.RunningTaskInfo findSidebarTask(
+-            List<ActivityManager.RunningTaskInfo> tasks, String packageName,
+-            int userId, int displayId) {
+-        ActivityManager.RunningTaskInfo newest = null;
+-        for (ActivityManager.RunningTaskInfo task : tasks) {
++    static <T extends TaskInfo> T findSidebarTask(
++            List<T> tasks, String packageName, int userId, int displayId) {
++        T newest = null;
++        for (T task : tasks) {
+             int mode = task.getWindowingMode();
+             if (task.userId != userId || task.displayId != displayId || task.isAppBubble
+                     || task.baseActivity == null
+diff --git a/services/core/java/com/android/server/wm/BackNavigationController.java b/services/core/java/com/android/server/wm/BackNavigationController.java
+index 94f0d6396..434c69dc5 100644
+--- a/services/core/java/com/android/server/wm/BackNavigationController.java
++++ b/services/core/java/com/android/server/wm/BackNavigationController.java
+@@ -214,7 +214,10 @@ class BackNavigationController {
+                             .shouldMiniWindowHandleInput();
+                 Slog.d(TAG, "startBackNavigation: Mini window detected, hasInputFocus=" + miniHasInputFocus);
+ 
+-                if (!miniHasInputFocus) {
++                if (!miniHasInputFocus
++                        && !window.getDisplayContent().getImeContainer().isVisible()) {
++                    // A visible IME must receive back through the focused application's callback,
++                    // even if a keyboard touch left the mini-window pointer-focus hint unset.
+                     // Mini window doesn't have focus, skip to background task
+                     Slog.d(TAG, "startBackNavigation: Skipping mini window, getting background task");
+ 
+diff --git a/services/core/java/com/android/server/wm/PopUpWindowController.java b/services/core/java/com/android/server/wm/PopUpWindowController.java
+index 897b3e976..fb5f382ff 100644
+--- a/services/core/java/com/android/server/wm/PopUpWindowController.java
++++ b/services/core/java/com/android/server/wm/PopUpWindowController.java
+@@ -382,6 +382,16 @@ public class PopUpWindowController {
+         }
+     }
+ 
++    private void clearDimmerForTask(Task task) {
++        final Task dimmerTask = DimmerWindow.getInstance().getTask();
++        if (task == null || dimmerTask == null) return;
++        final Task rootTask = task.getRootTask();
++        if (dimmerTask == task || (rootTask != null
++                && dimmerTask.getRootTask() == rootTask)) {
++            DimmerWindow.getInstance().setTask(null);
++        }
++    }
++
+     void moveActivityTaskToBack(Task task, int reason) {
+         synchronized (mAtmService.mGlobalLock) {
+             if (DEBUG_POP_UP) {
+@@ -393,7 +403,7 @@ public class PopUpWindowController {
+                     TopActivityRecorder.getInstance().clearMiniWindow();
+                 } else if (reason == MOVE_TO_BACK_FROM_LEAVE_BUTTON) {
+                     TopActivityRecorder.getInstance().clearPinnedWindow();
+-                    DimmerWindow.getInstance().setTask(null);
++                    clearDimmerForTask(task);
+                 }
+                 final TaskWindowSurfaceInfo info = task.mWindowContainerExt.getTaskWindowSurfaceInfo();
+                 info.playExitAnimation(reason == MOVE_TO_BACK_FROM_LEAVE_BUTTON,
+@@ -410,7 +420,7 @@ public class PopUpWindowController {
+                                     moveActivityTaskToBackInner(task, fullTask);
+                                 }
+                                 mHandler.postDelayed(()-> {
+-                                    tryExitPopUpView(task, true, reason != MOVE_TO_BACK_NEW_MINI, reason != MOVE_TO_BACK_NEW_PIN);
++                                    tryExitPopUpView(task, true, true, reason != MOVE_TO_BACK_NEW_PIN);
+                                 }, EXIT_POP_UP_DELAY);
+                             }
+                         }
+@@ -548,7 +558,7 @@ public class PopUpWindowController {
+                         }
+                         if (removePin && !wasMiniWindow) {
+                             TopActivityRecorder.getInstance().clearPinnedWindow();
+-                            DimmerWindow.getInstance().setTask(null);
++                            clearDimmerForTask(rootTask);
+                         }
+                         if (!skipAnim) {
+                             rootTask.mWindowContainerExt.scheduleTransition();
+@@ -647,7 +657,7 @@ public class PopUpWindowController {
+                 TopActivityRecorder.getInstance().moveTopMiniToPinned(
+                         isFromDimmer ? rootTask : taskOrRootTask);
+             }
+-            DimmerWindow.getInstance().hide();
++            clearDimmerForTask(rootTask);
+             PinnedWindowOverlayController.getInstance().setTask(null);
+             rootTask.mWindowContainerExt.prepareTransition();
+             rootTask.mWindowContainerExt.setPreFreezedWindowingMode(
+@@ -946,7 +956,8 @@ public class PopUpWindowController {
+                         Slog.w(TAG, "Cannot force update mini window surface: mSurfaceControl is null or invalid");
+                     }
+                 } else if (WindowConfiguration.isPinnedExtWindowMode(windowingMode)) {
+-                    DimmerWindow.getInstance().setTask(null);
++                    // A separate expanded mini-window may coexist with this corner window.
++                    clearDimmerForTask(rootTask);
+                     final ActivityRecord topActivity = rootTask.topRunningActivity();
+                     if (topActivity != null) {
+                         TopActivityRecorder.getInstance().updateTopPinnedWindowActivity(topActivity);
+@@ -1291,7 +1302,7 @@ public class PopUpWindowController {
+                 Slog.d(TAG, "exitPinnedWindowingMode: task=" + task);
+             }
+             TopActivityRecorder.getInstance().moveTopPinnedToFull();
+-            DimmerWindow.getInstance().setTask(null);
++            clearDimmerForTask(rootTask);
+             setTryExitWindowingMode(true);
+             tryExitPopUpView(rootTask, false, false, true);
+             setTryExitWindowingMode(false);
+diff --git a/services/core/java/com/android/server/wm/TopActivityRecorder.java b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+index e24ffcff9..a80c5b82f 100644
+--- a/services/core/java/com/android/server/wm/TopActivityRecorder.java
++++ b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+@@ -216,17 +216,24 @@ public class TopActivityRecorder {
+         return "";
+     }
+ 
++    private static boolean isSameTaskOrRoot(Task first, Task second) {
++        if (first == null || second == null) return false;
++        if (first == second) return true;
++        final Task root = first.getRootTask();
++        return root != null && root == second.getRootTask();
++    }
++
+     void removeMiniWindowTask(Task task) {
+         synchronized (mFocusLock) {
+             final int n = mTopMiniWindowActivity.size();
+             for (int i = n - 1; i >= 0; --i) {
+-                if (mTopMiniWindowActivity.get(i).task == task) {
++                if (isSameTaskOrRoot(mTopMiniWindowActivity.get(i).task, task)) {
+                     final ActivityInfo ai = mTopMiniWindowActivity.remove(i);
+                     logD("removeMiniWindowTask: " + ai);
+-                    if (n == 1) {
+-                        DimmerWindow.getInstance().setTask(null);
+-                    } else {
+-                        DimmerWindow.getInstance().setTask(mTopMiniWindowActivity.get(n - 2).task);
++                    // An old task's delayed exit must not remove a newer task's control bar.
++                    if (isSameTaskOrRoot(DimmerWindow.getInstance().getTask(), ai.task)) {
++                        DimmerWindow.getInstance().setTask(n == 1 ? null
++                                : mTopMiniWindowActivity.get(n - 2).task);
+                     }
+                     return;
+                 }
+@@ -354,8 +361,11 @@ public class TopActivityRecorder {
+         synchronized (mFocusLock) {
+             final int n = mTopMiniWindowActivity.size();
+             for (int i = n - 1; i >= 0; --i) {
+-                if (mTopMiniWindowActivity.get(i).task != task) {
+-                    return mTopMiniWindowActivity.get(i).task;
++                final Task miniTask = mTopMiniWindowActivity.get(i).task;
++                if (miniTask != null && miniTask.isAttached()
++                        && miniTask.getWindowConfiguration().isMiniExtWindowMode()
++                        && !isSameTaskOrRoot(miniTask, task)) {
++                    return miniTask;
+                 }
+             }
+             return null;

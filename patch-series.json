@@ -654,6 +654,146 @@
       "original_commit": "0a997792bbe31ef09a20e318439e2ba64d21e40b",
       "patch": "patches/resolver-approval-20261018/01_frameworks_base.patch",
       "sha256": "b1494782bb796f98c4dcdb2441dfbdda8ca700210e4db90b7d6f7df2671cef1e"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "0a997792bbe31ef09a20e318439e2ba64d21e40b",
+      "original_commit": "e2af3eaff4cdd3fbf123fbf5f3013fdc4436752d",
+      "patch": "patches/batch30-20261023/frameworks_base.patch",
+      "sha256": "b82a5656d091a80ceabe75a655ff8496535203e765c114d4d2a2486991e9c8b7"
+    },
+    {
+      "project": "packages/apps/FeatureSettings",
+      "base": "9a229c750d6b45eeb12403b023fbcaf5540b83ea",
+      "original_commit": "d3fe971c5e2c7c7968c6bcce4a410b7937222c49",
+      "patch": "patches/batch30-20261023/packages_apps_FeatureSettings.patch",
+      "sha256": "ad8a46c180429a3108fdb6df98c189226d5104ec1da88af449cd3e92fe856a13"
+    },
+    {
+      "project": "packages/apps/Launcher3",
+      "base": "7e9b22915760d8fcbe565afa334e195b59187c27",
+      "original_commit": "d781ffe1ba1783fe8d4c9c975fb76c9c42d52015",
+      "patch": "patches/batch30-20261023/packages_apps_Launcher3.patch",
+      "sha256": "b01a5dada112c2c0eb36f982177772b46948b5c03c2f20f99fa8d08c08da7379"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "e2af3eaff4cdd3fbf123fbf5f3013fdc4436752d",
+      "original_commit": "b2d6d6b762b27f11a964efce8b0a2b71aadafee2",
+      "patch": "patches/batch31-20261024/frameworks_base.patch",
+      "sha256": "da99c7bd3f5b19730ec395a491aabfaaa37ef3d0c02ded801a2216ee8a3474ca"
+    },
+    {
+      "project": "packages/apps/Launcher3",
+      "base": "d781ffe1ba1783fe8d4c9c975fb76c9c42d52015",
+      "original_commit": "5c433f14fe8e42579c5925714debd06efd5b4daf",
+      "patch": "patches/batch31-20261024/packages_apps_Launcher3.patch",
+      "sha256": "ae99aed573fe36d6afc27b444a56f95bd5800165ab05380c6dc4f9995dc4dc58"
+    },
+    {
+      "project": "vendor/xiaomi/sm8450-common",
+      "base": "5cb79cca5980aaace751f3f91712fe331080c77b",
+      "original_commit": "60011aa7a607cc5dd4e631e0ab83f2a16a184413",
+      "patch": "patches/batch31-20261024/vendor_xiaomi_sm8450-common.patch",
+      "sha256": "3925125d6bbbc81cf3bb501acba58e4d8d1573392fb41fe904ba93ba45b33ea3"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "b2d6d6b762b27f11a964efce8b0a2b71aadafee2",
+      "original_commit": "68e72274aba5dcb0e0412bba3c6eb6ffe64a2848",
+      "patch": "patches/batch32-20261025/frameworks_base.patch",
+      "sha256": "430fee5fa23431868edf7246252c766200f83846462a6d4f43f82f8e4ada2d10"
+    },
+    {
+      "project": "system/vold",
+      "base": "cd2c5dea3e93c07be61576f658d002ecc4570de2",
+      "original_commit": "6318dd74a8e910739a19c98a5838458da1e209cf",
+      "patch": "patches/batch32-20261025/system_vold.patch",
+      "sha256": "cb5f81d58777cf9e242be36e8e914c40d0e0714216bbc55f8366822b05f7354f"
+    },
+    {
+      "project": "packages/modules/Wifi",
+      "base": "66976f96bf3c78d92ea70832eda01f9f5f4114c7",
+      "original_commit": "79c481d4c306c5f195f2cb725f88303c90632484",
+      "patch": "patches/batch32-20261025/packages_modules_Wifi.patch",
+      "sha256": "0db7a8c61acd0045296edb3b1f377f329fbbde57abca4be21db1dd0c79bfce77"
+    },
+    {
+      "project": "packages/apps/Settings",
+      "base": "623617188de8735d4529b4ace81a91253ab9fb72",
+      "original_commit": "c61f85c62c8b8d15a8a2423c76e6173f17b2db29",
+      "patch": "patches/batch32-20261025/packages_apps_Settings.patch",
+      "sha256": "88f850bf9ce35eb6a59923b91faa28e55c480efa37885e4d964e5c71598059c8"
+    },
+    {
+      "project": "device/xiaomi/diting",
+      "base": "3ac8bfc82e82bd94638fbfb4a60b1f674186d586",
+      "original_commit": "ebcc14f38a653ae8bdf0aad74519fd385ea487b8",
+      "patch": "patches/batch32-20261025/device_xiaomi_diting.patch",
+      "sha256": "18b385837f59d357af317fda8ea4188058cde067ea5e35ba7034f5cc65e8d4cd"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "68e72274aba5dcb0e0412bba3c6eb6ffe64a2848",
+      "original_commit": "58e85b9b9adfd6131aefbb751e013d701d55dcff",
+      "patch": "patches/batch33-20261025/frameworks_base.patch",
+      "sha256": "89dcf771752490e69f553930614467892bc5e7ac0ca24275d8499d248ea459ec"
+    },
+    {
+      "project": "packages/modules/Wifi",
+      "base": "79c481d4c306c5f195f2cb725f88303c90632484",
+      "original_commit": "42cd6dc5491956eef7cefa15d7cba6dd525bb83e",
+      "patch": "patches/batch33-20261025/packages_modules_Wifi.patch",
+      "sha256": "8eeeb7d9b8dd02fa695cbaaaa367bb61cba22b303e43661194f5823f3da90709"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "58e85b9b9adfd6131aefbb751e013d701d55dcff",
+      "original_commit": "7d9b2c4da35d85510872a8ea6b771484570238b6",
+      "patch": "patches/batch34-20261026/frameworks_base.patch",
+      "sha256": "3186ae14b89db57c7152ec235f8ed8c4f2f1b95b2b3ee978154414c0fa8e4a3e"
+    },
+    {
+      "project": "system/logging",
+      "base": "e63321648d4f2cb7c437bd615366e8f8765ad2bc",
+      "original_commit": "6a9564eb25165c080bc5e17b871fa3e84d9bab6b",
+      "patch": "patches/batch34-20261026/system_logging.patch",
+      "sha256": "39ab43f0d93f9ea77ec576b1f91624e0029d19d178599d51c34c92c3b1099648"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "7d9b2c4da35d85510872a8ea6b771484570238b6",
+      "original_commit": "499d0bb361cd7ff3e6531716f5acafdf274f6eb3",
+      "patch": "patches/batch35-20261026/frameworks_base.patch",
+      "sha256": "0359db7f36ceb006f0294e6be89074699c2308ca8f82392d4b82d1fdaeca74d9"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "499d0bb361cd7ff3e6531716f5acafdf274f6eb3",
+      "original_commit": "6f09d7fb05c7ba3e4a7624872f3e89fa48186618",
+      "patch": "patches/batch36-20261026/frameworks_base.patch",
+      "sha256": "393dca59ac6e6aa71ce9de8ad36eef3a68f772f9ae9e15e672fd71c85f5482f1"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "6f09d7fb05c7ba3e4a7624872f3e89fa48186618",
+      "original_commit": "2c9ddeed71ba0a1fcb3121472fa0d2f0fffef7d3",
+      "patch": "patches/batch37-20261026/frameworks_base.patch",
+      "sha256": "0a557588e1309898e23c90c793e8804e55a1f3abbcb9cc9d63bbdc35d1499a54"
+    },
+    {
+      "project": "frameworks/base",
+      "base": "2c9ddeed71ba0a1fcb3121472fa0d2f0fffef7d3",
+      "original_commit": "ef8d67f5e0f411110e3d631114f0f59f3c6265e2",
+      "patch": "patches/batch38-20261026/frameworks_base.patch",
+      "sha256": "1cd59c643a3c4cc4155b9c83df831c10d756ee99027e76055eaab8a113f3077f"
+    },
+    {
+      "project": "system/vold",
+      "base": "6318dd74a8e910739a19c98a5838458da1e209cf",
+      "original_commit": "5726453e46f1ac733f9e6b6adde9a2a3da3e26b1",
+      "patch": "patches/batch38-20261026/system_vold.patch",
+      "sha256": "66789aad939d4585dbc634b81be7f976cd188b2bbcc22730202a6e9224eb98d6"
     }
   ],
   "upstream_bases": {
@@ -687,7 +827,11 @@
     "vendor/xiaomi/sm8450-common": "9f5f2f5b631508e5120f1925afc766ca645fedaf",
     "hardware/qcom-caf/sm8450/display": "aea8d60119598d755f29e2e15312b4ff491d1808",
     "system/core": "202f54380091906fafe35681b0a68ec2fe3c1a4d",
-    "packages/apps/Launcher3": "c73eeb92532870c98c12ef5013eb6f7664a8da80"
+    "packages/apps/Launcher3": "c73eeb92532870c98c12ef5013eb6f7664a8da80",
+    "packages/apps/FeatureSettings": "9a229c750d6b45eeb12403b023fbcaf5540b83ea",
+    "system/vold": "cd2c5dea3e93c07be61576f658d002ecc4570de2",
+    "packages/modules/Wifi": "66976f96bf3c78d92ea70832eda01f9f5f4114c7",
+    "system/logging": "e63321648d4f2cb7c437bd615366e8f8765ad2bc"
   },
   "original_final_revisions": {
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
@@ -718,10 +862,11 @@
     "hardware/interfaces": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
     "bionic": "407839baae0c3f009a8c611ddc69d987b34e3016",
     "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
-    "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d"
+    "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
+    "system/logging": "6a9564eb25165c080bc5e17b871fa3e84d9bab6b"
   },
   "optional_gms_projects": 3,
-  "candidate": "gms-media20261010",
+  "candidate": "batch38-20261026",
   "source_projects_with_gms": 1190,
   "review_corrections": {
     "date": "2026-10-14",
@@ -734,18 +879,18 @@
     "build/soong": "c2d37c67e351599334df8c5e6a17c5e6a8faa3d1",
     "packages/modules/common": "a0e375760e6c455f359c1c582ce3df90e923873a",
     "prebuilts/openeuicc-deps": "5624506682f476fafab2e2a68ab00f4166609b41",
-    "device/xiaomi/diting": "3ac8bfc82e82bd94638fbfb4a60b1f674186d586",
+    "device/xiaomi/diting": "ebcc14f38a653ae8bdf0aad74519fd385ea487b8",
     "frameworks/native": "f81d10c6065f44dad5e9b18fc332d510177769a5",
     "device/lineage/sepolicy": "d253f3fd2265c5cd2997c9d043cd90f4196262d2",
     "system/sepolicy": "86616e951f1ff1087afb6950ad0521722a21f252",
     "lineage-sdk": "d76d454b92264e9788f8fd777386d990795edd8d",
-    "frameworks/base": "0a997792bbe31ef09a20e318439e2ba64d21e40b",
+    "frameworks/base": "ef8d67f5e0f411110e3d631114f0f59f3c6265e2",
     "vendor/lineage": "ad9ba06dc1e65c0de7f82089e840c9bcae4b5508",
     "device/xiaomi/sm8450-common": "3a8763ab67b2d3aaff93441cc502cd75362b2c71",
     "packages/overlays/Lineage": "daa2faaf79fcb19b41528cd762a0ec4a4e441f1f",
     "packages/apps/LineageParts": "d93fc39633525a607fcbe1d27b8a462b4c96202a",
     "packages/apps/Profiles": "90c5b19401b01fb76096795eaf0f9f7d807a8881",
-    "packages/apps/Settings": "623617188de8735d4529b4ace81a91253ab9fb72",
+    "packages/apps/Settings": "c61f85c62c8b8d15a8a2423c76e6173f17b2db29",
     "packages/apps/TvSettings": "2fcd1053d348887fde308378ba363350543b2c9d",
     "packages/apps/Via": "9319a639fc7726c828feb501447c600d386e08de",
     "hardware/lineage/interfaces": "9af827c4436b8578b3a496c06fe23921912d1ca3",
@@ -758,12 +903,16 @@
     "packages/modules/Bluetooth": "76c7d64b39ff7782c93fb7600f9ee84ad6537ceb",
     "hardware/interfaces": "a7a792806d1cf78a487bddbb5eae3cec152d442c",
     "bionic": "407839baae0c3f009a8c611ddc69d987b34e3016",
-    "vendor/xiaomi/sm8450-common": "5cb79cca5980aaace751f3f91712fe331080c77b",
+    "vendor/xiaomi/sm8450-common": "60011aa7a607cc5dd4e631e0ab83f2a16a184413",
     "hardware/qcom-caf/sm8450/display": "f136c5f260130777ebe9f1e0d36385cd572b2a5d",
     "system/core": "65a63fbc746effe234458b53061e7a0977e27882",
-    "packages/apps/Launcher3": "7e9b22915760d8fcbe565afa334e195b59187c27"
+    "packages/apps/Launcher3": "5c433f14fe8e42579c5925714debd06efd5b4daf",
+    "packages/apps/FeatureSettings": "d3fe971c5e2c7c7968c6bcce4a410b7937222c49",
+    "system/vold": "5726453e46f1ac733f9e6b6adde9a2a3da3e26b1",
+    "packages/modules/Wifi": "42cd6dc5491956eef7cefa15d7cba6dd525bb83e",
+    "system/logging": "6a9564eb25165c080bc5e17b871fa3e84d9bab6b"
   },
-  "latest_source_update": "2026-10-18 batch28 preparation, local source only; not published",
+  "latest_source_update": "20261026 batch38: 113 public ordered patches; current documentation and qualified GMS/Vanilla artifact records",
   "round2_corrections": {
     "date": "2026-10-14",
     "report": "ROUND2-REVIEW-20261014.md",
@@ -786,14 +935,12 @@
     "date": "2026-10-15",
     "patch_count": 6,
     "report": "ROUND5-REVIEW-20261015.md",
-    "released_artifacts_rebuilt": false,
-    "private_system_core_delta_exported": false
+    "released_artifacts_rebuilt": false
   },
   "round6_corrections": {
     "date": "2026-10-16",
     "patch_count": 2,
     "report": "ROUND6-REVIEW-20261016.md",
-    "private_lineage_debug_delta_exported": false,
     "source_components_built": [
       "frameworks/base/services",
       "packages/apps/Launcher3/Launcher3QuickStep"
@@ -851,5 +998,10 @@
     "phone_apk_default_recovery_verified": true,
     "whole_rom_rebuilt": false,
     "published": false
+  },
+  "batch38_update": {
+    "review": "docs/reviews/BATCH30-38-20261026.md",
+    "release": "docs/releases/batch38-20261026/README.md",
+    "frozen_series_sha256": "f2dc76bd592f5eec1a92ce46dc9a8e459a450de5044df8646b2558179a700d04"
   }
 }

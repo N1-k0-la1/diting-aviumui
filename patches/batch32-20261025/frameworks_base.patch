@@ -1,0 +1,890 @@
+diff --git a/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml b/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml
+new file mode 100644
+index 000000000..383915393
+--- /dev/null
++++ b/packages/PackageInstaller/res/values-zh-rCN/frp_install.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="message_install_failed_frp">设备保护仍处于激活状态，系统暂时禁止安装应用。请通过受支持的系统流程完成机主身份验证；若没有验证入口，请联系 ROM 维护者。</string>
++</resources>
+diff --git a/packages/PackageInstaller/res/values/frp_install.xml b/packages/PackageInstaller/res/values/frp_install.xml
+new file mode 100644
+index 000000000..8bbfbceff
+--- /dev/null
++++ b/packages/PackageInstaller/res/values/frp_install.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- SPDX-License-Identifier: Apache-2.0 -->
++<resources>
++    <string name="message_install_failed_frp">Device protection is still active and is blocking app installation. Complete device-owner verification through a supported system flow. If no verification option is available, contact the ROM maintainer.</string>
++</resources>
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+index 4bcbfc199..b291e9daa 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallRepository.kt
+@@ -42,6 +42,7 @@ import android.net.Uri
+ import android.os.ParcelFileDescriptor
+ import android.os.Process
+ import android.os.UserManager
++import android.service.persistentdata.PersistentDataBlockManager
+ import android.text.TextUtils
+ import android.util.EventLog
+ import android.util.Log
+@@ -1105,17 +1106,51 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+             val session = packageInstaller.openSession(stagedSessionId)
+             session.commit(pendingIntent.intentSender)
+         } catch (e: Exception) {
+-            Log.e(LOG_TAG, "Session $stagedSessionId could not be opened.", e)
++            handleSessionFailure(installId, e)
++        }
++    }
++
++    private fun isFactoryResetProtectionActive(): Boolean {
++        return try {
++            context.getSystemService(PersistentDataBlockManager::class.java)
++                ?.isFactoryResetProtectionActive ?: false
++        } catch (e: RuntimeException) {
++            // A failed diagnostic query must not replace the original installation error.
++            Log.w(LOG_TAG, "Could not query factory reset protection state", e)
++            false
++        }
++    }
++
++    private fun handleSessionFailure(installId: Int, failure: Exception) {
++        Log.e(LOG_TAG, "Session $stagedSessionId could not be committed", failure)
++        // Classify only a real security rejection while the framework confirms protection is active.
++        // Never infer it from exception text, a GMS setting or setup-completion flags.
++        val frpBlocked = failure is SecurityException && isFactoryResetProtectionActive()
++        try {
++            InstallEventReceiver.removeObserver(context, installId)
++        } catch (cleanupFailure: RuntimeException) {
++            Log.w(LOG_TAG, "Could not remove failed installation observer", cleanupFailure)
++        }
++        try {
+             packageInstaller.abandonSession(stagedSessionId)
+-            setStageBasedOnResult(
+-                PackageInstaller.STATUS_FAILURE, PackageManager.INSTALL_FAILED_INTERNAL_ERROR, null)
++        } catch (cleanupFailure: RuntimeException) {
++            Log.w(LOG_TAG, "Could not abandon failed installation session", cleanupFailure)
+         }
++        setStageBasedOnResult(
++            if (frpBlocked) PackageInstaller.STATUS_FAILURE_BLOCKED else PackageInstaller.STATUS_FAILURE,
++            // Preserve the legacy result of a synchronous commit exception. The system SDK does
++            // not expose a dedicated FRP legacy code; the public status and typed UI reason do.
++            PackageManager.INSTALL_FAILED_INTERNAL_ERROR,
++            null,
++            frpBlocked
++        )
+     }
+ 
+     private fun setStageBasedOnResult(
+         statusCode: Int,
+         legacyStatus: Int,
+         message: String?,
++        frpBlocked: Boolean = false,
+     ) {
+         if (localLogv) {
+             Log.i(
+@@ -1159,12 +1194,16 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
+                     legacyCode = legacyStatus,
+                     statusCode = statusCode,
+                     shouldReturnResult = true,
+-                    resultIntent = resultIntent
++                    resultIntent = resultIntent,
++                    factoryResetProtectionBlocked = frpBlocked
+                 )
+             } else if (userDenied) {
+                 _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+             } else {
+-                _installResult.value = InstallFailed(appSnippet, legacyStatus, statusCode, message)
++                _installResult.value = InstallFailed(
++                    appSnippet, legacyStatus, statusCode, message,
++                    factoryResetProtectionBlocked = frpBlocked
++                )
+             }
+         }
+     }
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
+index 2716d935c..ab3cf6159 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/model/InstallStages.kt
+@@ -126,7 +126,9 @@ data class InstallFailed(
+      * If the caller is requesting a result back, this will hold an Intent with
+      * [Intent.EXTRA_INSTALL_RESULT] set to the [PackageInstaller.EXTRA_LEGACY_STATUS].
+      */
+-    val resultIntent: Intent? = null
++    val resultIntent: Intent? = null,
++    // Set only by this installer after a framework FRP state query, never by an incoming Intent.
++    val factoryResetProtectionBlocked: Boolean = false
+ ) : InstallStage(STAGE_FAILED) {
+ 
+     val appIcon: Drawable?
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java b/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
+index ec8b35cde..75f7738b5 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/v2/ui/fragments/InstallationFragment.java
+@@ -284,7 +284,8 @@ public class InstallationFragment extends DialogFragment {
+         mAppSnippet.setVisibility(View.VISIBLE);
+         mCustomMessageTextView.setVisibility(View.VISIBLE);
+ 
+-        Log.i(LOG_TAG, "Installation status code: " + installStage.getLegacyCode());
++        Log.i(LOG_TAG, "Installation status code: " + installStage.getStatusCode()
++                + "; legacy code: " + installStage.getLegacyCode());
+ 
+         // Set the app icon and label
+         mAppIcon.setImageDrawable(installStage.getAppIcon());
+@@ -299,9 +300,11 @@ public class InstallationFragment extends DialogFragment {
+         String positiveButtonText = null;
+         View.OnClickListener positiveButtonListener = null;
+ 
+-        switch (installStage.getLegacyCode()) {
++        switch (installStage.getStatusCode()) {
+             case PackageInstaller.STATUS_FAILURE_BLOCKED -> {
+-                mCustomMessageTextView.setText(R.string.message_install_failed_blocked);
++                mCustomMessageTextView.setText(installStage.getFactoryResetProtectionBlocked()
++                        ? R.string.message_install_failed_frp
++                        : R.string.message_install_failed_blocked);
+                 titleResId = R.string.title_install_failed_blocked;
+             }
+             case PackageInstaller.STATUS_FAILURE_CONFLICT -> {
+diff --git a/services/core/java/com/android/server/pdb/PersistentDataBlockService.java b/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
+index 5ddc442f6..da6aa27a5 100644
+--- a/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
++++ b/services/core/java/com/android/server/pdb/PersistentDataBlockService.java
+@@ -208,6 +208,16 @@ public class PersistentDataBlockService extends SystemService {
+      */
+     private boolean mFrpActive = true;
+ 
++    // Non-secret results survive log rotation for the lifetime of this service. These describe
++    // the last automatic attempt, which can also be requested after boot; they never store keys.
++    @GuardedBy("mLock")
++    private String mLastAutoDeactivationResult = "not-attempted";
++    @GuardedBy("mLock")
++    private String mPrimarySecretReadResult = "not-attempted";
++    @GuardedBy("mLock")
++    private String mBackupSecretReadResult = "not-attempted";
++
++
+     @GuardedBy("mLock")
+     private boolean mIsWritable = true;
+ 
+@@ -588,12 +598,17 @@ public class PersistentDataBlockService extends SystemService {
+     @VisibleForTesting
+     boolean automaticallyDeactivateFrpIfPossible() {
+         synchronized (mLock) {
++            mLastAutoDeactivationResult = "in-progress";
++            mPrimarySecretReadResult = "not-attempted";
++            mBackupSecretReadResult = "not-attempted";
+             if (deactivateFrpWithFileSecret(mFrpSecretFile)) {
++                mLastAutoDeactivationResult = "primary-secret";
+                 return true;
+             }
+ 
+             Slog.w(TAG, "Failed to deactivate with primary secret file, trying backup.");
+             if (deactivateFrpWithFileSecret(mFrpSecretTmpFile)) {
++                mLastAutoDeactivationResult = "backup-secret";
+                 // The backup file has the FRP secret, make it the primary file.
+                 moveFrpTempFileToPrimary();
+                 return true;
+@@ -601,6 +616,7 @@ public class PersistentDataBlockService extends SystemService {
+ 
+             Slog.w(TAG, "Failed to deactivate with backup secret file, trying default secret.");
+             if (deactivateFrp(new byte[FRP_SECRET_SIZE])) {
++                mLastAutoDeactivationResult = "default-secret";
+                 return true;
+             }
+ 
+@@ -614,6 +630,7 @@ public class PersistentDataBlockService extends SystemService {
+             // To handle this case, we check to see if we have recently upgraded from a pre-V
+             // version.  If so, we deactivate FRP and set the secret to the default value.
+             if (isUpgradingFromPreVRelease()) {
++                mLastAutoDeactivationResult = "pre-v-upgrade";
+                 Slog.w(TAG, "Upgrading from Android 14 or lower, defaulting FRP secret");
+                 writeFrpMagicAndDefaultSecret();
+                 mFrpActive = false;
+@@ -621,6 +638,7 @@ public class PersistentDataBlockService extends SystemService {
+                 return true;
+             }
+ 
++            mLastAutoDeactivationResult = "not-deactivated";
+             Slog.e(TAG, "Did not find valid FRP secret, FRP remains active.");
+             return false;
+         }
+@@ -628,14 +646,32 @@ public class PersistentDataBlockService extends SystemService {
+ 
+     private boolean deactivateFrpWithFileSecret(String frpSecretFile) {
+         try {
+-            return deactivateFrp(Files.readAllBytes(Paths.get(frpSecretFile)));
++            final byte[] secret = Files.readAllBytes(Paths.get(frpSecretFile));
++            final boolean accepted = deactivateFrp(secret);
++            recordFrpSecretReadResult(frpSecretFile, secret.length != FRP_SECRET_SIZE
++                    ? "invalid-length" : accepted ? "accepted" : "not-matched");
++            return accepted;
+         } catch (IOException e) {
++            recordFrpSecretReadResult(frpSecretFile,
++                    e instanceof java.nio.file.NoSuchFileException ? "not-found"
++                    : e instanceof java.nio.file.AccessDeniedException ? "access-denied"
++                    : "read-error");
+             Slog.i(TAG, "Failed to read FRP secret file: " + frpSecretFile + " "
+                     + e.getClass().getSimpleName());
+             return false;
+         }
+     }
+ 
++    private void recordFrpSecretReadResult(String file, String result) {
++        synchronized (mLock) {
++            if (mFrpSecretFile.equals(file)) {
++                mPrimarySecretReadResult = result;
++            } else if (mFrpSecretTmpFile.equals(file)) {
++                mBackupSecretReadResult = result;
++            }
++        }
++    }
++
+     private void moveFrpTempFileToPrimary() {
+         try {
+             Files.move(Paths.get(mFrpSecretTmpFile), Paths.get(mFrpSecretFile), REPLACE_EXISTING);
+@@ -734,8 +770,7 @@ public class PersistentDataBlockService extends SystemService {
+             setOldSettingForBackworkCompatibility(mFrpActive);
+             return true;
+         } else {
+-            Slog.e(TAG,
+-                    "FRP deactivation failed with secret " + HexFormat.of().formatHex(secret));
++            Slog.e(TAG, "FRP deactivation failed: secret did not match.");
+             return false;
+         }
+     }
+@@ -841,6 +876,11 @@ public class PersistentDataBlockService extends SystemService {
+             pw.println("=========");
+             pw.println("Enforcement enabled: true");
+             pw.println("FRP state: " + mFrpActive);
++            synchronized (mLock) {
++                pw.println("Last automatic deactivation: " + mLastAutoDeactivationResult);
++                pw.println("Primary secret read result: " + mPrimarySecretReadResult);
++                pw.println("Backup secret read result: " + mBackupSecretReadResult);
++            }
+             printFrpDataFilesContents(pw, printSecrets);
+             printFrpSecret(pw, printSecrets);
+ 
+diff --git a/services/core/java/com/android/server/pm/UserDataPreparer.java b/services/core/java/com/android/server/pm/UserDataPreparer.java
+index a621e8714..ae6534b1e 100644
+--- a/services/core/java/com/android/server/pm/UserDataPreparer.java
++++ b/services/core/java/com/android/server/pm/UserDataPreparer.java
+@@ -97,10 +97,12 @@ class UserDataPreparer {
+         final boolean isNewUser = userInfo.lastLoggedInTime == 0;
+         Slogf.d(TAG, "Preparing user data; volumeUuid=%s, userId=%d, flags=0x%x, isNewUser=%s",
+                 volumeUuid, userId, flags, isNewUser);
++        String stage = "prepare-user-storage";
+         try {
+             // Prepare CE and/or DE storage.
+             getStorageManagerInternal().prepareUserStorage(volumeUuid, userId, flags);
+ 
++            stage = "verify-user-serial";
+             // Ensure that the data directories of a removed user with the same ID are not being
+             // reused.  New users must get fresh data directories, to avoid leaking data.
+             if ((flags & StorageManager.FLAG_STORAGE_DE) != 0) {
+@@ -117,16 +119,24 @@ class UserDataPreparer {
+             }
+ 
+             // Prepare the app data directories.
++            stage = "create-app-data";
+             mInstaller.createUserData(volumeUuid, userId, userSerial, flags);
+ 
+             // If applicable, record that the system user's CE storage has been prepared.
+-            if ((flags & StorageManager.FLAG_STORAGE_CE) != 0 &&
+-                    (userId == UserHandle.USER_SYSTEM)) {
++            if ((flags & StorageManager.FLAG_STORAGE_CE) != 0
++                    && userId == UserHandle.USER_SYSTEM
++                    && Objects.equals(volumeUuid, StorageManager.UUID_PRIVATE_INTERNAL)) {
++                // Adoptable storage cannot certify that internal CE storage is ready.
++                stage = "publish-internal-ce-ready";
+                 String propertyName = "sys.user." + userId + ".ce_available";
+                 Slog.d(TAG, "Setting property: " + propertyName + "=true");
+                 SystemProperties.set(propertyName, "true");
+             }
+         } catch (Exception e) {
++            // Keep the failure phase in the existing persisted package-manager history.
++            // Ordinary bugreports can then diagnose early-boot failures after logcat rotates.
++            final String failure = "; flags=0x" + Integer.toHexString(flags)
++                    + "; stage=" + stage + ": " + e;
+             // Failed to prepare user data.  For new users, specifically users that haven't ever
+             // been unlocked, destroy the user data, and try again (if not already retried).  This
+             // might be effective at resolving some errors, such as stale directories from a reused
+@@ -134,11 +144,11 @@ class UserDataPreparer {
+             // users might be fixable via an OTA without having to wipe the user's data.
+             if (isNewUser) {
+                 logCriticalInfo(Log.ERROR, "Destroying user " + userId + " on volume " + volumeUuid
+-                        + " because we failed to prepare: " + e);
++                        + " because we failed to prepare" + failure);
+                 destroyUserDataLI(volumeUuid, userId, flags);
+             } else {
+                 logCriticalInfo(Log.ERROR, "Failed to prepare user " + userId + " on volume "
+-                        + volumeUuid + ": " + e);
++                        + volumeUuid + failure);
+             }
+             if (allowRecover) {
+                 // Try one last time; if we fail again we're really in trouble
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index 0152169c0..810168f7f 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -388,6 +388,13 @@ class ActivityStartInterceptor {
+         // caller-controlled action, MIME type or an arbitrary activity in package android.
+         if ("android".equals(pkg)
+                 && "com.android.internal.app.ResolverActivity".equals(target.name)) return true;
++        // The modular sharesheet is also a mediation surface. Keep this scoped to its
++        // platform-signed system components; other activities still require approval.
++        if ("com.android.intentresolver".equals(pkg)
++                && ("com.android.intentresolver.ChooserActivity".equals(target.name)
++                    || "com.android.intentresolver.ChooserActivityLauncher".equals(target.name))) {
++            return true;
++        }
+         return "com.android.settings".equals(pkg)
+                 || "com.android.systemui".equals(pkg)
+                 || "com.android.documentsui".equals(pkg)
+@@ -398,6 +405,33 @@ class ActivityStartInterceptor {
+                 || "com.google.android.providers.media.module".equals(pkg);
+     }
+ 
++    /** System storage UI may be signed by its module/vendor instead of the platform. */
++    @VisibleForTesting
++    static boolean isSystemStorageLaunchFlow(ActivityInfo target,
++            android.content.Context context, int userId) {
++        if (target == null || target.applicationInfo == null
++                || !target.applicationInfo.isSystemApp()) return false;
++        final String pkg = target.packageName;
++        if ("com.android.documentsui".equals(pkg)
++                || "com.google.android.documentsui".equals(pkg)) {
++            // MANAGE_DOCUMENTS is signature|role. A package name alone is not sufficient.
++            return context.checkPermission(android.Manifest.permission.MANAGE_DOCUMENTS,
++                    -1, target.applicationInfo.uid)
++                    == android.content.pm.PackageManager.PERMISSION_GRANTED;
++        }
++        if ("com.android.providers.media.module".equals(pkg)
++                || "com.google.android.providers.media.module".equals(pkg)) {
++            // Verify the actual provider in the destination user, including module updates.
++            final android.content.pm.ProviderInfo media =
++                    context.getPackageManager().resolveContentProviderAsUser(
++                            android.provider.MediaStore.AUTHORITY, 0, userId);
++            return media != null && media.applicationInfo != null
++                    && pkg.equals(media.packageName)
++                    && target.applicationInfo.uid == media.applicationInfo.uid;
++        }
++        return false;
++    }
++
+     private boolean interceptAppLaunchApproval() {
+         if (mIntent == null || mAInfo == null || mAInfo.applicationInfo == null
+                 || mCallingPackage == null) return false;
+@@ -416,7 +450,8 @@ class ActivityStartInterceptor {
+         // Ordinary system apps (browser, camera, store, etc.) still require approval.
+         if (isSystemLaunchFlow(mAInfo, pm.getPermissionControllerPackageName(),
+                 pm.checkSignatures("android", mAInfo.packageName)
+-                        == android.content.pm.PackageManager.SIGNATURE_MATCH)) return false;
++                        == android.content.pm.PackageManager.SIGNATURE_MATCH)
++                || isSystemStorageLaunchFlow(mAInfo, mServiceContext, mUserId)) return false;
+         final Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+         final ResolveInfo homeInfo = pm.resolveActivityAsUser(home, 0, sourceUser);
+         if (homeInfo != null && homeInfo.activityInfo != null
+diff --git a/services/core/java/com/android/server/wm/DimmerWindow.java b/services/core/java/com/android/server/wm/DimmerWindow.java
+index 856022783..86c9b7e6b 100644
+--- a/services/core/java/com/android/server/wm/DimmerWindow.java
++++ b/services/core/java/com/android/server/wm/DimmerWindow.java
+@@ -322,7 +322,12 @@ class DimmerWindow {
+         PopUpWindowController.getInstance().findAndExitAllPopUp();
+     }
+ 
+-    void onDragResizeChanged(float scale, Rect taskWindowSurfaceBound, boolean isLandscape) {
++    void onDragResizeChanged(Task task, float scale, Rect taskWindowSurfaceBound,
++            boolean isLandscape) {
++        // Animations from another task must not move the current dimmer's handle.
++        if (task == null || task != mLastDimmerTask) {
++            return;
++        }
+         mEdgeBarHelper.onDragResizeChanged(scale, taskWindowSurfaceBound, isLandscape);
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java b/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
+index 45c583632..163166beb 100644
+--- a/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
++++ b/services/core/java/com/android/server/wm/MiniWindowEdgeBarHelper.java
+@@ -54,6 +54,8 @@ class MiniWindowEdgeBarHelper {
+     private float mDragSlop;
+ 
+     private boolean mScrolling = false;
++    private boolean mGestureActive;
++    private int mGestureGeneration;
+     private boolean mListening = false;
+ 
+     private int mDragScaleType = DRAG_SCALE_TYPE_NONE;
+@@ -62,18 +64,39 @@ class MiniWindowEdgeBarHelper {
+ 
+     void onDragResizeChanged(float scale, Rect displayBound, boolean isLandscape) {
+         if (mListening && mView != null) {
+-            mView.postOnAnimation(() -> {
+-                updateBoundsOnDrag(scale, displayBound, isLandscape);
+-                mView.invalidate();
++            final int gestureGeneration = mGestureGeneration;
++            final View view = mView;
++            final Task task = mTask;
++            final Rect bounds = new Rect(displayBound.left, displayBound.top,
++                    displayBound.right, displayBound.bottom);
++            view.postOnAnimation(() -> {
++                // A queued frame may outlive a canceled drag, hidden bar or replaced task.
++                if (!mListening || mView != view || mTask != task
++                        || mGestureGeneration != gestureGeneration) {
++                    return;
++                }
++                updateBoundsOnDrag(scale, bounds, isLandscape);
++                view.invalidate();
+             });
+         }
+     }
+ 
+     void onResizeChanged() {
+-        if (mView != null) {
+-            mView.postOnAnimation(() -> {
++        postBoundsUpdate();
++    }
++
++    private void postBoundsUpdate() {
++        if (mListening && mView != null) {
++            final int gestureGeneration = mGestureGeneration;
++            final View view = mView;
++            final Task task = mTask;
++            view.postOnAnimation(() -> {
++                if (!mListening || mView != view || mTask != task
++                        || mGestureGeneration != gestureGeneration) {
++                    return;
++                }
+                 updateBounds();
+-                mView.invalidate();
++                view.invalidate();
+             });
+         }
+     }
+@@ -83,18 +106,15 @@ class MiniWindowEdgeBarHelper {
+             mListening = true;
+             updateBounds();
+         } else {
+-            mScrolling = false;
++            resetGestureState();
+             mListening = false;
+         }
+     }
+ 
+     void onOrientationChanged() {
+-        if (mListening && mView != null) {
+-            mView.postOnAnimation(() -> {
+-                updateBounds();
+-                mView.invalidate();
+-            });
+-        }
++        // A stream started on the old edge cannot continue using its old touch axis.
++        resetGestureState();
++        postBoundsUpdate();
+     }
+ 
+     void onDraw(Canvas canvas) {
+@@ -103,7 +123,10 @@ class MiniWindowEdgeBarHelper {
+         }
+     }
+ 
++    private float mStartX = 0f;
+     private float mStartY = 0f;
++    private boolean mHorizontalDrag;
++    private float mDragExtent;
+     private float mCurrentScale = 1.0f;
+     private static final float MIN_SCALE = 0.35f;
+     private static final float MAX_SCALE = 1.3f;
+@@ -112,11 +135,41 @@ class MiniWindowEdgeBarHelper {
+         return true;
+     }
+ 
++    private void resetGestureState() {
++        mGestureGeneration++;
++        mGestureActive = false;
++        mScrolling = false;
++        mStartX = 0f;
++        mStartY = 0f;
++        mDragExtent = 0f;
++        mDragScaleType = DRAG_SCALE_TYPE_NONE;
++    }
++
+     private void handleActionDown(MotionEvent event) {
+-        if (!mBarTouchBounds.contains(event.getRawX(), event.getRawY())) {
++        // A new stream must never inherit a completed tap, cancel or another task's drag.
++        resetGestureState();
++        if (!mListening || mView == null || mTask == null
++                || mTask.mDisplayContent == null || mTaskWindowSurfaceInfo == null
++                || !mBarTouchBounds.contains(event.getRawX(), event.getRawY())) {
+             return;
+         }
++        mGestureActive = true;
++        mStartX = event.getRawX();
+         mStartY = event.getRawY();
++        // Follow the visible handle: landscape draws it on the right, portrait below.
++        // Latch the axis and display extent so rotation cannot flip an ongoing drag.
++        mHorizontalDrag = mBarBounds.height() > mBarBounds.width();
++        final Rect displayBounds = new Rect();
++        if (mTask != null && mTask.mDisplayContent != null) {
++            mTask.mDisplayContent.getBounds(displayBounds);
++        }
++        if (displayBounds.isEmpty()) {
++            final android.util.DisplayMetrics metrics =
++                    mView.getContext().getResources().getDisplayMetrics();
++            mDragExtent = mHorizontalDrag ? metrics.widthPixels : metrics.heightPixels;
++        } else {
++            mDragExtent = mHorizontalDrag ? displayBounds.width() : displayBounds.height();
++        }
+         if (mTaskWindowSurfaceInfo != null) {
+             mStartScale = mTaskWindowSurfaceInfo.getWindowSurfaceScale();
+             mCurrentScale = mStartScale;
+@@ -125,22 +178,25 @@ class MiniWindowEdgeBarHelper {
+     }
+ 
+     private void handleActionMove(MotionEvent event) {
+-        if (mStartY == 0f || mTaskWindowSurfaceInfo == null || mTask == null) {
++        if (!mGestureActive || mTaskWindowSurfaceInfo == null || mTask == null
++                || mTask.mDisplayContent == null) {
++            resetGestureState();
+             return;
+         }
++        final float dragDistance = mHorizontalDrag
++                ? event.getRawX() - mStartX : event.getRawY() - mStartY;
+         if (!mScrolling) {
+-            float deltaY = Math.abs(event.getRawY() - mStartY);
+-            if (deltaY > mDragSlop) {
++            if (Math.abs(dragDistance) > mDragSlop) {
+                 mScrolling = true;
+             } else {
+                 return;
+             }
+         }
+ 
+-        float dragDistanceY = event.getRawY() - mStartY;
+-        float displayHeight = mView.getContext().getResources().getDisplayMetrics().heightPixels;
+-
+-        float scaleDelta = (dragDistanceY / displayHeight) * 1.2f;
++        if (mDragExtent <= 0f) {
++            return;
++        }
++        float scaleDelta = (dragDistance / mDragExtent) * 1.2f;
+         float newScale = mStartScale + scaleDelta;
+         newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+         mCurrentScale = newScale;
+@@ -163,16 +219,15 @@ class MiniWindowEdgeBarHelper {
+     }
+ 
+     private void applyWindowScale(float scale) {
+-        if (mTask == null || mTask.mSurfaceControl == null || mTaskWindowSurfaceInfo == null) {
++        if (mTask == null || mTask.mSurfaceControl == null || mTaskWindowSurfaceInfo == null
++                || mTask.mDisplayContent == null) {
+             return;
+         }
+-
++        final DisplayContent displayContent = mTask.mDisplayContent;
+         mTaskWindowSurfaceInfo.cancelPopUpViewAnimation();
+ 
+         Rect displayBound = new Rect();
+-        if (mTask.mDisplayContent != null) {
+-            mTask.mDisplayContent.getBounds(displayBound);
+-        }
++        displayContent.getBounds(displayBound);
+ 
+         Point pos = new Point();
+         Rect bounds = mTask.getBounds();
+@@ -192,10 +247,10 @@ class MiniWindowEdgeBarHelper {
+              .apply();
+         }
+ 
+-        final int displayRotation = mTask.mDisplayContent != null ? mTask.mDisplayContent.getRotation() : Surface.ROTATION_0;
++        final int displayRotation = displayContent.getRotation();
+         final boolean isLandscape = displayRotation == Surface.ROTATION_90
+                 || displayRotation == Surface.ROTATION_270;
+-        DimmerWindow.getInstance().onDragResizeChanged(scale,
++        DimmerWindow.getInstance().onDragResizeChanged(mTask, scale,
+                 mTaskWindowSurfaceInfo.getTaskWindowSurfaceBoundsOnDrag(displayBound), isLandscape);
+     }
+ 
+@@ -203,35 +258,38 @@ class MiniWindowEdgeBarHelper {
+         switch (event.getActionMasked()) {
+             case MotionEvent.ACTION_DOWN:
+                 handleActionDown(event);
+-                return mBarTouchBounds.contains(event.getRawX(), event.getRawY());
++                return mGestureActive;
+ 
+             case MotionEvent.ACTION_MOVE:
++                if (!mGestureActive) return false;
+                 handleActionMove(event);
+-                return mScrolling;
++                // Once DOWN is accepted, keep its stream out of the dimmer's tap detector,
++                // including moves below the drag threshold.
++                return true;
+ 
+             case MotionEvent.ACTION_UP:
+-                if (mScrolling) {
+-                    mScrolling = false;
+-                    mStartY = 0f;
+-                    handleDragEnd();
+-                    return true;
++                if (!mGestureActive) return false;
++                try {
++                    if (mScrolling) handleDragEnd();
++                } finally {
++                    resetGestureState();
+                 }
+-                break;
++                return true;
+ 
+             case MotionEvent.ACTION_CANCEL:
+-                if (mScrolling) {
+-                    mScrolling = false;
+-                    mStartY = 0f;
+-                    restoreOriginalState();
+-                    return true;
++                if (!mGestureActive) return false;
++                try {
++                    if (mScrolling) restoreOriginalState();
++                } finally {
++                    resetGestureState();
+                 }
+-                break;
++                return true;
+         }
+         return false;
+     }
+ 
+     private void handleDragEnd() {
+-        if (mTask == null) {
++        if (mTask == null || mTask.mDisplayContent == null) {
+             return;
+         }
+ 
+@@ -254,16 +312,14 @@ class MiniWindowEdgeBarHelper {
+     }
+ 
+     private void restoreOriginalState() {
+-        if (mTaskWindowSurfaceInfo == null || mTask == null) {
++        if (mTaskWindowSurfaceInfo == null || mTask == null || mTask.mDisplayContent == null) {
+             return;
+         }
+-
++        final DisplayContent displayContent = mTask.mDisplayContent;
+         Rect displayBound = new Rect();
+-        if (mTask.mDisplayContent != null) {
+-            mTask.mDisplayContent.getBounds(displayBound);
+-        }
++        displayContent.getBounds(displayBound);
+ 
+-        final int displayRotation = mTask.mDisplayContent.getRotation();
++        final int displayRotation = displayContent.getRotation();
+         final boolean isLandscape = displayRotation == Surface.ROTATION_90
+                 || displayRotation == Surface.ROTATION_270;
+ 
+@@ -331,9 +387,7 @@ class MiniWindowEdgeBarHelper {
+         } else {
+             mTaskWindowSurfaceInfo = null;
+         }
+-        mScrolling = false;
+-        mStartY = 0f;
+-        mDragScaleType = 0;
++        resetGestureState();
+         onResizeChanged();
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/PopUpAnimationController.java b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+index 8d758534a..67417ed61 100644
+--- a/services/core/java/com/android/server/wm/PopUpAnimationController.java
++++ b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+@@ -82,6 +82,8 @@ class PopUpAnimationController {
+     private float mVelX;
+     private float mVelY;
+ 
++    // Guarded by mLock; invalidates late callbacks from canceled/replaced resize animations.
++    private int mResizeAnimationGeneration;
+     private boolean mIsAnimating;
+     private boolean mIsCancelling;
+     private boolean mIsFromLeaveButton;
+@@ -438,15 +440,24 @@ class PopUpAnimationController {
+             int boundWidth, int boundHeight,
+             float startWinScale, float endWinScale,
+             Rect displayBound, boolean isLandscape, TaskWindowSurfaceInfo info) {
++        final int resizeGeneration;
++        synchronized (mLock) {
++            resizeGeneration = ++mResizeAnimationGeneration;
++        }
+         final ValueAnimator windowScaleAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+         windowScaleAnimator.addUpdateListener(animation -> {
+-            final float progress = (float) animation.getAnimatedValue();
+-            final float currentScale = startWinScale + (endWinScale - startWinScale) * progress;
+-            final int x = (int) (startPos.x + (endPos.x - startPos.x) * progress);
+-            final int y = (int) (startPos.y + (endPos.y - startPos.y) * progress);
+-            info.setWindowSurfaceScaleDrag(currentScale / info.getWindowSurfaceScaleFactor(),
+-                    displayBound, isLandscape);
+-            doWindowTransition(x, y, currentScale, boundWidth, boundHeight);
++            synchronized (mLock) {
++                if (resizeGeneration != mResizeAnimationGeneration || !mIsAnimating) {
++                    return;
++                }
++                final float progress = (float) animation.getAnimatedValue();
++                final float currentScale = startWinScale + (endWinScale - startWinScale) * progress;
++                final int x = (int) (startPos.x + (endPos.x - startPos.x) * progress);
++                final int y = (int) (startPos.y + (endPos.y - startPos.y) * progress);
++                info.setWindowSurfaceScaleDrag(currentScale / info.getWindowSurfaceScaleFactor(),
++                        displayBound, isLandscape);
++                doWindowTransition(x, y, currentScale, boundWidth, boundHeight);
++            }
+         });
+         windowScaleAnimator.addListener(new AnimatorListenerAdapter() {
+             @Override
+@@ -454,7 +465,11 @@ class PopUpAnimationController {
+                 if (DEBUG_POP_UP) {
+                     Slog.d(TAG, "playResizeAnimation: onAnimationStart");
+                 }
+-                mIsAnimating = true;
++                synchronized (mLock) {
++                    if (resizeGeneration == mResizeAnimationGeneration) {
++                        mIsAnimating = true;
++                    }
++                }
+             }
+ 
+             @Override
+@@ -462,11 +477,14 @@ class PopUpAnimationController {
+                 if (DEBUG_POP_UP) {
+                     Slog.d(TAG, "playResizeAnimation: onAnimationEnd mIsAnimating=" + mIsAnimating);
+                 }
+-                if (mIsAnimating) {
+-                    info.setWindowSurfaceScaleDrag(endWinScale / info.getWindowSurfaceScaleFactor(),
+-                            displayBound, isLandscape);
+-                    doWindowTransition(endPos.x, endPos.y, endWinScale, boundWidth, boundHeight);
+-                    mIsAnimating = false;
++                synchronized (mLock) {
++                    if (resizeGeneration == mResizeAnimationGeneration && mIsAnimating) {
++                        info.setWindowSurfaceScaleDrag(
++                                endWinScale / info.getWindowSurfaceScaleFactor(),
++                                displayBound, isLandscape);
++                        doWindowTransition(endPos.x, endPos.y, endWinScale, boundWidth, boundHeight);
++                        mIsAnimating = false;
++                    }
+                 }
+             }
+         });
+@@ -746,17 +764,25 @@ class PopUpAnimationController {
+     }
+ 
+     boolean cancelAnimation() {
+-        if (isAnimating()) {
+-            synchronized (mLock) {
++        synchronized (mLock) {
++            // Pending starts do not necessarily set mIsAnimating yet. Remove them even when
++            // no animator is running, so cancel/replacement cannot start an obsolete animation.
++            mChoreographer.removeFrameCallback(mFrameCallback);
++            mChoreographer.removeFrameCallback(mFrameExitCallback);
++            mChoreographer.removeFrameCallback(mFrameToggleResizeCallback);
++            // A resize animator is local to its start call. Reject its late callbacks even
++            // before start or after another animation has already cleared mIsAnimating.
++            mResizeAnimationGeneration++;
++            if (isAnimating()) {
+                 mIsAnimating = false;
+                 synchronized (mCancelLock) {
+                     mIsCancelling = true;
+                 }
+                 mChoreographer.postFrameCallback(mFrameCancelCallback);
++                return true;
+             }
+-            return true;
++            return false;
+         }
+-        return false;
+     }
+ 
+     private void doWindowTransition(int x, int y, float scale, int boundWidth, int boundHeight) {
+diff --git a/services/core/java/com/android/server/wm/Task.java b/services/core/java/com/android/server/wm/Task.java
+index 0ea7eadde..a6b5c67bb 100644
+--- a/services/core/java/com/android/server/wm/Task.java
++++ b/services/core/java/com/android/server/wm/Task.java
+@@ -2307,7 +2307,12 @@ class Task extends TaskFragment {
+         // Use Display specific min sizes when there is one associated with this Task.
+         final int defaultMinSizeDp = mDisplayContent == null
+                 ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
+-        final float density = (float) parentConfig.densityDpi / DisplayMetrics.DENSITY_DEFAULT;
++        final Configuration taskConfig = getResolvedOverrideConfiguration();
++        // App bubbles scale their logical viewport with a task-local density. Using the
++        // display density here would enlarge the task beyond its TaskView and crop content.
++        final int densityDpi = hasAppBubbleDensityOverride(taskConfig, parentConfig)
++                ? taskConfig.densityDpi : parentConfig.densityDpi;
++        final float density = (float) densityDpi / DisplayMetrics.DENSITY_DEFAULT;
+         final int defaultMinSize = (int) (defaultMinSizeDp * density);
+ 
+         if (minWidth == INVALID_MIN_SIZE) {
+diff --git a/services/core/java/com/android/server/wm/TaskFragment.java b/services/core/java/com/android/server/wm/TaskFragment.java
+index 957e0fbe1..c8b4ce7f3 100644
+--- a/services/core/java/com/android/server/wm/TaskFragment.java
++++ b/services/core/java/com/android/server/wm/TaskFragment.java
+@@ -2597,6 +2597,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
+         // Non-null compatibility insets means the activity prefers to keep its original size, so
+         // out bounds doesn't need to be restricted by the parent or current display
+         final boolean customContainerPolicy = compatInsets != null;
++        // A density-scaled app bubble has its own logical viewport. Parent dp dimensions
++        // use the display density and cannot cap dimensions expressed in the task density.
++        final boolean constrainToParentConfig = insideParentBounds && !customContainerPolicy
++                && !hasAppBubbleDensityOverride(inOutConfig, parentConfig);
+ 
+         Rect outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
+         if (outAppBounds == null || outAppBounds.isEmpty()) {
+@@ -2660,14 +2664,14 @@ class TaskFragment extends WindowContainer<WindowContainer> {
+ 
+             if (inOutConfig.screenWidthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) {
+                 final int overrideScreenWidthDp = (int) (mTmpStableBounds.width() / density + 0.5f);
+-                inOutConfig.screenWidthDp = (insideParentBounds && !customContainerPolicy)
++                inOutConfig.screenWidthDp = constrainToParentConfig
+                         ? Math.min(overrideScreenWidthDp, parentConfig.screenWidthDp)
+                         : overrideScreenWidthDp;
+             }
+             if (inOutConfig.screenHeightDp == Configuration.SCREEN_HEIGHT_DP_UNDEFINED) {
+                 final int overrideScreenHeightDp =
+                         (int) (mTmpStableBounds.height() / density + 0.5f);
+-                inOutConfig.screenHeightDp = (insideParentBounds && !customContainerPolicy)
++                inOutConfig.screenHeightDp = constrainToParentConfig
+                         ? Math.min(overrideScreenHeightDp, parentConfig.screenHeightDp)
+                         : overrideScreenHeightDp;
+             }
+@@ -2733,6 +2737,18 @@ class TaskFragment extends WindowContainer<WindowContainer> {
+         }
+     }
+ 
++    /** Whether an app bubble uses a different density from its containing display/task. */
++    boolean hasAppBubbleDensityOverride(Configuration config, Configuration parentConfig) {
++        int windowingMode = config.windowConfiguration.getWindowingMode();
++        if (windowingMode == WINDOWING_MODE_UNDEFINED) {
++            windowingMode = parentConfig.windowConfiguration.getWindowingMode();
++        }
++        final Task task = getTask();
++        return windowingMode == WINDOWING_MODE_MULTI_WINDOW && task != null
++                && task.mLaunchNextToBubble && config.densityDpi > 0
++                && parentConfig.densityDpi > 0 && config.densityDpi != parentConfig.densityDpi;
++    }
++
+     /**
+      * Gets bounds with non-decor and stable insets applied respectively.
+      *
+diff --git a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+index ef7a2f8e8..f4aa725f1 100644
+--- a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
++++ b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+@@ -165,9 +165,9 @@ class TaskWindowSurfaceInfo {
+                 result.set(0, 0, bound.width(), bound.height());
+                 result.scale(getWindowSurfaceRealScale());
+                 result.offsetTo(pos.x, pos.y);
+-                DimmerWindow.getInstance().onDragResizeChanged(scale, result, isLandscape);
++                DimmerWindow.getInstance().onDragResizeChanged(mTask, scale, result, isLandscape);
+             } else {
+-                DimmerWindow.getInstance().onDragResizeChanged(scale,
++                DimmerWindow.getInstance().onDragResizeChanged(mTask, scale,
+                         getTaskWindowSurfaceBoundsOnDrag(displayBound), isLandscape);
+             }
+         }

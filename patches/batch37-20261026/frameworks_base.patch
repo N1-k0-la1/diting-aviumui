@@ -1,0 +1,363 @@
+diff --git a/core/java/android/view/ImeBackAnimationController.java b/core/java/android/view/ImeBackAnimationController.java
+index b0cba5c88..626d692a0 100644
+--- a/core/java/android/view/ImeBackAnimationController.java
++++ b/core/java/android/view/ImeBackAnimationController.java
+@@ -224,6 +224,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+         mPostCommitAnimator.setInterpolator(interpolator);
+         mPostCommitAnimator.setDuration(duration);
+         mPostCommitAnimator.addUpdateListener(animation -> {
++            if (animation != mPostCommitAnimator) return;
+             if (mWindowInsetsAnimationController != null) {
+                 setInterpolatedProgress((float) animation.getAnimatedValue());
+             } else {
+@@ -233,6 +234,8 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+         mPostCommitAnimator.addListener(new AnimatorListenerAdapter() {
+             @Override
+             public void onAnimationEnd(Animator animator) {
++                if (animator != mPostCommitAnimator) return;
++                mPostCommitAnimator = null;
+                 if (mIsPreCommitAnimationInProgress) {
+                     // this means a new gesture has started while the cancel-post-commit-animation
+                     // was in progress. Let's not reset anything and let the new user gesture take
+@@ -275,8 +278,9 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+ 
+     private void resetPostCommitAnimator() {
+         if (mPostCommitAnimator != null) {
+-            mPostCommitAnimator.cancel();
++            final ValueAnimator animator = mPostCommitAnimator;
+             mPostCommitAnimator = null;
++            animator.cancel();
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/wm/PopUpAnimationController.java b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+index 5ff3695bc..6dd63b96c 100644
+--- a/services/core/java/com/android/server/wm/PopUpAnimationController.java
++++ b/services/core/java/com/android/server/wm/PopUpAnimationController.java
+@@ -856,13 +856,22 @@ class PopUpAnimationController {
+             mResizeAnimationGeneration++;
+             mPendingAnimationCommand = false;
+             mIsAnimating = false;
+-            mIsCancelling = wasAnimating;
++            // Even an animator whose end callback ran can still have a queued private frame.
++            // Block it immediately, before the animation-thread cleanup drops that buffer.
++            mIsCancelling = true;
+         }
+         final Runnable cancel = () -> {
+             synchronized (mLock) {
+                 // A replacement command performs its own cancellation before starting.
+                 if (generation == mAnimationCommandGeneration) {
+                     cancelAnimationsOnAnimationThread();
++                    // A WM traversal may have skipped geometry while cancellation was pending.
++                    // Post without taking the WM lock while mLock is held.
++                    mService.mAnimationHandler.post(() -> {
++                        synchronized (mService.mGlobalLock) {
++                            mService.scheduleAnimationLocked();
++                        }
++                    });
+                 }
+             }
+         };
+diff --git a/services/core/java/com/android/server/wm/PopUpWindowController.java b/services/core/java/com/android/server/wm/PopUpWindowController.java
+index b9e4c76dd..863c60ff3 100644
+--- a/services/core/java/com/android/server/wm/PopUpWindowController.java
++++ b/services/core/java/com/android/server/wm/PopUpWindowController.java
+@@ -393,38 +393,48 @@ public class PopUpWindowController {
+                     info.getWindowSurfaceRealScale(), () -> {
+                         synchronized (mAtmService.mGlobalLock) {
+                             if (!isCurrentPopUpExit(target, token, mode)) return;
+-                            if (!target.movePopUpTaskToBack()) {
+-                                mPendingPopUpExits.remove(target);
+-                                final Task otherMini = TopActivityRecorder.getInstance()
+-                                        .getTopMiniWindowExceptTask(target);
+-                                if (target.getWindowConfiguration().isMiniExtWindowMode()
+-                                        && otherMini != null) {
+-                                    // Policy rejected hiding this task; keep it as a usable host,
+-                                    // without stealing another expanded window's control bar.
+-                                    tryExitPopUpView(target, true, true, false);
+-                                } else {
+-                                    activatePopUpTask(target);
+-                                }
+-                                return;
++                            if (!target.movePopUpTaskToBack(
++                                    () -> isCurrentPopUpExit(target, token, mode),
++                                    moved -> onPopUpTaskMoveCompleted(
++                                            target, token, mode, reason, moved))) {
++                                onPopUpTaskMoveCompleted(target, token, mode, reason, false);
+                             }
+-                            mHandler.postDelayed(() -> {
+-                                synchronized (mAtmService.mGlobalLock) {
+-                                    if (!isCurrentPopUpExit(target, token, mode)) return;
+-                                    try {
+-                                        tryExitPopUpView(target, true, true,
+-                                                reason != MOVE_TO_BACK_NEW_PIN);
+-                                    } finally {
+-                                        if (mPendingPopUpExits.get(target) == token) {
+-                                            mPendingPopUpExits.remove(target);
+-                                        }
+-                                    }
+-                                }
+-                            }, EXIT_POP_UP_DELAY);
+                         }
+                     });
+         }
+     }
+ 
++    private void onPopUpTaskMoveCompleted(Task target, Object token, int mode,
++            int reason, boolean moved) {
++        synchronized (mAtmService.mGlobalLock) {
++            if (!isCurrentPopUpExit(target, token, mode)) return;
++            if (!moved) {
++                final Task otherMini = TopActivityRecorder.getInstance()
++                        .getTopMiniWindowExceptTask(target);
++                if (target.getWindowConfiguration().isMiniExtWindowMode() && otherMini != null) {
++                    tryExitPopUpView(target, true, true, false);
++                } else {
++                    activatePopUpTask(target);
++                }
++                return;
++            }
++            // Start cleanup only after the native move actually executes, not when queued.
++            mHandler.postDelayed(() -> {
++                synchronized (mAtmService.mGlobalLock) {
++                    if (!isCurrentPopUpExit(target, token, mode)) return;
++                    try {
++                        tryExitPopUpView(target, true, true, reason != MOVE_TO_BACK_NEW_PIN);
++                    } finally {
++                        if (mPendingPopUpExits.get(target) == token) {
++                            mPendingPopUpExits.remove(target);
++                        }
++                    }
++                }
++            }, EXIT_POP_UP_DELAY);
++        }
++    }
++
++
+     boolean isPopUpTaskExiting(Task task) {
+         if (mAtmService == null || task == null) return false;
+         synchronized (mAtmService.mGlobalLock) {
+@@ -452,7 +462,13 @@ public class PopUpWindowController {
+         final Task target = task != null ? task.getRootTask() : null;
+         if (target == null || !target.isAttached()
+                 || !target.getWindowConfiguration().isPopUpWindowMode()) return;
+-        cancelPendingPopUpExit(target);
++        mPendingPopUpExits.remove(target);
++        final TaskWindowSurfaceInfo info = target.mWindowContainerExt.getTaskWindowSurfaceInfo();
++        if (info != null) {
++            // An end callback can run before the last private frame buffer is applied.
++            info.cancelPopUpViewAnimation();
++            info.invalidateSurfaceGeometry();
++        }
+         target.setAlwaysOnTop(true);
+         if (target.getWindowConfiguration().isMiniExtWindowMode()) {
+             TopActivityRecorder.getInstance().activateMini(target);
+@@ -578,6 +594,7 @@ public class PopUpWindowController {
+                                     ", removePin=" + removePin +
+                                     ", wasMiniWindow=" + wasMiniWindow);
+                         }
++                        cancelPendingPopUpExit(rootTask);
+                         rootTask.mWindowContainerExt.setFreezerSkipAnim(skipAnim);
+                         if (!skipAnim) {
+                             rootTask.mWindowContainerExt.prepareTransition();
+@@ -593,6 +610,12 @@ public class PopUpWindowController {
+                                 info.cancelPopUpViewAnimation();
+                             }
+                             rootTask.resetSurfaceControlTransforms();
++                            // Only this pop-up exit owns the alpha reset; leave generic Task
++                            // transforms alone for recents/PiP and other transition owners.
++                            if (rootTask.mSurfaceControl != null
++                                    && rootTask.mSurfaceControl.isValid()) {
++                                rootTask.getSyncTransaction().setAlpha(rootTask.mSurfaceControl, 1f);
++                            }
+                         }
+                         if (removeMini && wasMiniWindow) {
+                             TopActivityRecorder.getInstance().removeMiniWindowTask(task);
+@@ -1456,7 +1479,10 @@ public class PopUpWindowController {
+                 if (info == null) return;
+                 final Rect bounds = info.getTaskWindowSurfaceBounds();
+                 DimmerWindow.getInstance().hideMenu();
+-                setMiniWindowInputFocus(bounds != null && bounds.contains(x, y));
++                final android.graphics.RectF edgeBarBounds =
++                        DimmerWindow.getInstance().getEdgeBarBounds();
++                setMiniWindowInputFocus((bounds != null && bounds.contains(x, y))
++                        || (edgeBarBounds != null && edgeBarBounds.contains(x, y)));
+             }
+         };
+         mService.registerPointerEventListener(mMiniWindowPointerListener, DEFAULT_DISPLAY);
+diff --git a/services/core/java/com/android/server/wm/Task.java b/services/core/java/com/android/server/wm/Task.java
+index 133ff10ed..a8312b709 100644
+--- a/services/core/java/com/android/server/wm/Task.java
++++ b/services/core/java/com/android/server/wm/Task.java
+@@ -6062,24 +6062,27 @@ class Task extends TaskFragment {
+      * @param tr The task to collect and move to the bottom.
+      * @return Returns true if the move completed, false if not.
+      */
+-    /**
+-     * A pop-up already owns its exit animation. Move it synchronously while its controller's
+-     * generation is checked under the WM lock, rather than queueing an unguarded TO_BACK after
+-     * the same task may have been reopened. Keep the normal lock-task/controller policy checks.
+-     */
+-    boolean movePopUpTaskToBack() {
+-        if (!isRootTask() || !isAttached() || !getWindowConfiguration().isPopUpWindowMode()
+-                || !canMoveTaskToBack(this)) return false;
+-        // moveTaskToBackInner balances this when Shell transitions are enabled, even without
+-        // a newly queued transition. Non-Shell execution does not defer/continue layout here.
+-        if (mTransitionController.isShellTransitionsEnabled()) mAtmService.deferWindowLayout();
+-        moveTaskToBackInner(this, null);
+-        return true;
+-    }
++
+ 
+     boolean moveTaskToBack(Task tr) {
++        return moveTaskToBack(tr, null, null);
++    }
++
++    /** Keep normal Shell collection, but revalidate the pop-up exit at execution time. */
++    boolean movePopUpTaskToBack(java.util.function.BooleanSupplier isCurrentExit,
++            java.util.function.Consumer<Boolean> onMoved) {
++        if (!isRootTask() || !isAttached() || !getWindowConfiguration().isPopUpWindowMode()) {
++            return false;
++        }
++        return moveTaskToBack(this, isCurrentExit, onMoved);
++    }
++
++    private boolean moveTaskToBack(Task tr,
++            @Nullable java.util.function.BooleanSupplier isCurrentExit,
++            @Nullable java.util.function.Consumer<Boolean> onMoved) {
+         Slog.i(TAG, "moveTaskToBack: " + tr);
+ 
++        if (isCurrentExit != null && !isCurrentExit.getAsBoolean()) return false;
+         if (!canMoveTaskToBack(tr)) return false;
+ 
+         if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to back transition: task="
+@@ -6095,16 +6098,30 @@ class Task extends TaskFragment {
+                 chain.collect(tr);
+                 moveTaskToBackInner(tr, collecting);
+                 mAtmService.mChainTracker.endPartial();
++                if (onMoved != null) onMoved.accept(true);
+                 return true;
+             }
+             final Transition transition = new Transition(TRANSIT_TO_BACK, TRANSIT_FLAG_MOVE_TASK_TO_BACK /* flags */,
+                     mTransitionController, mWmService.mSyncEngine);
++            final boolean[] moveExecuted = {false};
++            if (onMoved != null) {
++                // A queued transition can be aborted by player replacement before collection.
++                transition.addPendingTransitionEndedListener(() -> {
++                    if (!moveExecuted[0] && isCurrentExit != null
++                            && isCurrentExit.getAsBoolean()) onMoved.accept(false);
++                });
++            }
+             // Guarantee that this gets its own transition by queueing on SyncEngine
+             mTransitionController.startCollectOrQueue(transition,
+                     (deferred) -> {
+                         // Need to check again if deferred since the system might
+                         // be in a different state.
+-                        if (!tr.isAttached() || (deferred && !canMoveTaskToBack(tr))) {
++                        if (!tr.isAttached()
++                                || (isCurrentExit != null && !isCurrentExit.getAsBoolean())) {
++                            transition.abort();
++                            return;
++                        }
++                        if (deferred && !canMoveTaskToBack(tr)) {
+                             Slog.e(TAG, "Failed to move task to back after saying we could: "
+                                     + tr.mTaskId);
+                             transition.abort();
+@@ -6114,14 +6131,17 @@ class Task extends TaskFragment {
+                                 "taskToBack", transition);
+                         mTransitionController.requestStartTransition(transition, tr,
+                                 null /* remoteTransition */, null /* displayChange */);
+-                        if (!tr.getWindowConfiguration().isPopUpWindowMode()) {
++                        if (isCurrentExit != null || !tr.getWindowConfiguration().isPopUpWindowMode()) {
+                             chain.collect(tr);
+                         }
++                        moveExecuted[0] = true;
+                         moveTaskToBackInner(tr, transition);
+                         mAtmService.mChainTracker.endPartial();
++                        if (onMoved != null) onMoved.accept(true);
+                     });
+         } else {
+             moveTaskToBackInner(tr, null /* transition */);
++            if (onMoved != null) onMoved.accept(true);
+         }
+         return true;
+     }
+diff --git a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+index 8d33ef9a9..361f0eab0 100644
+--- a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
++++ b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+@@ -357,8 +357,7 @@ class TaskWindowSurfaceInfo {
+         }
+         if (isMiniWindow) {
+             resetDraggingState();
+-            if (isPrevPopUpWindow && !isPrevMiniWindow) {
+-            } else {
++            if (!isPrevMiniWindow) {
+                 final Rect displayBound = new Rect();
+                 if (mTask.mDisplayContent != null) {
+                     mTask.mDisplayContent.getBounds(displayBound);
+@@ -526,7 +525,19 @@ class TaskWindowSurfaceInfo {
+         mConfiguration.setTo(newConfig);
+     }
+ 
++    void invalidateSurfaceGeometry() {
++        mLastSurfaceX = Integer.MIN_VALUE;
++        mLastSurfaceY = Integer.MIN_VALUE;
++        mLastSurfaceScale = -1.0f;
++        mLastSurfaceControl = null;
++    }
++
+     void onPrepareSurfaces(SurfaceControl.Transaction t) {
++        if (!mTask.isVisibleRequested()
++                || PopUpWindowController.getInstance().isPopUpTaskExiting(mTask)) {
++            invalidateSurfaceGeometry();
++            return;
++        }
+         final WindowConfiguration winConfig = mTask.getConfiguration().windowConfiguration;
+         final boolean isPinned = winConfig.isPinnedExtWindowMode();
+         final boolean animating = mPopUpAnimationController.isAnimating();
+diff --git a/services/core/java/com/android/server/wm/TopActivityRecorder.java b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+index 561d0a154..396942c6d 100644
+--- a/services/core/java/com/android/server/wm/TopActivityRecorder.java
++++ b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+@@ -79,7 +79,9 @@ public class TopActivityRecorder {
+         pruneMiniTasks();
+         for (int i = mMiniTasks.size() - 1; i >= 0; --i) {
+             final Task task = mMiniTasks.get(i);
+-            if (!sameRoot(task, except) && task.isVisibleRequested()) return task;
++            // A registered live mini can be starting or temporarily invisible (e.g. sleep).
++            // Exit identity/always-on-top/mode, rather than visibility, owns this record.
++            if (!sameRoot(task, except)) return task;
+         }
+         return null;
+     }
+diff --git a/services/core/java/com/android/server/wm/Transition.java b/services/core/java/com/android/server/wm/Transition.java
+index b6d2782c9..e9f45864f 100644
+--- a/services/core/java/com/android/server/wm/Transition.java
++++ b/services/core/java/com/android/server/wm/Transition.java
+@@ -1849,6 +1849,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
+         if (mState == STATE_PENDING) {
+             // hasn't started collecting, so can jump directly to aborted state.
+             mState = STATE_ABORT;
++            invokeTransitionEndedListeners();
+             return;
+         }
+         if (mState != STATE_COLLECTING && mState != STATE_STARTED) {
+@@ -2315,6 +2316,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
+     /**
+      * Adds a listener that will be executed after the transition is finished or aborted.
+      */
++    /** Observe cancellation while a native transition is still queued, before collection. */
++    void addPendingTransitionEndedListener(Runnable listener) {
++        if (mState != STATE_PENDING) {
++            throw new IllegalStateException("Transition is no longer pending. state=" + mState);
++        }
++        if (mTransitionEndedListeners == null) {
++            mTransitionEndedListeners = new ArrayList<>();
++        }
++        mTransitionEndedListeners.add(listener);
++    }
++
+     void addTransitionEndedListener(Runnable listener) {
+         if (mState != STATE_COLLECTING && mState != STATE_STARTED) {
+             throw new IllegalStateException(

@@ -1,29 +1,13 @@
-# 当前公开构建输入：batch29 · 2026-10-19
+# batch38 · 2026-10-26 源码与构建
 
-本仓库公开 93 份有序补丁。batch29 的 GMS 与 Vanilla 均完成正式构建、签名、实际镜像/OTA/payload/组件审核及 Windows 回读。
-GMS 保留 20261018 attempt1，Vanilla 为 20261019 attempt2；同一源码冻结，签名身份不变。输入身份与实际文件哈希见 [本批清单](docs/releases/batch29-20261019/ARTIFACTS.json)。
-前 89 份 round8 补丁保持原样；追加文件夹拖出修复、指纹/蓝牙修复及系统 Resolver 审批修复。上游清单、外部输入和 93 份补丁共同标识公开源码，后续文档提交不改变成品来源。
-维护者反馈 12T Pro GMS 验收后没有问题，不代替 Vanilla、K50 Ultra 或全部专项硬件验收。LHDC 仍缺对应耳机实测。
+当前113份有序补丁覆盖35个定制项目。固定清单为1187个基础项目及3个可选GMS项目。
+GMS与Vanilla源于同一冻结，均通过整包构建、签名、实际镜像/OTA/payload、组件和Windows回读审核。
+[源码清单](patch-series.json) · [本批成品与输入身份](docs/releases/batch38-20261026/ARTIFACTS.json)。
 
-软件 LHDC、相机修复和按区域启用的 eSIM 已纳入补丁；不启用 RAW 或未经验证的 Qualcomm DSP offload。
-源码默认关闭 Dolby Vision；维护者公开媒体成品使用 `TARGET_DITING_DOLBY_VISION=true`。按需求明确设置，不把开关启用等同于实机解码验收。
-应用补丁前，构建者应按 [external-artifacts.json](external-artifacts.json) 取得精确 Via APK 和23个媒体 ELF；来源、许可范围见 [LICENSES.md](LICENSES.md)。
+## 获取固定源码
 
-```sh
-git clone https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc.git lhdc-donor
-git -C lhdc-donor checkout 63fa4e2f923721ef7e1d25c90a5268afd196df8d
-git clone https://github.com/Avicii-Labs/android_hardware_dolby.git dolby-donor
-git -C dolby-donor checkout 30250166e08e6b4bc795aa361446851a0b2970be
-git -C dolby-donor lfs pull
-python3 diting-aviumui/tools/prepare-media-inputs.py --lhdc-checkout lhdc-donor --dolby-checkout dolby-donor --output media-inputs
-```
-
-将 media-inputs 的绝对路径传给下方 `--media-input-dir`，工具在写入源码前校验固定输入。
-
-# Build / 构建
-
-使用 Linux 文件系统中的源码目录（WSL2 请使用 ext4 虚拟磁盘内目录），安装 AOSP / LineageOS Android 16 所需的主机工具、Git LFS 和 repo。
-本仓库只提供固定版本和补丁，不含完整 Android 源码。当前原机成功构建用了 32GB 内存、swap、低并发；不保证更高并发可用。
+使用Linux文件系统；WSL2源码放在ext4内。安装Android 16所需主机依赖、Git LFS、repo和ccache。
+使用源码自带JDK21、-j4和ccache；内存、swap及其他编译器并行行为也会影响资源需求。
 
 ```sh
 git clone https://github.com/N1-k0-la1/diting-aviumui.git
@@ -35,94 +19,81 @@ repo sync -j4 --no-clone-bundle
 repo forall -c 'git lfs pull'
 ```
 
-取得官方 Via 7.3.3 APK（见 `external-artifacts.json`），先核对 SHA256。官方 URL 会更新；哈希不同则不能用它复现此候选。
-本仓库不附带 APK，也不绕过文件校验。
+GMS构建者在应用补丁前同步三个固定依赖；Vanilla跳过这一段：
+
+```sh
+mkdir -p .repo/local_manifests
+cp "$PATCH_PROJECT/manifests/gms.xml" .repo/local_manifests/gms.xml
+REPO_SKIP_SELF_UPDATE=1 repo sync vendor/pixel/gms vendor/pixel/clocks vendor/pixel/sounds --no-manifest-update -c -j3 --no-tags --no-clone-bundle
+```
+
+## 精确外部输入与补丁
+
+按 [external-artifacts.json](external-artifacts.json) 取得官方Via 7.3.3 APK与23个媒体ELF，先核对固定哈希。上游下载内容可能变化，不能用新版文件替代原哈希。
+在源码目录外准备媒体输入，例如：
+
+```sh
+git clone https://github.com/TheXPerienceProject/android_vendor_savitech_lhdc.git lhdc-donor
+git -C lhdc-donor checkout 63fa4e2f923721ef7e1d25c90a5268afd196df8d
+git clone https://github.com/Avicii-Labs/android_hardware_dolby.git dolby-donor
+git -C dolby-donor checkout 30250166e08e6b4bc795aa361446851a0b2970be
+git -C dolby-donor lfs pull
+python3 "$PATCH_PROJECT/tools/prepare-media-inputs.py" --lhdc-checkout lhdc-donor --dolby-checkout dolby-donor --output media-inputs
+```
+
+在Android源码根目录执行：
 
 ```sh
 python3 "$PATCH_PROJECT/tools/apply-patches.py" "$PWD" --via-apk /absolute/path/to/Via-7.3.3.apk --media-input-dir /absolute/path/to/media-inputs
+```
+
+工具先验证补丁/外部输入哈希、各项目固定HEAD与干净状态，再按序应用；只适用于全新checkout。
+工具暂存改动但不代替提交。请使用自己的Git作者身份提交；失败须保留现场检查，不能直接重复运行或忽略标记。
+内核提交号/dirty标记取决于实际构建者，不能保证与维护者产物相同。
+本批SOURCE-PATCH-SERIES.json记录113份补丁及上游/目标版本，与构建冻结一致；根目录清单另含发布说明等元数据。
+
+## 编译与变体切换
+
+```sh
+export USE_CCACHE=1 CCACHE_EXEC="$(command -v ccache)" CCACHE_DIR="$HOME/.cache/ccache"
+export JAVA_HOME="$PWD/prebuilts/jdk/jdk21/linux-x86"
+export PATH="$JAVA_HOME/bin:$PATH"
 export GOGC=50 GOMEMLIMIT=18GiB
-export WITH_GMS=false AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true TARGET_DITING_DOLBY_VISION=false
+export WITH_GMS=false AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true TARGET_DITING_DOLBY_VISION=true
 export AVIUM_VERSION_APPEND_TIME_OF_DAY=true
 source build/envsetup.sh
 lunch lineage_diting-bp4a-user
 m target-files-package otatools -j4
 ```
 
-补丁工具在修改前检查所有文件哈希和各项目原始 HEAD / 干净状态；发生错误立即停止。
-补丁工具只暂存改动。编译前请用自己的 Git 作者身份提交这些改动；内核版本会显示你实际的提交及 dirty 状态，不能期望复制维护者本地提交号。
-只用于全新、与清单一致的 checkout。中途失败的目录须人工检查，不能靠重复运行忽略错误。
-不要在已有定制源码目录使用这个工具。batch14 的 `TARGET_DITING_ESIM=true` 与 ditingp SKU / GL 区域限制配套；其他 SKU 或关闭此选项的构建均需独立验收。
+GMS使用WITH_GMS=true，并提前同步可选依赖。envsetup按上游规则拼接GMS APK分片。
+两变体共用out，必须串行；切换变体重新配置后执行m installclean，先另存上一版target-files及日志，再构建另一版。
+缓存可以复用，签名/组件/镜像证据必须分别归档。不要将后续变体的共享out当作旧产物的证明。
+12T Pro eSIM按SKU/固件区域限制启用；K50U不据同代号推定eSIM能力。Dolby开关启用不等于实机播放或流媒体认证通过。
 
-## Signing / 签名
+## 发布签名与验证
 
-上面的输出是原始 user target-files，**不是已完成私有签名的发布 ZIP**。
-构建者需生成自己的 APK、APEX container/payload、OTA 和 AVB 密钥，审计该 checkout 的
-`META/apkcerts.txt`、`META/apexkeys.txt`、`META/misc_info.txt`，并使用其 otatools 完成重签名和 OTA 生成。
-不要只执行默认 APK `-d` 映射就声称整个系统已经私有签名；嵌套 APK、共享 UID、APEX、payload 和 AVB 链还需独立核对。
-遵循 [AOSP release signing](https://source.android.com/docs/core/ota/sign_builds) 并以实际工具的帮助和元数据为准。
-维护者私钥不公开，因此自己的签名、日期和构建环境不同，输出字节和哈希不会与 发布包相同。
+上述命令生成原始user target-files，不是已签名发布OTA。构建者需准备自己的APK、APEX container/payload、OTA及AVB密钥，审计META/apkcerts.txt、META/apexkeys.txt与misc_info。
+保留外部PRESIGNED APK原始签名和轮换链，不能仅执行默认APK映射便声称全系统已正确重签。
+遵循 [AOSP release signing](https://source.android.com/docs/core/ota/sign_builds) 与实际otatools帮助，完成实际OTA/payload、分区镜像、组件及最终复制文件回读。
+维护者密钥不分发。签名、时间和环境不同，公开者的构建不会与维护者发布包字节一致。
 
-## Historical validation / 早期验证记录
+113份补丁已在临时Git索引按序重放，覆盖35个定制项目；这不等于另做一次从零同步全编或完整硬件验收。
+维护者12T Pro GMS测试暂未发现问题；Vanilla、K50U、LHDC耳机及长期组合需独立验证，详见 [验证范围](README.md)。
 
-以下 batch13/batch14 记录保留其历史范围；当前公开89补丁版本状态以本文顶部和 README 为准。
+## 主机回归
 
-当前 93 份有序补丁已在 31 个定制项目的临时 Git 索引中按序重放，与公开目标树精确一致；1190 个项目包括 1187 个基础项目及 3 个可选 GMS 项目。
-维护者现有 checkout 的两版正式整包已通过构建和主机产物审核。精确补丁重放不等于从零同步后再完成第二轮完整构建，也不等于全面设备验收。
-Via APK 与媒体 ELF 是独立输入，均需满足固定来源和 SHA256；仓库不分发这些专有二进制。
+```sh
+python3 tests/session-lifecycle-regressions.py /path/to/patched/android
+python3 tests/resolver-approval-regressions.py /path/to/patched/android
+python3 tests/failure-diagnostics-regressions.py /path/to/patched/android --output /tmp/failure-diagnostics.json
+```
+
+新的诊断回归使用源码JDK21/kotlinc和主机g++，从给定源码提取真实方法与模型，运行故障注入和9组安装失败UI场景；不操作手机、账户或加密存储。
+测试替身不能代替完整Android平台和手机验收。其他专项范围见 [审查索引](docs/reviews/README.md)。
 
 ## English
 
-Use a Linux filesystem, repo, Git LFS and Android 16 host dependencies.
-Initialize this manifest, sync pinned sources, provide the exact official Via APK, and apply the series once to a fresh checkout.
-The commands above build real user target-files. Generate and audit your own complete signing material before producing an OTA.
-Private maintainer keys are not distributed; your build is not byte-for-byte reproducible as the signed release ZIP.
-Do not substitute a newer Via binary without an explicit source/version change and validation.
-
-## GMS / 可选 Google 组件
-
-Vanilla 使用上面的 `WITH_GMS=false`。GMS 在应用补丁之前加入三个固定依赖：
-
-```sh
-mkdir -p .repo/local_manifests
-cp "$PATCH_PROJECT/manifests/gms.xml" .repo/local_manifests/gms.xml
-REPO_SKIP_SELF_UPDATE=1 repo sync vendor/pixel/gms vendor/pixel/clocks vendor/pixel/sounds --no-manifest-update -c -j3 --no-tags --no-clone-bundle
-export WITH_GMS=true AVIUM_FORCE_SET_FAKE_PROP=false TARGET_DITING_ESIM=true TARGET_DITING_DOLBY_VISION=true
-source build/envsetup.sh
-lunch lineage_diting-bp4a-user
-m installclean
-m target-files-package otatools -j4
-```
-
-`envsetup.sh` 会按上游规则拼接 GMS APK 分片。两个 flavour 切换时执行 `m installclean`，防止安装文件残留；编译缓存可以复用。
-全新 checkout 应先同步 GMS 三个仓库，再执行前面的补丁应用步骤；已经应用过补丁的 checkout 不要再次应用。
-先复制保存每个 flavour 的 target-files，再编译另一个；分别完成签名和验收。
-保留 Google 等外部 `PRESIGNED` APK 的原始签名及签名轮换链，不将它们替换为维护者签名。
-GMS 组件并不保证 Google 认证、Play Integrity 或硬件认证通过。
-GMS proprietary inputs retain their upstream licenses; this source repository does not redistribute their APK binaries.
-
-## Dual-model scope / 双机型范围
-
-原设备树按 `ro.boot.hwc` 加载 CN / GL ODM 属性。相机组件已有 HM6 与 HP1，沿用其选择逻辑。
-内置 eUICC feature 限于 `ro.boot.hardware.sku=ditingp`，两个相关 overlay 限于 `ro.boot.hwc=GL`。
-这是源码范围限制，不代替 K50 至尊版的启动、108MP 相机和双实体 SIM 实测。
-原固件二进制保持；两机型兼容未完成验收前，不把共用代号当成已经验证的刷机承诺。
-
-第三轮反馈核实与修复见 [ROUND3-REVIEW-20261014.md](ROUND3-REVIEW-20261014.md)。
-
-全局字体、防误触和文件夹模糊修复及验证边界见 [ROUND4-REVIEW-20261015.md](ROUND4-REVIEW-20261015.md)。
-
-新增回归（主机测试使用 Android API 替身，设备字体测试使用真实 native 排版）：
-
-```sh
-python3 tests/fingerprint-mistouch-regressions.py /path/to/patched/android
-python3 tests/folder-blur-regressions.py /path/to/patched/android
-python3 tests/global-font-device-regressions.py /path/to/patched/android --adb /path/to/adb --serial DEVICE_SERIAL --font /sdcard/test-font.ttf
-```
-
-设备字体测试需要已构建的 framework.jar、SDK/JDK 21、Android 16 和 su；仅运行临时进程，不安装字体、不改系统配置、不重启。请使用与原字体明显不同的已有字体文件。
-
-第五轮核实、修复与未成立的审查项见 [ROUND5-REVIEW-20261015.md](ROUND5-REVIEW-20261015.md)。已交付测试包不含本轮追加补丁。
-
-单独运行指纹生命周期/guest guard 主机回归：`python3 tests/session-lifecycle-regressions.py /path/to/patched/android`；该套件也由 fingerprint-mistouch-regressions.py 调用。
-
-Resolver 主机回归：`python3 tests/resolver-approval-regressions.py /path/to/patched/android`。正式手机验收与主机 API 替身测试分别记录。
+Use pinned sources on a Linux filesystem, exact external inputs, bundled JDK21, ccache and -j4.
+Apply the ordered series once to a fresh checkout. Build GMS and Vanilla serially, retain each target-files archive, and clean installed outputs when switching variants.
+Provide and audit your own complete signing identity; preserve externally signed applications. Public source reconstruction and host regression tests do not replace full builds or device acceptance.

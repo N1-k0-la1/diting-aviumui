@@ -1,0 +1,176 @@
+diff --git a/core/java/android/content/res/AssetManager.java b/core/java/android/content/res/AssetManager.java
+index cd36646fd..77d11ff21 100644
+--- a/core/java/android/content/res/AssetManager.java
++++ b/core/java/android/content/res/AssetManager.java
+@@ -84,7 +84,7 @@ public final class AssetManager implements AutoCloseable {
+     public static final String FRAMEWORK_APK_PATH = getFrameworkApkPath();
+     private static final String FRAMEWORK_APK_PATH_DEVICE = "/system/framework/framework-res.apk";
+     private static final String FRAMEWORK_APK_PATH_RAVENWOOD = "ravenwood-data/framework-res.apk";
+-    private static final String LINEAGE_APK_PATH = "/system/framework/org.system.platform-res.apk";
++    private static final String PLATFORM_RESOURCE_APK_PATH = "/system/framework/org.system.platform-res.apk";
+ 
+     private static final Object sSync = new Object();
+ 
+@@ -292,7 +292,7 @@ public final class AssetManager implements AutoCloseable {
+             for (String idmapPath : systemIdmapPaths) {
+                 apkAssets.add(ApkAssets.loadOverlayFromPath(idmapPath, ApkAssets.PROPERTY_SYSTEM));
+             }
+-            apkAssets.add(ApkAssets.loadFromPath(LINEAGE_APK_PATH, ApkAssets.PROPERTY_SYSTEM));
++            apkAssets.add(ApkAssets.loadFromPath(PLATFORM_RESOURCE_APK_PATH, ApkAssets.PROPERTY_SYSTEM));
+ 
+             sSystemApkAssetsSet = new ArraySet<>(apkAssets);
+             sSystemApkAssets = apkAssets.toArray(new ApkAssets[0]);
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+index 5217207df..00d581a52 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+@@ -4035,6 +4035,67 @@ public class BubbleController implements ConfigurationChangeListener,
+         });
+     }
+ 
++    /** Sidebar launches use the same mini-window task and handle as the recents gesture.
++     * Notification and note bubbles keep their TaskView lifecycle and controls.
++     */
++    public void showSidebarApp(String packageName, UserHandle user) {
++        if (!org.rising.view.PopUpViewManager.FEATURE_SUPPORTED) {
++            showOrUpdateAppBubble(packageName, user);
++            return;
++        }
++        mMainExecutor.execute(() -> {
++            if (!isAppBubbleUserAvailable(user)) return;
++            try {
++                Intent intent = mContext.createContextAsUser(user, 0).getPackageManager()
++                        .getLaunchIntentForPackage(packageName);
++                if (intent == null) return;
++                ActivityOptions options = ActivityOptions.makeBasic();
++                options.setLaunchWindowingMode(
++                        android.app.WindowConfiguration.WINDOWING_MODE_MINI_WINDOW_EXT);
++                options.setLaunchDisplayId(mContext.getDisplayId());
++                ActivityManager.RunningTaskInfo task = findSidebarTask(
++                        mTaskOrganizer.getRunningTasks(), packageName,
++                        user.getIdentifier(), mContext.getDisplayId());
++                mBubbleData.setExpanded(false);
++                if (task != null) {
++                    // Resume the current activity stack rather than relaunching its root.
++                    ActivityTaskManager.getService().startActivityFromRecents(
++                            task.taskId, options.toBundle());
++                } else {
++                    // A TaskView-owned bubble must not be reused as a mini-window root.
++                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
++                            | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
++                    mContext.startActivityAsUser(intent, options.toBundle(), user);
++                }
++            } catch (android.content.ActivityNotFoundException | SecurityException
++                    | RemoteException | IllegalArgumentException e) {
++                Log.w(TAG, "Unable to open sidebar mini-window", e);
++            }
++        });
++    }
++
++    @VisibleForTesting
++    static ActivityManager.RunningTaskInfo findSidebarTask(
++            List<ActivityManager.RunningTaskInfo> tasks, String packageName,
++            int userId, int displayId) {
++        ActivityManager.RunningTaskInfo newest = null;
++        for (ActivityManager.RunningTaskInfo task : tasks) {
++            int mode = task.getWindowingMode();
++            if (task.userId != userId || task.displayId != displayId || task.isAppBubble
++                    || task.baseActivity == null
++                    || !packageName.equals(task.baseActivity.getPackageName())
++                    || task.getActivityType()
++                            != android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
++                    || (mode != android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
++                            && mode != android.app.WindowConfiguration.WINDOWING_MODE_MINI_WINDOW_EXT
++                            && mode != android.app.WindowConfiguration.WINDOWING_MODE_PINNED_WINDOW_EXT)) {
++                continue;
++            }
++            if (newest == null || task.lastActiveTime > newest.lastActiveTime) newest = task;
++        }
++        return newest;
++    }
++
+     //Ext add
+     public void showOrUpdateAppBubble(String packageName) {
+         showOrUpdateAppBubble(packageName, UserHandle.of(ActivityManager.getCurrentUser()));
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExt.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExt.java
+index 988f092e4..fb2397d3c 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExt.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExt.java
+@@ -53,8 +53,8 @@ public class BubbleExt {
+             public void onReceive(Context context, Intent intent) {
+                 String packageName = intent.getStringExtra("package_name");
+                 if (packageName != null) {
+-                    Log.d(TAG, "Requesting bubble for: " + packageName);
+-                    mController.showOrUpdateAppBubble(packageName, UserHandle.of(
++                    Log.d(TAG, "Requesting sidebar mini-window for: " + packageName);
++                    mController.showSidebarApp(packageName, UserHandle.of(
+                             intent.getIntExtra(Intent.EXTRA_USER_HANDLE,
+                                     ActivityManager.getCurrentUser())));
+                 }
+diff --git a/services/core/java/com/android/server/wm/Task.java b/services/core/java/com/android/server/wm/Task.java
+index a6b5c67bb..e9a222161 100644
+--- a/services/core/java/com/android/server/wm/Task.java
++++ b/services/core/java/com/android/server/wm/Task.java
+@@ -2237,7 +2237,8 @@ class Task extends TaskFragment {
+             mWindowContainerExt.onWindowingModeChanged(prevWindowingMode);
+         }
+ 
+-        if (!isOrganized() && !getRequestedOverrideBounds().isEmpty() && mDisplayContent != null) {
++        if (!isOrganized() && !getWindowConfiguration().isPopUpWindowMode()
++                && !getRequestedOverrideBounds().isEmpty() && mDisplayContent != null) {
+             // If the parent (display) has rotated, rotate our bounds to best-fit where their
+             // bounds were on the pre-rotated display.
+             final int newRotation = getWindowConfiguration().getRotation();
+@@ -2285,6 +2286,20 @@ class Task extends TaskFragment {
+             return;
+         }
+ 
++        if (WindowConfiguration.isPopUpWindowMode(windowingMode)) {
++            final ActivityRecord top = topRunningActivity();
++            final int requestedOrientation = top != null
++                    ? top.getRequestedConfigurationOrientation()
++                    : Configuration.ORIENTATION_UNDEFINED;
++            final int naturalOrientation = mDisplayContent != null
++                    ? mDisplayContent.getNaturalOrientation() : Configuration.ORIENTATION_PORTRAIT;
++            resolvePopUpTaskBounds(outOverrideBounds, previousBounds,
++                    newParentConfig.windowConfiguration.getBounds(),
++                    requestedOrientation, naturalOrientation);
++            // Floating tasks own their logical viewport, including when recents
++            // clears launch bounds. Never fill the host game's landscape bounds.
++        }
++
+         adjustForMinimalTaskDimensions(outOverrideBounds, previousBounds, newParentConfig);
+         if (windowingMode == WINDOWING_MODE_FREEFORM) {
+             computeFreeformBounds(outOverrideBounds, newParentConfig);
+@@ -2292,6 +2307,31 @@ class Task extends TaskFragment {
+         }
+     }
+ 
++    static void resolvePopUpTaskBounds(Rect bounds, Rect previousBounds, Rect displayBounds,
++            int requestedOrientation, int naturalOrientation) {
++        if (bounds.isEmpty()) {
++            bounds.set(previousBounds.isEmpty() ? displayBounds : previousBounds);
++        }
++        if (bounds.isEmpty()) return;
++        int orientation = requestedOrientation;
++        if (orientation == Configuration.ORIENTATION_UNDEFINED) {
++            // BEHIND/unspecified must retain the app viewport, not follow the host.
++            orientation = previousBounds.isEmpty() ? naturalOrientation
++                    : previousBounds.width() > previousBounds.height()
++                            ? Configuration.ORIENTATION_LANDSCAPE : Configuration.ORIENTATION_PORTRAIT;
++        }
++        int shortEdge = Math.min(bounds.width(), bounds.height());
++        int longEdge = Math.max(bounds.width(), bounds.height());
++        int left = bounds.left;
++        int top = bounds.top;
++        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
++            bounds.set(left, top, left + longEdge, top + shortEdge);
++        } else {
++            bounds.set(left, top, left + shortEdge, top + longEdge);
++        }
++        WindowResizingAlgorithm.getPopUpViewDefalutBounds(bounds);
++    }
++
+     void adjustForMinimalTaskDimensions(@NonNull Rect bounds, @NonNull Rect previousBounds,
+             @NonNull Configuration parentConfig) {
+         // If the task has no requested minimal size, we'd like to enforce a minimal size

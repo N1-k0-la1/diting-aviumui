@@ -1,0 +1,398 @@
+diff --git a/FsCrypt.cpp b/FsCrypt.cpp
+index d0ae5f8..520a1cd 100644
+--- a/FsCrypt.cpp
++++ b/FsCrypt.cpp
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include "FsCrypt.h"
++#include "PrepareSubdirsError.h"
+ 
+ #include "Checkpoint.h"
+ #include "KeyStorage.h"
+@@ -940,17 +941,32 @@ bool fscrypt_lock_ce_storage(userid_t user_id) {
+ }
+ 
+ static bool prepare_subdirs(const std::string& action, const std::string& volume_uuid,
+-                            userid_t user_id, int flags) {
+-    if (0 != android::vold::ForkExecvp(
+-                 std::vector<std::string>{prepare_subdirs_path, action, volume_uuid,
+-                                          std::to_string(user_id), std::to_string(flags)})) {
+-        LOG(ERROR) << "vold_prepare_subdirs failed";
++                            userid_t user_id, int flags, std::string* error = nullptr) {
++    const int status = android::vold::ForkExecvp(
++            std::vector<std::string>{prepare_subdirs_path, action, volume_uuid,
++                                     std::to_string(user_id), std::to_string(flags)});
++    if (status != 0) {
++        LOG(ERROR) << "vold_prepare_subdirs failed, status: " << status;
++        if (error != nullptr) {
++            *error = "prepare-subdirs/" + std::string(PrepareSubdirsErrorName(status))
++                    + ":status=" + std::to_string(status);
++        }
+         return false;
+     }
+     return true;
+ }
+ 
+ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_id, int flags) {
++    return fscrypt_prepare_user_storage(volume_uuid, user_id, flags, nullptr);
++}
++
++bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_id, int flags,
++                                 std::string* error) {
++    if (error != nullptr) error->clear();
++    const auto fail = [error](const char* stage) {
++        if (error != nullptr) *error = stage;
++        return false;
++    };
+     LOG(DEBUG) << "fscrypt_prepare_user_storage for volume " << escape_empty(volume_uuid)
+                << ", user " << user_id << ", flags " << flags;
+ 
+@@ -961,13 +977,13 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+             !android::vold::pathExists(android::vold::BuildDataMiscDePath("", user_id))) {
+             LOG(ERROR) << "Cannot prepare DE storage for user " << user_id << " on volume "
+                        << volume_uuid << " before internal storage";
+-            return false;
++            return fail("internal-de-prerequisite");
+         }
+         if ((flags & android::os::IVold::STORAGE_FLAG_CE) &&
+             !android::vold::pathExists(android::vold::BuildDataMiscCePath("", user_id))) {
+             LOG(ERROR) << "Cannot prepare CE storage for user " << user_id << " on volume "
+                        << volume_uuid << " before internal storage";
+-            return false;
++            return fail("internal-ce-prerequisite");
+         }
+     }
+ 
+@@ -987,7 +1003,7 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+             auto it = s_de_policies.find(user_id);
+             if (it == s_de_policies.end()) {
+                 LOG(ERROR) << "Cannot find DE policy for user " << user_id;
+-                return false;
++                return fail("de-policy");
+             }
+             UserPolicies& user_de_policies = it->second;
+             if (volume_uuid.empty()) {
+@@ -996,25 +1012,25 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+                 auto misc_de_empty_volume_path = android::vold::BuildDataMiscDePath("", user_id);
+                 if (!read_or_create_volkey(misc_de_empty_volume_path, volume_uuid, user_de_policies,
+                                            &de_policy)) {
+-                    return false;
++                    return fail("adoptable-de-key");
+                 }
+             }
+         }
+ 
+         if (volume_uuid.empty()) {
+-            if (!prepare_dir(system_legacy_path, 0700, AID_SYSTEM, AID_SYSTEM)) return false;
+-            if (!prepare_dir(profiles_de_path, 0771, AID_SYSTEM, AID_SYSTEM)) return false;
++            if (!prepare_dir(system_legacy_path, 0700, AID_SYSTEM, AID_SYSTEM)) return fail("system-legacy-dir");
++            if (!prepare_dir(profiles_de_path, 0771, AID_SYSTEM, AID_SYSTEM)) return fail("profiles-de-dir");
+ 
+             if (!prepare_dir_with_policy(system_de_path, 0770, AID_SYSTEM, AID_SYSTEM, de_policy))
+-                return false;
++                return fail("system-de-dir");
+             if (!prepare_dir_with_policy(vendor_de_path, 0771, AID_ROOT, AID_ROOT, de_policy))
+-                return false;
++                return fail("vendor-de-dir");
+         }
+ 
+         if (!prepare_dir_with_policy(misc_de_path, 01771, AID_SYSTEM, AID_MISC, de_policy))
+-            return false;
++            return fail("misc-de-dir");
+         if (!prepare_dir_with_policy(user_de_path, 0771, AID_SYSTEM, AID_SYSTEM, de_policy))
+-            return false;
++            return fail("user-de-dir");
+     }
+ 
+     if (flags & android::os::IVold::STORAGE_FLAG_CE) {
+@@ -1030,7 +1046,7 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+             auto it = s_ce_policies.find(user_id);
+             if (it == s_ce_policies.end()) {
+                 LOG(ERROR) << "Cannot find CE policy for user " << user_id;
+-                return false;
++                return fail("ce-policy");
+             }
+             UserPolicies& user_ce_policies = it->second;
+             if (volume_uuid.empty()) {
+@@ -1039,31 +1055,31 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+                 auto misc_ce_empty_volume_path = android::vold::BuildDataMiscCePath("", user_id);
+                 if (!read_or_create_volkey(misc_ce_empty_volume_path, volume_uuid, user_ce_policies,
+                                            &ce_policy)) {
+-                    return false;
++                    return fail("adoptable-ce-key");
+                 }
+             }
+         }
+ 
+         if (volume_uuid.empty()) {
+             if (!prepare_dir_with_policy(system_ce_path, 0770, AID_SYSTEM, AID_SYSTEM, ce_policy))
+-                return false;
++                return fail("system-ce-dir");
+             if (!prepare_dir_with_policy(vendor_ce_path, 0771, AID_ROOT, AID_ROOT, ce_policy))
+-                return false;
++                return fail("vendor-ce-dir");
+         }
+         if (!prepare_dir_with_policy(media_ce_path, 02770, AID_MEDIA_RW, AID_MEDIA_RW, ce_policy))
+-            return false;
++            return fail("media-ce-dir");
+         // On devices without sdcardfs (kernel 5.4+), the path permissions aren't fixed
+         // up automatically; therefore, use a default ACL, to ensure apps with MEDIA_RW
+         // can keep reading external storage; in particular, this allows app cloning
+         // scenarios to work correctly on such devices.
+         int ret = SetDefaultAcl(media_ce_path, 02770, AID_MEDIA_RW, AID_MEDIA_RW, {AID_MEDIA_RW});
+         if (ret != android::OK) {
+-            return false;
++            return fail("media-ce-default-acl");
+         }
+         if (!prepare_dir_with_policy(misc_ce_path, 01771, AID_SYSTEM, AID_MISC, ce_policy))
+-            return false;
++            return fail("misc-ce-dir");
+         if (!prepare_dir_with_policy(user_ce_path, 0771, AID_SYSTEM, AID_SYSTEM, ce_policy))
+-            return false;
++            return fail("user-ce-dir");
+ 
+         if (volume_uuid.empty()) {
+             // Now that credentials have been installed, we can run restorecon
+@@ -1074,7 +1090,7 @@ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_
+             android::vold::RestoreconRecursive(misc_ce_path);
+         }
+     }
+-    if (!prepare_subdirs("prepare", volume_uuid, user_id, flags)) return false;
++    if (!prepare_subdirs("prepare", volume_uuid, user_id, flags, error)) return false;
+ 
+     return true;
+ }
+diff --git a/FsCrypt.h b/FsCrypt.h
+index d4a482c..2f76da3 100644
+--- a/FsCrypt.h
++++ b/FsCrypt.h
+@@ -33,6 +33,9 @@ bool fscrypt_unlock_ce_storage(userid_t user_id, const std::vector<uint8_t>& sec
+ bool fscrypt_lock_ce_storage(userid_t user_id);
+ 
+ bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_id, int flags);
++// Diagnostic overload; error contains a fixed operation name, never key material.
++bool fscrypt_prepare_user_storage(const std::string& volume_uuid, userid_t user_id, int flags,
++                                 std::string* error);
+ bool fscrypt_destroy_user_storage(const std::string& volume_uuid, userid_t user_id, int flags);
+ 
+ bool fscrypt_destroy_volume_keys(const std::string& volume_uuid);
+diff --git a/PrepareSubdirsError.h b/PrepareSubdirsError.h
+new file mode 100644
+index 0000000..1f3ea9a
+--- /dev/null
++++ b/PrepareSubdirsError.h
+@@ -0,0 +1,52 @@
++// SPDX-License-Identifier: Apache-2.0
++#pragma once
++
++// Private exit-code protocol between vold and vold_prepare_subdirs. These fixed identifiers
++// contain no paths, credentials or policy key references. Unknown/legacy exit codes stay failures.
++enum class PrepareSubdirsError : int {
++    kUnknown = 1,
++    kContext = 32,
++    kUserDe = 33,
++    kSdkSandboxDe = 34,
++    kVoldDe = 35,
++    kStoragedDe = 36,
++    kRollbackDe = 37,
++    kProfilesDe = 38,
++    kFingerprintDe = 39,
++    kFaceDe = 40,
++    kUserCe = 41,
++    kSdkSandboxCe = 42,
++    kVoldCe = 43,
++    kStoragedCe = 44,
++    kRollbackCe = 45,
++    kCheckinCe = 46,
++    kBackupCe = 47,
++    kBackupStageCe = 48,
++    kAppSearchCe = 49,
++    kFaceCe = 50,
++};
++
++inline const char* PrepareSubdirsErrorName(int status) {
++    switch (static_cast<PrepareSubdirsError>(status)) {
++        case PrepareSubdirsError::kContext: return "selinux-contexts";
++        case PrepareSubdirsError::kUserDe: return "user-de";
++        case PrepareSubdirsError::kSdkSandboxDe: return "sdk-sandbox-de";
++        case PrepareSubdirsError::kVoldDe: return "vold-de";
++        case PrepareSubdirsError::kStoragedDe: return "storaged-de";
++        case PrepareSubdirsError::kRollbackDe: return "rollback-de";
++        case PrepareSubdirsError::kProfilesDe: return "profiles-de";
++        case PrepareSubdirsError::kFingerprintDe: return "fingerprint-de";
++        case PrepareSubdirsError::kFaceDe: return "face-de";
++        case PrepareSubdirsError::kUserCe: return "user-ce";
++        case PrepareSubdirsError::kSdkSandboxCe: return "sdk-sandbox-ce";
++        case PrepareSubdirsError::kVoldCe: return "vold-ce";
++        case PrepareSubdirsError::kStoragedCe: return "storaged-ce";
++        case PrepareSubdirsError::kRollbackCe: return "rollback-ce";
++        case PrepareSubdirsError::kCheckinCe: return "checkin-ce";
++        case PrepareSubdirsError::kBackupCe: return "backup-ce";
++        case PrepareSubdirsError::kBackupStageCe: return "backup-stage-ce";
++        case PrepareSubdirsError::kAppSearchCe: return "appsearch-ce";
++        case PrepareSubdirsError::kFaceCe: return "face-ce";
++        default: return "unknown";
++    }
++}
+diff --git a/VoldNativeService.cpp b/VoldNativeService.cpp
+index aa9d842..57e1723 100644
+--- a/VoldNativeService.cpp
++++ b/VoldNativeService.cpp
+@@ -711,7 +711,13 @@ binder::Status VoldNativeService::prepareUserStorage(const std::optional<std::st
+     CHECK_ARGUMENT_HEX(uuid_);
+ 
+     ACQUIRE_CRYPT_LOCK;
+-    return translateBool(fscrypt_prepare_user_storage(uuid_, userId, flags));
++    std::string error;
++    if (!fscrypt_prepare_user_storage(uuid_, userId, flags, &error)) {
++        // translateBool(false) loses the operation and reports an empty error with code 0.
++        // Propagate a nonzero failure and its fixed stage through the existing Binder path.
++        return binder::Status::fromServiceSpecificError(EIO, error.c_str());
++    }
++    return binder::Status::ok();
+ }
+ 
+ binder::Status VoldNativeService::destroyUserStorage(const std::optional<std::string>& uuid,
+diff --git a/vold_prepare_subdirs.cpp b/vold_prepare_subdirs.cpp
+index ca8e3f6..3f57bd5 100644
+--- a/vold_prepare_subdirs.cpp
++++ b/vold_prepare_subdirs.cpp
+@@ -36,6 +36,7 @@
+ #include <selinux/android.h>
+ 
+ #include "Utils.h"
++#include "PrepareSubdirsError.h"
+ #include "android/os/IVold.h"
+ 
+ #include <private/android_filesystem_config.h>
+@@ -169,29 +170,35 @@ static bool prepare_apex_subdirs(struct selabel_handle* sehandle, const std::str
+     return true;
+ }
+ 
+-static bool prepare_subdirs(const std::string& volume_uuid, int user_id, int flags) {
++static bool prepare_subdirs(const std::string& volume_uuid, int user_id, int flags,
++                            PrepareSubdirsError* error) {
++    *error = PrepareSubdirsError::kUnknown;
++    const auto fail = [error](PrepareSubdirsError stage) {
++        *error = stage;
++        return false;
++    };
+     struct selabel_handle* sehandle = selinux_android_file_context_handle();
+     if (!sehandle) {
+         LOG(ERROR) << "Failed to get SELinux file contexts handle";
+-        return false;
++        return fail(PrepareSubdirsError::kContext);
+     }
+ 
+     if (flags & android::os::IVold::STORAGE_FLAG_DE) {
+         auto user_de_path = android::vold::BuildDataUserDePath(volume_uuid, user_id);
+         if (!prepare_dir_for_user(sehandle, 0771, AID_SYSTEM, AID_SYSTEM, user_de_path, user_id)) {
+-            return false;
++            return fail(PrepareSubdirsError::kUserDe);
+         }
+ 
+         auto misc_de_path = android::vold::BuildDataMiscDePath(volume_uuid, user_id);
+         if (!prepare_dir_for_user(sehandle, 0771, AID_SYSTEM, AID_SYSTEM,
+                                   misc_de_path + "/sdksandbox", user_id)) {
+-            return false;
++            return fail(PrepareSubdirsError::kSdkSandboxDe);
+         }
+ 
+         if (volume_uuid.empty()) {
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/vold")) return false;
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/storaged")) return false;
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/rollback")) return false;
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/vold")) return fail(PrepareSubdirsError::kVoldDe);
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/storaged")) return fail(PrepareSubdirsError::kStoragedDe);
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/rollback")) return fail(PrepareSubdirsError::kRollbackDe);
+             // TODO: Return false if this returns false once sure this should succeed.
+             prepare_dir(sehandle, 0700, 0, 0, misc_de_path + "/apexrollback");
+             prepare_apex_subdirs(sehandle, misc_de_path);
+@@ -199,35 +206,35 @@ static bool prepare_subdirs(const std::string& volume_uuid, int user_id, int fla
+             auto profiles_de_path = android::vold::BuildDataProfilesDePath(user_id);
+             if (!prepare_dir_for_user(sehandle, 0771, AID_SYSTEM, AID_SYSTEM, profiles_de_path,
+                                       user_id)) {
+-                return false;
++                return fail(PrepareSubdirsError::kProfilesDe);
+             }
+ 
+             auto vendor_de_path = android::vold::BuildDataVendorDePath(user_id);
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM, vendor_de_path + "/fpdata")) {
+-                return false;
++                return fail(PrepareSubdirsError::kFingerprintDe);
+             }
+             auto facedata_path = vendor_de_path + "/facedata";
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM, facedata_path)) {
+-                return false;
++                return fail(PrepareSubdirsError::kFaceDe);
+             }
+         }
+     }
+     if (flags & android::os::IVold::STORAGE_FLAG_CE) {
+         auto user_ce_path = android::vold::BuildDataUserCePath(volume_uuid, user_id);
+         if (!prepare_dir_for_user(sehandle, 0771, AID_SYSTEM, AID_SYSTEM, user_ce_path, user_id)) {
+-            return false;
++            return fail(PrepareSubdirsError::kUserCe);
+         }
+ 
+         auto misc_ce_path = android::vold::BuildDataMiscCePath(volume_uuid, user_id);
+         if (!prepare_dir_for_user(sehandle, 0771, AID_SYSTEM, AID_SYSTEM,
+                                   misc_ce_path + "/sdksandbox", user_id)) {
+-            return false;
++            return fail(PrepareSubdirsError::kSdkSandboxCe);
+         }
+ 
+         if (volume_uuid.empty()) {
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/vold")) return false;
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/storaged")) return false;
+-            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/rollback")) return false;
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/vold")) return fail(PrepareSubdirsError::kVoldCe);
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/storaged")) return fail(PrepareSubdirsError::kStoragedCe);
++            if (!prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/rollback")) return fail(PrepareSubdirsError::kRollbackCe);
+             // TODO: Return false if this returns false once sure this should succeed.
+             prepare_dir(sehandle, 0700, 0, 0, misc_ce_path + "/apexrollback");
+             prepare_apex_subdirs(sehandle, misc_ce_path);
+@@ -235,25 +242,25 @@ static bool prepare_subdirs(const std::string& volume_uuid, int user_id, int fla
+             // the user id to set the correct selinux mls_level.
+             if (!prepare_dir_for_user(sehandle, 0770, AID_SYSTEM, AID_CACHE,
+                                       misc_ce_path + "/checkin", user_id)) {
+-                return false;
++                return fail(PrepareSubdirsError::kCheckinCe);
+             }
+ 
+             auto system_ce_path = android::vold::BuildDataSystemCePath(user_id);
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM, system_ce_path + "/backup")) {
+-                return false;
++                return fail(PrepareSubdirsError::kBackupCe);
+             }
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM,
+                              system_ce_path + "/backup_stage")) {
+-                return false;
++                return fail(PrepareSubdirsError::kBackupStageCe);
+             }
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM,
+                              system_ce_path + "/appsearch")) {
+-                return false;
++                return fail(PrepareSubdirsError::kAppSearchCe);
+             }
+             auto vendor_ce_path = android::vold::BuildDataVendorCePath(user_id);
+             auto facedata_path = vendor_ce_path + "/facedata";
+             if (!prepare_dir(sehandle, 0700, AID_SYSTEM, AID_SYSTEM, facedata_path)) {
+-                return false;
++                return fail(PrepareSubdirsError::kFaceCe);
+             }
+         }
+     }
+@@ -296,7 +303,10 @@ int main(int argc, const char* const argv[]) {
+     int user_id = stoi(args[2]);
+     int flags = stoi(args[3]);
+     if (args[0] == "prepare") {
+-        if (!prepare_subdirs(volume_uuid, user_id, flags)) return -1;
++        PrepareSubdirsError error;
++        if (!prepare_subdirs(volume_uuid, user_id, flags, &error)) {
++            return static_cast<int>(error);
++        }
+     } else if (args[0] == "destroy") {
+         if (!destroy_subdirs(volume_uuid, user_id, flags)) return -1;
+     } else {

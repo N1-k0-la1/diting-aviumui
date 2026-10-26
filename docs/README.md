@@ -1,6 +1,7 @@
 # 文档导航
 
-- [batch29 文件及校验记录](releases/batch29-20261019/README.md)
+- [batch38 当前文件及校验记录](releases/batch38-20261026/README.md)
+- [batch29 历史发布](releases/batch29-20261019/README.md)
 - [当前发布与验证范围](../README.md) · [发布说明](../RELEASE.md)
 - [ROM 安装](../INSTALL.md) · [OFRP 安装](../OFRP-INSTALL.md) · [构建](../BUILD.md)
 - [历史版本与旧安装说明](history/README.md)

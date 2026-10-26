@@ -1,0 +1,126 @@
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/ShellTaskOrganizer.java b/libs/WindowManager/Shell/src/com/android/wm/shell/ShellTaskOrganizer.java
+index 6143a6dda..a42baaaa0 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/ShellTaskOrganizer.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/ShellTaskOrganizer.java
+@@ -837,11 +837,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
+         synchronized (mLock) {
+             ProtoLog.v(WM_SHELL_TASK_ORG_NOISY, "Task info changed taskId=%d", taskInfo.taskId);
+ 
++            final TaskAppearedInfo data = mTasks.get(taskInfo.taskId);
++            if (data == null) {
++                // A queued info change can arrive after the task vanished or changed organizer.
++                // Without an appeared task/leash there is no state to update or forward.
++                ProtoLog.w(WM_SHELL_TASK_ORG, "Ignoring info change for unknown taskId=%d",
++                        taskInfo.taskId);
++                return;
++            }
+             if (mUnfoldAnimationController != null) {
+                 mUnfoldAnimationController.onTaskInfoChanged(taskInfo);
+             }
+-
+-            final TaskAppearedInfo data = mTasks.get(taskInfo.taskId);
+             final TaskListener oldListener = getTaskListener(data.getTaskInfo());
+             final TaskListener newListener = getTaskListener(taskInfo,
+                     true /* removeLaunchCookieIfNeeded */);
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
+index 1f92007b5..663a54893 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleExpandedView.java
+@@ -383,18 +383,24 @@ public class BubbleExpandedView extends LinearLayout {
+             return;
+         }
+         final int orientation = taskInfo.topActivityInfo.screenOrientation;
+-        if (!isFixedOrientationPortrait(orientation)
+-                && !isFixedOrientationLandscape(orientation)) {
+-            // Splash/redirect activities often leave orientation unspecified. Retain the
+-            // last stable shape instead of resizing and recreating the app in a loop.
+-            return;
+-        }
+-        boolean portrait = isFixedOrientationPortrait(orientation);
+-        // The activity may request landscape at runtime (for example, a video player)
+-        // without changing its manifest ActivityInfo. Follow its actual app bounds then.
+         final Rect appBounds = taskInfo.appCompatTaskInfo.topActivityAppBounds;
+-        if (portrait && !appBounds.isEmpty()) {
+-            portrait = appBounds.width() <= appBounds.height();
++        final boolean portrait;
++        if (taskInfo.appCompatTaskInfo.isTopActivityLetterboxed()
++                && !appBounds.isEmpty() && appBounds.width() != appBounds.height()) {
++            // ActivityInfo contains the manifest orientation, not a runtime request.
++            // A BEHIND/unspecified activity can request portrait after launch (or
++            // landscape for video). WM's letterboxed app bounds describe that request.
++            portrait = appBounds.width() < appBounds.height();
++        } else {
++            if (!isFixedOrientationPortrait(orientation)
++                    && !isFixedOrientationLandscape(orientation)) {
++                // No runtime letterbox evidence: retain the last stable shape for
++                // splash/redirect pages and after the task has been resized to fit.
++                return;
++            }
++            // A fixed-portrait manifest may still switch to a landscape video at runtime.
++            portrait = isFixedOrientationPortrait(orientation)
++                    && (appBounds.isEmpty() || appBounds.width() <= appBounds.height());
+         }
+         if (mIsFixedOrientationPortrait != portrait) {
+             mIsFixedOrientationPortrait = portrait;
+diff --git a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+index 484eab285..0152169c0 100644
+--- a/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
++++ b/services/core/java/com/android/server/wm/ActivityStartInterceptor.java
+@@ -451,6 +451,11 @@ class ActivityStartInterceptor {
+         final String resolvedType = mResolvedType;
+         final ActivityOptions deferredOptions = mActivityOptions == null
+                 ? ActivityOptions.makeBasic() : ActivityOptions.fromBundle(mActivityOptions.toBundle());
++        // Resolver/chooser launches may carry the sender-only BAL opt-in. These options
++        // are now used to create a PendingIntent, whose API rejects that sender field.
++        // Clear only the copied sender field; keep task/display options and the creator opt-in.
++        deferredOptions.setPendingIntentBackgroundActivityStartMode(
++                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED);
+         deferredOptions.setPendingIntentCreatorBackgroundActivityStartMode(
+                 MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+         final Bundle options = deferredOptions.toBundle();
+diff --git a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+index 87deb2f42..ef7a2f8e8 100644
+--- a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
++++ b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+@@ -81,6 +81,7 @@ class TaskWindowSurfaceInfo {
+     private int mLastSurfaceX = Integer.MIN_VALUE;
+     private int mLastSurfaceY = Integer.MIN_VALUE;
+     private float mLastSurfaceScale = -1.0f;
++    private SurfaceControl mLastSurfaceControl;
+ 
+     TaskWindowSurfaceInfo(Task task) {
+         mTask = task;
+@@ -535,6 +536,15 @@ class TaskWindowSurfaceInfo {
+         final boolean hasAnimationLeash = hasTaskSurfaceAnimationLeash() ||
+                 animating ||
+                 mTask.mTransitionController.isPlaying();
++        // A transition/drag can write a different transform to this surface. Cached geometry
++        // no longer proves that the pinned task's current surface still has that geometry.
++        if (!isPinned || hasAnimationLeash || isWindowPositioningLocked()
++                || mIsDragging || mIsDockedToEdge) {
++            mLastSurfaceX = Integer.MIN_VALUE;
++            mLastSurfaceY = Integer.MIN_VALUE;
++            mLastSurfaceScale = -1.0f;
++            mLastSurfaceControl = null;
++        }
+         if (winConfig.isPopUpWindowMode() && !hasAnimationLeash &&
+                 !isWindowPositioningLocked() && !mIsDragging && !isPinned) {
+             final Rect displayBound = new Rect();
+@@ -564,7 +574,8 @@ class TaskWindowSurfaceInfo {
+                 return;
+             }
+             final Rect surfaceBounds = getTaskWindowSurfaceBounds();
+-            if (surfaceBounds.left != mLastSurfaceX || surfaceBounds.top != mLastSurfaceY
++            if (mLastSurfaceControl != mTask.mSurfaceControl
++                    || surfaceBounds.left != mLastSurfaceX || surfaceBounds.top != mLastSurfaceY
+                     || mLastSurfaceScale != mWindowSurfaceScale) {
+                 t.setPosition(mTask.mSurfaceControl, surfaceBounds.left, surfaceBounds.top)
+                         .setWindowCrop(mTask.mSurfaceControl, mTask.getBounds().width(), mTask.getBounds().height())
+@@ -578,6 +589,7 @@ class TaskWindowSurfaceInfo {
+                 mLastSurfaceX = surfaceBounds.left;
+                 mLastSurfaceY = surfaceBounds.top;
+                 mLastSurfaceScale = mWindowSurfaceScale;
++                mLastSurfaceControl = mTask.mSurfaceControl;
+             }
+         }
+     }

@@ -11,3 +11,5 @@
 历史文件名、二进制与校验值不因目录整理而重命名或改写。
 
 - round8fix20261016（历史总批次27）：[两版原始元数据](../../ROUND8-VARIANTS.json) · [审查记录](../../ROUND8-REVIEW-20261016.md)
+
+- batch29 · 20261019：[原发布说明](../releases/batch29-20261019/README.md) · [原文件与哈希](../releases/batch29-20261019/ARTIFACTS.json)

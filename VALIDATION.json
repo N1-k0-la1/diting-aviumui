@@ -2,7 +2,7 @@
   "pinned_base_projects": 1187,
   "optional_gms_projects": 3,
   "pinned_projects_with_gms": 1190,
-  "ordered_patches": 93,
+  "ordered_patches": 113,
   "round6_20261016": {
     "ordered_patches": 87,
     "immutable_approval_forward_result_fix": true,
@@ -14,7 +14,6 @@
     "round6_host_regressions_passed": true,
     "gms_image_audit_passed": true,
     "vanilla_image_audit_pending": false,
-    "private_lineage_debug_delta_exported": false,
     "phone_acceptance_pending": [
       "QQ clone authorization",
       "Thanox rapid double-back wallpaper state"
@@ -68,11 +67,10 @@
   "independently_fetched_upstream_patches_validated": 50,
   "all_patches_apply_to_upstream_touched_files_scope": "Historical first 50 patches remotely fetched; all 89 reconstructed from local pinned Git objects across 31 customized projects",
   "current_public_source_reconstruction": {
-    "ordered_patches": 89,
-    "customized_projects": 31,
-    "all_git_trees_match_safe_public_revisions": true,
-    "full_fresh_repo_sync_and_build_performed": false,
-    "report": "ROUND8-REVIEW-20261016.md"
+    "ordered_patches": 113,
+    "customized_projects": 35,
+    "temporary_index_replay_passed": true,
+    "scope": "Exact ordered public patch tree reconstruction with pinned external inputs; not a second fresh full repo sync/build."
   },
   "round2_20261014": {
     "helper_regressions_passed": 15,
@@ -153,7 +151,6 @@
     "previous_79_patches_byte_identical": true,
     "historical_rom_recovery_hashes_unchanged": true,
     "public_git_tree_replay_projects": 31,
-    "private_system_core_delta_exported": false,
     "k50_ultra_enrollment_hardware_acceptance_pending": true,
     "full_device_cts_run": false,
     "delivered_reviewfix20261015_binaries_contain_this_round": false,
@@ -379,5 +376,26 @@
     "published": true,
     "release_date": "2026-10-19",
     "publication_confirmation": "maintainer report with Coolapk announcement and cloud links"
+  },
+  "batch38_20261026": {
+    "public_patch_count": 113,
+    "both_variants_built_signed_and_host_qualified": true,
+    "actual_images_ota_payload_components_windows_readback_passed": true,
+    "same_frozen_source_inputs": true,
+    "matching_own_payload_boots_verified": true,
+    "maintainer_phone_feedback": {
+      "device": "Xiaomi 12T Pro",
+      "variant": "gms",
+      "date": "2026-10-26",
+      "result": "No current issues reported after testing",
+      "individual_steps_independently_verified": false
+    },
+    "vanilla_phone_acceptance_confirmed": false,
+    "k50_ultra_phone_acceptance_confirmed": false,
+    "lhdc_hardware_tested": false,
+    "ofrp_rebuilt": false,
+    "artifact_record": "docs/releases/batch38-20261026/ARTIFACTS.json",
+    "portable_failure_diagnostic_test_cases": 59,
+    "portable_failure_diagnostic_assertions": 284
   }
 }

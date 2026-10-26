@@ -1,0 +1,1387 @@
+diff --git a/core/java/android/view/ImeBackAnimationController.java b/core/java/android/view/ImeBackAnimationController.java
+index 3a10171a2..b0cba5c88 100644
+--- a/core/java/android/view/ImeBackAnimationController.java
++++ b/core/java/android/view/ImeBackAnimationController.java
+@@ -34,6 +34,7 @@ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ import android.app.WindowConfiguration;
+ import android.graphics.Insets;
++import android.os.CancellationSignal;
+ import android.util.Log;
+ import android.view.animation.BackGestureInterpolator;
+ import android.view.animation.Interpolator;
+@@ -65,6 +66,8 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+     private ValueAnimator mPostCommitAnimator = null;
+     private float mLastProgress = 0f;
+     private boolean mTriggerBack = false;
++    private CancellationSignal mControlCancellationSignal;
++    private int mControlRequestGeneration;
+     private boolean mIsPreCommitAnimationInProgress = false;
+     private int mStartRootScrollY = 0;
+ 
+@@ -76,6 +79,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+     @Override
+     public void onBackStarted(@NonNull BackEvent backEvent) {
+         if (!isBackAnimationAllowed()) {
++            cancelImeBackAnimation();
+             // There is no good solution for a predictive back animation if the app uses
+             // adjustResize, since we can't relayout the whole app for every frame. We also don't
+             // want to reveal any black areas behind the IME. Therefore let's not play any animation
+@@ -88,6 +92,9 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+             // If IME is currently animating away, skip back gesture
+             return;
+         }
++        if (mWindowInsetsAnimationController == null && mControlCancellationSignal != null) {
++            cancelImeBackAnimation();
++        }
+         mIsPreCommitAnimationInProgress = true;
+         if (mWindowInsetsAnimationController != null) {
+             // There's still an active animation controller. This means that a cancel post commit
+@@ -97,11 +104,14 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+             setPreCommitProgress(0f);
+             return;
+         }
+-        mInsetsController.controlWindowInsetsAnimation(ime(), /*cancellationSignal*/ null,
++        final int generation = ++mControlRequestGeneration;
++        mControlCancellationSignal = new CancellationSignal();
++        mInsetsController.controlWindowInsetsAnimation(ime(), mControlCancellationSignal,
+                 new WindowInsetsAnimationControlListener() {
+                     @Override
+                     public void onReady(@NonNull WindowInsetsAnimationController controller,
+                             @WindowInsets.Type.InsetsType int types) {
++                        if (generation != mControlRequestGeneration) return;
+                         mWindowInsetsAnimationController = controller;
+                         if (isAdjustPan()) mStartRootScrollY = mViewRoot.mScrollY;
+                         if (mIsPreCommitAnimationInProgress) {
+@@ -114,12 +124,20 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+ 
+                     @Override
+                     public void onFinished(@NonNull WindowInsetsAnimationController controller) {
+-                        reset();
++                        if (generation == mControlRequestGeneration) {
++                            mControlCancellationSignal = null;
++                            ++mControlRequestGeneration;
++                            reset();
++                        }
+                     }
+ 
+                     @Override
+                     public void onCancelled(@Nullable WindowInsetsAnimationController controller) {
+-                        reset();
++                        if (generation == mControlRequestGeneration) {
++                            mControlCancellationSignal = null;
++                            ++mControlRequestGeneration;
++                            reset();
++                        }
+                     }
+                 }, /*durationMs*/ -1, /*interpolator*/ null, ANIMATION_TYPE_USER,
+                 /*fromPredictiveBack*/ true);
+@@ -133,13 +151,18 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+ 
+     @Override
+     public void onBackCancelled() {
+-        if (!isBackAnimationAllowed()) return;
++        if (!isBackAnimationAllowed() || mWindowInsetsAnimationController == null) {
++            cancelImeBackAnimation();
++            return;
++        }
+         startPostCommitAnim(/*hideIme*/ false);
+     }
+ 
+     @Override
+     public void onBackInvoked() {
+-        if (!isBackAnimationAllowed() || !mIsPreCommitAnimationInProgress) {
++        if (!isBackAnimationAllowed() || !mIsPreCommitAnimationInProgress
++                || mWindowInsetsAnimationController == null) {
++            cancelImeBackAnimation();
+             // play regular hide animation if predictive back-animation is not allowed or if insets
+             // control has been cancelled by the system. This can happen in multi-window mode for
+             // example (i.e. split-screen or activity-embedding)
+@@ -231,6 +254,15 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
+         }
+     }
+ 
++    private void cancelImeBackAnimation() {
++        final CancellationSignal signal = mControlCancellationSignal;
++        mControlCancellationSignal = null;
++        // Expire callbacks before cancellation can synchronously call the old listener.
++        ++mControlRequestGeneration;
++        reset();
++        if (signal != null) signal.cancel();
++    }
++
+     private void reset() {
+         mWindowInsetsAnimationController = null;
+         resetPostCommitAnimator();
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+index bc572d2b8..4ca38a09f 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/bubbles/BubbleController.java
+@@ -53,6 +53,7 @@ import android.app.PendingIntent;
+ import android.app.TaskInfo;
+ import android.content.BroadcastReceiver;
+ import android.content.Context;
++import android.content.ComponentName;
+ import android.content.Intent;
+ import android.content.IntentFilter;
+ import android.content.pm.LauncherApps;
+@@ -4058,7 +4059,7 @@ public class BubbleController implements ConfigurationChangeListener,
+                 if (task == null) {
+                     // A stopped process may still have a valid task in recents. Reattach it
+                     // instead of creating another document with MULTIPLE_TASK on every launch.
+-                    task = findSidebarTask(ActivityTaskManager.getService().getRecentTasks(
++                    task = findSidebarRecentTask(ActivityTaskManager.getService().getRecentTasks(
+                                     ActivityTaskManager.getMaxRecentTasksStatic(),
+                                     ActivityManager.RECENT_IGNORE_UNAVAILABLE,
+                                     user.getIdentifier()).getList(),
+@@ -4066,15 +4067,24 @@ public class BubbleController implements ConfigurationChangeListener,
+                 }
+                 mBubbleData.setExpanded(false);
+                 if (task != null) {
+-                    // Resume the current activity stack rather than relaunching its root.
+-                    ActivityTaskManager.getService().startActivityFromRecents(
+-                            task.taskId, options.toBundle());
+-                } else {
+-                    // A TaskView-owned bubble must not be reused as a mini-window root.
+-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+-                            | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+-                    mContext.startActivityAsUser(intent, options.toBundle(), user);
++                    try {
++                        final int result = ActivityTaskManager.getService().startActivityFromRecents(
++                                task.taskId, options.toBundle());
++                        if (ActivityManager.isStartResultSuccessful(result)) return;
++                        Log.w(TAG, "Sidebar recent task start failed: " + result);
++                        // A deferred/aborted launch or permission rejection is not a missing task.
++                        if (result >= 0 || result == ActivityManager.START_PERMISSION_DENIED) return;
++                    } catch (IllegalArgumentException e) {
++                        // The selected recent task can disappear between lookup and restoration.
++                        Log.w(TAG, "Sidebar recent task disappeared", e);
++                    }
++                }
++                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++                if (task == null) {
++                    // Only the no-eligible-task case needs isolation from a TaskView-owned bubble.
++                    intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                 }
++                mContext.startActivityAsUser(intent, options.toBundle(), user);
+             } catch (android.content.ActivityNotFoundException | SecurityException
+                     | RemoteException | IllegalArgumentException e) {
+                 Log.w(TAG, "Unable to open sidebar mini-window", e);
+@@ -4103,6 +4113,40 @@ public class BubbleController implements ConfigurationChangeListener,
+         return newest;
+     }
+ 
++    @VisibleForTesting
++    static ActivityManager.RecentTaskInfo findSidebarRecentTask(
++            List<ActivityManager.RecentTaskInfo> tasks, String packageName,
++            int userId, int displayId) {
++        ActivityManager.RecentTaskInfo newest = null;
++        for (ActivityManager.RecentTaskInfo task : tasks) {
++            final boolean detached = !task.isRunning
++                    && task.displayId == android.view.Display.INVALID_DISPLAY;
++            // RecentTasks restores detached records into the default TaskDisplayArea.
++            if (task.userId != userId || task.isAppBubble
++                    || (detached ? displayId != android.view.Display.DEFAULT_DISPLAY
++                            : task.displayId != displayId)) continue;
++            final int mode = task.getWindowingMode();
++            final int type = task.getActivityType();
++            if (type != android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
++                    && !(detached && type
++                            == android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED)) continue;
++            if (mode != android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
++                    && mode != android.app.WindowConfiguration.WINDOWING_MODE_MINI_WINDOW_EXT
++                    && mode != android.app.WindowConfiguration.WINDOWING_MODE_PINNED_WINDOW_EXT
++                    && !(detached && mode
++                            == android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED)) continue;
++            ComponentName component = task.baseActivity;
++            if (component == null && !task.isRunning) {
++                component = task.realActivity != null ? task.realActivity
++                        : task.baseIntent != null ? task.baseIntent.getComponent() : null;
++            }
++            if (component == null || !packageName.equals(component.getPackageName())) continue;
++            if (newest == null || task.lastActiveTime > newest.lastActiveTime) newest = task;
++        }
++        return newest;
++    }
++
++
+     //Ext add
+     public void showOrUpdateAppBubble(String packageName) {
+         showOrUpdateAppBubble(packageName, UserHandle.of(ActivityManager.getCurrentUser()));
+diff --git a/services/core/java/com/android/server/wm/BackNavigationController.java b/services/core/java/com/android/server/wm/BackNavigationController.java
+index 434c69dc5..a9905534e 100644
+--- a/services/core/java/com/android/server/wm/BackNavigationController.java
++++ b/services/core/java/com/android/server/wm/BackNavigationController.java
+@@ -144,6 +144,20 @@ class BackNavigationController {
+         return true;
+     }
+ 
++    private static boolean hasVisibleImeForWindow(WindowState window) {
++        final DisplayContent dc = window.getDisplayContent();
++        if (dc == null || !dc.getImeContainer().isVisible()) return false;
++        final InputTarget target = dc.getImeInputTarget();
++        final WindowState imeWindow = target != null ? target.getWindowState() : null;
++        // During an IME target handoff, keep the original focused callback rather than guessing.
++        if (imeWindow == null) return true;
++        final Task focusedTask = window.getTask();
++        final Task imeTask = imeWindow.getTask();
++        return focusedTask != null && imeTask != null
++                && focusedTask.getRootTask() != null
++                && focusedTask.getRootTask() == imeTask.getRootTask();
++    }
++
+     /**
+      * Set up the necessary leashes and build a {@link BackNavigationInfo} instance for an upcoming
+      * back gesture animation.
+@@ -214,8 +228,7 @@ class BackNavigationController {
+                             .shouldMiniWindowHandleInput();
+                 Slog.d(TAG, "startBackNavigation: Mini window detected, hasInputFocus=" + miniHasInputFocus);
+ 
+-                if (!miniHasInputFocus
+-                        && !window.getDisplayContent().getImeContainer().isVisible()) {
++                if (!miniHasInputFocus && !hasVisibleImeForWindow(window)) {
+                     // A visible IME must receive back through the focused application's callback,
+                     // even if a keyboard touch left the mini-window pointer-focus hint unset.
+                     // Mini window doesn't have focus, skip to background task
+@@ -235,14 +248,11 @@ class BackNavigationController {
+                         } else {
+                             Slog.w(TAG, "startBackNavigation: Background window not drawable, " +
+                                     "falling back to callback");
+-                            // No valid background window, return callback type
+-                            infoBuilder.setType(BackNavigationInfo.TYPE_CALLBACK);
+-                            return infoBuilder.build();
++                            // Keep the original window and resolve its real callback below.
+                         }
+                     } else {
+                         Slog.w(TAG, "startBackNavigation: No background task found, falling back to callback");
+-                        infoBuilder.setType(BackNavigationInfo.TYPE_CALLBACK);
+-                        return infoBuilder.build();
++                        // Keep the original focused window instead of returning an empty callback.
+                     }
+                 }
+             }
+diff --git a/services/core/java/com/android/server/wm/PopUpWindowController.java b/services/core/java/com/android/server/wm/PopUpWindowController.java
+index fb5f382ff..b9e4c76dd 100644
+--- a/services/core/java/com/android/server/wm/PopUpWindowController.java
++++ b/services/core/java/com/android/server/wm/PopUpWindowController.java
+@@ -116,6 +116,9 @@ public class PopUpWindowController {
+ 
+     private WindowState mDimWinState = null;
+ 
++    // Guarded by mAtmService.mGlobalLock. Identity tokens expire callbacks on reactivation.
++    private final java.util.IdentityHashMap<Task, Object> mPendingPopUpExits =
++            new java.util.IdentityHashMap<>();
+     private PointerEventListener mMiniWindowPointerListener;
+ 
+     private static class InstanceHolder {
+@@ -359,28 +362,7 @@ public class PopUpWindowController {
+         }
+     }
+ 
+-    private void moveActivityTaskToBackInner(Task task, Task fullTask) {
+-        ActivityRecord fullTaskActivity = fullTask.getResumedActivity();
+-        if (fullTaskActivity == null) {
+-            fullTaskActivity = fullTask.getTopActivity(true, true);
+-        }
+-        ActivityRecord taskActivity = task.getResumedActivity();
+-        if (taskActivity == null) {
+-            taskActivity = task.getTopActivity(true, true);
+-        }
+-        task.startPausing(true, false, fullTaskActivity, "PopUpWindowController.moveActivityTaskToBackInner");
+-        if (taskActivity != null && task.getDisplayContent() != null) {
+-            if (taskActivity.getTask() != null &&
+-                    (taskActivity.getTask() == task || taskActivity.getTask().getParent() == task)) {
+-                task.moveTaskToBack(taskActivity.getTask());
+-            }
+-            final ActivityRecord resumedActivity = task.mRootWindowContainer.getTopResumedActivity();
+-            if (resumedActivity != null && !resumedActivity.isSleeping()) {
+-                mAtmService.setLastResumedActivityUncheckLocked(
+-                        resumedActivity, "PopUpWindowController.moveActivityTaskToBackInner");
+-            }
+-        }
+-    }
++
+ 
+     private void clearDimmerForTask(Task task) {
+         final Task dimmerTask = DimmerWindow.getInstance().getTask();
+@@ -394,41 +376,100 @@ public class PopUpWindowController {
+ 
+     void moveActivityTaskToBack(Task task, int reason) {
+         synchronized (mAtmService.mGlobalLock) {
+-            if (DEBUG_POP_UP) {
+-                Slog.d(TAG, "moveActivityTaskToBack, task=" + (task != null ? task : "null")
+-                        + ", reason=" + reasonToString(reason));
+-            }
+-            if (task != null && task.mWindowContainerExt.getTaskWindowSurfaceInfo() != null) {
+-                if (reason == MOVE_TO_BACK_TOUCH_OUTSIDE) {
+-                    TopActivityRecorder.getInstance().clearMiniWindow();
+-                } else if (reason == MOVE_TO_BACK_FROM_LEAVE_BUTTON) {
+-                    TopActivityRecorder.getInstance().clearPinnedWindow();
+-                    clearDimmerForTask(task);
+-                }
+-                final TaskWindowSurfaceInfo info = task.mWindowContainerExt.getTaskWindowSurfaceInfo();
+-                info.playExitAnimation(reason == MOVE_TO_BACK_FROM_LEAVE_BUTTON,
+-                        info.getWindowSurfaceRealScale(),
+-                        () -> {
+-                            synchronized (mAtmService.mGlobalLock) {
+-                                if (task.mDisplayContent == null) {
+-                                    task.mDisplayContent = mService.getDefaultDisplayContentLocked();
+-                                }
+-                                final Task fullTask = TopActivityRecorder.getInstance().getTopFullscreenTask();
+-                                if (fullTask != null) {
+-                                    task.setAlwaysOnTop(false);
+-                                    task.mDisplayContent.assignWindowLayers(true);
+-                                    moveActivityTaskToBackInner(task, fullTask);
++            final Task target = task != null ? task.getRootTask() : null;
++            if (target == null || !target.isAttached()
++                    || !target.getWindowConfiguration().isPopUpWindowMode()) return;
++            final TaskWindowSurfaceInfo info = target.mWindowContainerExt.getTaskWindowSurfaceInfo();
++            if (info == null) return;
++            final int mode = target.getWindowingMode();
++            final Object token = new Object();
++            mPendingPopUpExits.put(target, token);
++            target.setAlwaysOnTop(false);
++            // Remove the old owner before an exit animation or delayed cleanup can overlap a
++            // replacement. It must never become a fallback control-bar target again.
++            TopActivityRecorder.getInstance().removeMiniWindowTask(target);
++            TopActivityRecorder.getInstance().removePinnedWindowTask(target);
++            info.playExitAnimation(reason == MOVE_TO_BACK_FROM_LEAVE_BUTTON,
++                    info.getWindowSurfaceRealScale(), () -> {
++                        synchronized (mAtmService.mGlobalLock) {
++                            if (!isCurrentPopUpExit(target, token, mode)) return;
++                            if (!target.movePopUpTaskToBack()) {
++                                mPendingPopUpExits.remove(target);
++                                final Task otherMini = TopActivityRecorder.getInstance()
++                                        .getTopMiniWindowExceptTask(target);
++                                if (target.getWindowConfiguration().isMiniExtWindowMode()
++                                        && otherMini != null) {
++                                    // Policy rejected hiding this task; keep it as a usable host,
++                                    // without stealing another expanded window's control bar.
++                                    tryExitPopUpView(target, true, true, false);
++                                } else {
++                                    activatePopUpTask(target);
+                                 }
+-                                mHandler.postDelayed(()-> {
+-                                    tryExitPopUpView(task, true, true, reason != MOVE_TO_BACK_NEW_PIN);
+-                                }, EXIT_POP_UP_DELAY);
++                                return;
+                             }
++                            mHandler.postDelayed(() -> {
++                                synchronized (mAtmService.mGlobalLock) {
++                                    if (!isCurrentPopUpExit(target, token, mode)) return;
++                                    try {
++                                        tryExitPopUpView(target, true, true,
++                                                reason != MOVE_TO_BACK_NEW_PIN);
++                                    } finally {
++                                        if (mPendingPopUpExits.get(target) == token) {
++                                            mPendingPopUpExits.remove(target);
++                                        }
++                                    }
++                                }
++                            }, EXIT_POP_UP_DELAY);
+                         }
+-                );
+-            }
++                    });
++        }
++    }
++
++    boolean isPopUpTaskExiting(Task task) {
++        if (mAtmService == null || task == null) return false;
++        synchronized (mAtmService.mGlobalLock) {
++            final Task rootTask = task.getRootTask();
++            return rootTask != null && mPendingPopUpExits.containsKey(rootTask);
+         }
+     }
+ 
++    private boolean isCurrentPopUpExit(Task task, Object token, int mode) {
++        if (mPendingPopUpExits.get(task) != token) return false;
++        if (task.isAttached() && task.getWindowingMode() == mode) return true;
++        mPendingPopUpExits.remove(task);
++        return false;
++    }
++
++    private void cancelPendingPopUpExit(Task task) {
++        final Task target = task != null ? task.getRootTask() : null;
++        if (target != null && mPendingPopUpExits.remove(target) != null) {
++            final TaskWindowSurfaceInfo info = target.mWindowContainerExt.getTaskWindowSurfaceInfo();
++            if (info != null) info.cancelPopUpViewAnimation();
++        }
++    }
++
++    private void activatePopUpTask(Task task) {
++        final Task target = task != null ? task.getRootTask() : null;
++        if (target == null || !target.isAttached()
++                || !target.getWindowConfiguration().isPopUpWindowMode()) return;
++        cancelPendingPopUpExit(target);
++        target.setAlwaysOnTop(true);
++        if (target.getWindowConfiguration().isMiniExtWindowMode()) {
++            TopActivityRecorder.getInstance().activateMini(target);
++            DimmerWindow.getInstance().setTask(target);
++            setMiniWindowInputFocus(true);
++        } else {
++            final ActivityRecord activity = target.getTopNonFinishingActivity();
++            if (activity != null) TopActivityRecorder.getInstance()
++                    .updateTopPinnedWindowActivity(activity);
++            PinnedWindowOverlayController.getInstance().setTask(target);
++        }
++        if (target.mSurfaceControl != null && target.mSurfaceControl.isValid()) {
++            target.getPendingTransaction().setAlpha(target.mSurfaceControl, 1.0f);
++        }
++        mService.scheduleAnimationLocked();
++    }
++
+     boolean getOrCreateRootTask(Task candidateTask, DisplayContent displayContent, int windowingMode) {
+         if (!WindowConfiguration.isPopUpWindowMode(windowingMode)) {
+             return false;
+@@ -557,7 +598,7 @@ public class PopUpWindowController {
+                             TopActivityRecorder.getInstance().removeMiniWindowTask(task);
+                         }
+                         if (removePin && !wasMiniWindow) {
+-                            TopActivityRecorder.getInstance().clearPinnedWindow();
++                            TopActivityRecorder.getInstance().removePinnedWindowTask(rootTask);
+                             clearDimmerForTask(rootTask);
+                         }
+                         if (!skipAnim) {
+@@ -594,12 +635,13 @@ public class PopUpWindowController {
+                     Slog.e(TAG, "enterMiniWindowingMode: the windowState doesn't have a root task. rootTask=" + rootTask);
+                     return;
+                 }
++                cancelPendingPopUpExit(rootTask);
+                 final TaskWindowSurfaceInfo info = rootTask.mWindowContainerExt.getTaskWindowSurfaceInfo();
+                 if (info != null) {
+                     info.cancelPopUpViewAnimation();
+                 }
+                 if (rootTask.getWindowConfiguration().isPinnedExtWindowMode()) {
+-                    final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini();
++                    final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini(rootTask);
+                     if (prevMiniTask != null) {
+                         moveActivityTaskToBack(prevMiniTask, MOVE_TO_BACK_NEW_MINI);
+                     }
+@@ -613,6 +655,7 @@ public class PopUpWindowController {
+                 rootTask.mWindowContainerExt.prepareTransition();
+                 rootTask.setWindowingMode(WINDOWING_MODE_MINI_WINDOW_EXT);
+                 mAtmService.setFocusedTask(rootTask.mTaskId);
++                activatePopUpTask(rootTask);
+                 rootTask.mWindowContainerExt.scheduleTransition();
+                 DimmerWindow.getInstance().setTask(rootTask);
+             }
+@@ -638,19 +681,16 @@ public class PopUpWindowController {
+                 Slog.e(TAG, "enterPinnedWindowingModeInternal: rootTask is null");
+                 return;
+             }
++            cancelPendingPopUpExit(rootTask);
+             final TaskWindowSurfaceInfo info = rootTask.mWindowContainerExt.getTaskWindowSurfaceInfo();
+             if (info != null) {
+                 info.cancelPopUpViewAnimation();
+             }
+             if (!isFromDimmer) {
+                 final Task existingPinnedTask = TopActivityRecorder.getInstance().getTopPinnedWindowTask();
+-                if (existingPinnedTask != null && existingPinnedTask != taskOrRootTask) {
+-                    TopActivityRecorder.getInstance().clearPinnedWindow();
+-                    PinnedWindowOverlayController.getInstance().setTask(null);
+-                    final Task existingRootTask = existingPinnedTask.getRootTask();
+-                    if (existingRootTask != null) {
+-                        existingPinnedTask.removeIfPossible("replace-pinned-window");
+-                    }
++                if (existingPinnedTask != null
++                        && existingPinnedTask.getRootTask() != rootTask) {
++                    moveActivityTaskToBack(existingPinnedTask, MOVE_TO_BACK_NEW_PIN);
+                 }
+             }
+             if (rootTask.getWindowConfiguration().isMiniExtWindowMode()) {
+@@ -698,6 +738,7 @@ public class PopUpWindowController {
+                 TopActivityRecorder.getInstance().updateTopPinnedWindowActivity(topActivity);
+             }
+             updateFocusedApp();
++            activatePopUpTask(rootTask);
+             rootTask.mWindowContainerExt.scheduleTransition();
+             PinnedWindowOverlayController.getInstance().setTask(rootTask);
+         }
+@@ -759,12 +800,13 @@ public class PopUpWindowController {
+             if (rootTask == null) {
+                 return;
+             }
++            cancelPendingPopUpExit(rootTask);
+             final TaskWindowSurfaceInfo info = rootTask.mWindowContainerExt.getTaskWindowSurfaceInfo();
+             if (info != null) {
+                 info.cancelPopUpViewAnimation();
+             }
+             if (rootTask.getWindowConfiguration().isPinnedExtWindowMode()) {
+-                final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini();
++                final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini(rootTask);
+                 if (prevMiniTask != null) {
+                     moveActivityTaskToBack(prevMiniTask, MOVE_TO_BACK_NEW_MINI);
+                 }
+@@ -777,6 +819,7 @@ public class PopUpWindowController {
+             }
+             rootTask.mWindowContainerExt.prepareTransition();
+             rootTask.setWindowingMode(WINDOWING_MODE_MINI_WINDOW_EXT);
++            activatePopUpTask(rootTask);
+             rootTask.mWindowContainerExt.scheduleTransition();
+             DimmerWindow.getInstance().setTask(rootTask);
+         }
+@@ -827,6 +870,7 @@ public class PopUpWindowController {
+     private void setWindowingModePopUpView(Task task, int windowingMode) {
+         if (task != null) {
+             final Task rootTask = task.getRootTask();
++            cancelPendingPopUpExit(rootTask);
+             
+             boolean skipPrepareTransition = false;
+             if (WindowConfiguration.isMiniExtWindowMode(windowingMode)) {
+@@ -835,7 +879,7 @@ public class PopUpWindowController {
+                         ? existingPinnedTask.getRootTask() : null;
+                 if (existingPinnedTask != null
+                         && (existingPinnedTask == task || existingPinnedRootTask == rootTask)) {
+-                    final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini();
++                    final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini(rootTask);
+                     if (prevMiniTask != null) {
+                         moveActivityTaskToBack(prevMiniTask, MOVE_TO_BACK_NEW_MINI);
+                     }
+@@ -849,13 +893,9 @@ public class PopUpWindowController {
+                 }
+             } else if (WindowConfiguration.isPinnedExtWindowMode(windowingMode)) {
+                 final Task existingPinnedTask = TopActivityRecorder.getInstance().getTopPinnedWindowTask();
+-                if (existingPinnedTask != null && existingPinnedTask != task) {
+-                    TopActivityRecorder.getInstance().clearPinnedWindow();
+-                    PinnedWindowOverlayController.getInstance().setTask(null);
+-                    final Task existingRootTask = existingPinnedTask.getRootTask();
+-                    if (existingRootTask != null) {
+-                        existingPinnedTask.removeIfPossible("replace-pinned-window");
+-                    }
++                if (existingPinnedTask != null
++                        && existingPinnedTask.getRootTask() != rootTask) {
++                    moveActivityTaskToBack(existingPinnedTask, MOVE_TO_BACK_NEW_PIN);
+                 }
+             }
+             
+@@ -965,6 +1005,7 @@ public class PopUpWindowController {
+                     PinnedWindowOverlayController.getInstance().setTask(rootTask);
+                 }
+             }
++            activatePopUpTask(rootTask);
+             task.mWindowContainerExt.scheduleTransition();
+         }
+     }
+@@ -1301,7 +1342,7 @@ public class PopUpWindowController {
+             if (DEBUG_POP_UP) {
+                 Slog.d(TAG, "exitPinnedWindowingMode: task=" + task);
+             }
+-            TopActivityRecorder.getInstance().moveTopPinnedToFull();
++            TopActivityRecorder.getInstance().moveTopPinnedToFull(rootTask);
+             clearDimmerForTask(rootTask);
+             setTryExitWindowingMode(true);
+             tryExitPopUpView(rootTask, false, false, true);
+@@ -1328,8 +1369,9 @@ public class PopUpWindowController {
+             if (DEBUG_POP_UP) {
+                 Slog.d(TAG, "enterMiniWindowingModeFromPinned: task=" + task);
+             }
++            cancelPendingPopUpExit(rootTask);
+             final TaskWindowSurfaceInfo surfaceInfo = rootTask.mWindowContainerExt.getTaskWindowSurfaceInfo();
+-            final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini();
++            final Task prevMiniTask = TopActivityRecorder.getInstance().moveTopPinnedToMini(rootTask);
+             if (prevMiniTask != null) {
+                 moveActivityTaskToBack(prevMiniTask, MOVE_TO_BACK_NEW_MINI);
+             }
+@@ -1362,6 +1404,8 @@ public class PopUpWindowController {
+ 
+             rootTask.setWindowingMode(WINDOWING_MODE_MINI_WINDOW_EXT);
+             mAtmService.setFocusedTask(rootTask.mTaskId);
++            TopActivityRecorder.getInstance().removePinnedWindowTask(rootTask);
++            activatePopUpTask(rootTask);
+             rootTask.mWindowContainerExt.scheduleTransition();
+         }
+     }
+@@ -1386,72 +1430,36 @@ public class PopUpWindowController {
+ 
+     private void setupMiniWindowPointerListener() {
+         mMiniWindowPointerListener = event -> {
+-            if (event.getActionMasked() != android.view.MotionEvent.ACTION_DOWN) {
+-                return;
+-            }
+-
+-            final Task miniTask = DimmerWindow.getInstance().getTask();
+-            if (miniTask == null || !miniTask.getWindowConfiguration().isMiniExtWindowMode()) {
+-                return;
+-            }
+-
+-            final DisplayContent dc = miniTask.getDisplayContent();
+-            if (dc == null) return;
+-
+-            final int x = (int) event.getRawX();
+-            final int y = (int) event.getRawY();
+-
+-            final DisplayPolicy policy = dc.getDisplayPolicy();
+-            final int leftGestureInset = policy.getLeftGestureInset();
+-            final int rightGestureInset = policy.getRightGestureInset();
+-            final int displayWidth = dc.mBaseDisplayWidth;
+-
+-            final boolean inLeftGestureArea = x < leftGestureInset;
+-            final boolean inRightGestureArea = x > (displayWidth - rightGestureInset);
+-
+-            if (inLeftGestureArea || inRightGestureArea) {
+-                if (DEBUG_POP_UP) {
+-                    Slog.d(TAG, "Touch in gesture area at (" + x + "," + y + "), ignoring");
++            if (event.getActionMasked() != android.view.MotionEvent.ACTION_DOWN) return;
++            synchronized (mService.mGlobalLock) {
++                final Task task = DimmerWindow.getInstance().getTask();
++                if (task == null || !task.isAttached()
++                        || !task.getWindowConfiguration().isMiniExtWindowMode()) return;
++                final DisplayContent dc = task.getDisplayContent();
++                if (dc == null) return;
++                final int x = (int) event.getRawX();
++                final int y = (int) event.getRawY();
++                final Rect displayBounds = new Rect();
++                dc.getBounds(displayBounds);
++                final DisplayPolicy policy = dc.getDisplayPolicy();
++                if (x < displayBounds.left + policy.getLeftGestureInset()
++                        || x >= displayBounds.right - policy.getRightGestureInset()
++                        || isShadeExpanded(dc) || isInExcludeArea(dc, x, y)) return;
++                // A touch on the focused app's keyboard does not change mini/background routing.
++                final WindowState ime = dc.mInputMethodWindow;
++                if (ime != null && ime.isVisible()) {
++                    final android.graphics.Region region = new android.graphics.Region();
++                    ime.getTouchableRegion(region);
++                    if (region.contains(x, y)) return;
+                 }
+-                return;
+-            }
+-
+-            if (isShadeExpanded(dc)) {
+-                if (DEBUG_POP_UP) {
+-                    Slog.d(TAG, "Shade/QuickSettings expanded, ignoring touch");
+-                }
+-                return;
+-            }
+-
+-            if (isInExcludeArea(dc, x, y)) {
+-                if (DEBUG_POP_UP) {
+-                    Slog.d(TAG, "Touch in system UI area at (" + x + "," + y + "), ignoring");
+-                }
+-                return;
+-            }
+-
+-            final Rect dimmerBounds = DimmerWindow.getInstance().getBounds();
+-            final boolean inMiniWindow = dimmerBounds != null && dimmerBounds.contains(x, y);
+-
+-            if (DEBUG_POP_UP) {
+-                Slog.d(TAG, "Touch at (" + x + "," + y + "), dimmerBounds=" + dimmerBounds +
+-                    ", inMiniWindow=" + inMiniWindow);
+-            }
+-
+-
+-            DimmerWindow.getInstance().hideMenu();
+-
+-            if (inMiniWindow) {
+-                setMiniWindowInputFocus(true);
+-            } else {
+-                setMiniWindowInputFocus(false);
++                final TaskWindowSurfaceInfo info = task.mWindowContainerExt.getTaskWindowSurfaceInfo();
++                if (info == null) return;
++                final Rect bounds = info.getTaskWindowSurfaceBounds();
++                DimmerWindow.getInstance().hideMenu();
++                setMiniWindowInputFocus(bounds != null && bounds.contains(x, y));
+             }
+         };
+-
+         mService.registerPointerEventListener(mMiniWindowPointerListener, DEFAULT_DISPLAY);
+-        if (DEBUG_POP_UP) {
+-            Slog.d(TAG, "Registered mini window pointer listener");
+-        }
+     }
+ 
+     private boolean isInExcludeArea(DisplayContent dc, int x, int y) {
+diff --git a/services/core/java/com/android/server/wm/Task.java b/services/core/java/com/android/server/wm/Task.java
+index e9a222161..133ff10ed 100644
+--- a/services/core/java/com/android/server/wm/Task.java
++++ b/services/core/java/com/android/server/wm/Task.java
+@@ -6062,6 +6062,21 @@ class Task extends TaskFragment {
+      * @param tr The task to collect and move to the bottom.
+      * @return Returns true if the move completed, false if not.
+      */
++    /**
++     * A pop-up already owns its exit animation. Move it synchronously while its controller's
++     * generation is checked under the WM lock, rather than queueing an unguarded TO_BACK after
++     * the same task may have been reopened. Keep the normal lock-task/controller policy checks.
++     */
++    boolean movePopUpTaskToBack() {
++        if (!isRootTask() || !isAttached() || !getWindowConfiguration().isPopUpWindowMode()
++                || !canMoveTaskToBack(this)) return false;
++        // moveTaskToBackInner balances this when Shell transitions are enabled, even without
++        // a newly queued transition. Non-Shell execution does not defer/continue layout here.
++        if (mTransitionController.isShellTransitionsEnabled()) mAtmService.deferWindowLayout();
++        moveTaskToBackInner(this, null);
++        return true;
++    }
++
+     boolean moveTaskToBack(Task tr) {
+         Slog.i(TAG, "moveTaskToBack: " + tr);
+ 
+diff --git a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+index f4aa725f1..8d33ef9a9 100644
+--- a/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
++++ b/services/core/java/com/android/server/wm/TaskWindowSurfaceInfo.java
+@@ -330,6 +330,16 @@ class TaskWindowSurfaceInfo {
+             Slog.d(TAG, "onWindowingModeChanged " + preWindowMode + "->"
+                     + winConfig.getWindowingMode() + " mTask=" + mTask);
+         }
++        if (!winConfig.isPinnedExtWindowMode() && mIsDockedToEdge) {
++            // Docking belongs to the corner-window mode, including its alpha/crop animation.
++            cancelPopUpViewAnimation();
++            mIsDockedToEdge = false;
++            final Task overlayTask = PinnedWindowOverlayController.getInstance().getTask();
++            if (overlayTask != null && mTask.getRootTask() != null
++                    && overlayTask.getRootTask() == mTask.getRootTask()) {
++                PinnedWindowOverlayController.getInstance().setDockedState(false);
++            }
++        }
+         if (!isPopUpWindow && isPrevPopUpWindow) {
+             resetDraggingState();
+             if (mIsDockedToEdge) {
+diff --git a/services/core/java/com/android/server/wm/TopActivityRecorder.java b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+index a80c5b82f..561d0a154 100644
+--- a/services/core/java/com/android/server/wm/TopActivityRecorder.java
++++ b/services/core/java/com/android/server/wm/TopActivityRecorder.java
+@@ -1,424 +1,332 @@
+ /*
+  * Copyright (C) 2023-2024 The Nameless-AOSP Project
++ * Copyright (C) 2026 The AviumUI Project
+  * SPDX-License-Identifier: Apache-2.0
+  */
+ 
+ package com.android.server.wm;
+ 
+ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+-import static android.os.Process.THREAD_PRIORITY_DEFAULT;
+-
+-import static org.rising.DebugConstants.DEBUG_WMS_TOP_APP;
+ 
+ import android.app.WindowConfiguration;
+-import android.content.ComponentName;
+-import android.os.Handler;
+-import android.util.Slog;
+-
+-import com.android.server.ServiceThread;
+-import com.android.server.wm.PinnedWindowOverlayController;
+ 
+ import java.util.ArrayList;
+ 
++/** Tracks live task identities. All task/record state uses the WMS global lock. */
+ public class TopActivityRecorder {
+-
+-    private static final String TAG = "TopActivityRecorder";
+-
+     private static class InstanceHolder {
+-        private static TopActivityRecorder INSTANCE = new TopActivityRecorder();
++        private static final TopActivityRecorder INSTANCE = new TopActivityRecorder();
+     }
+ 
+     public static TopActivityRecorder getInstance() {
+         return InstanceHolder.INSTANCE;
+     }
+ 
+-    private final Object mFocusLock = new Object();
++    private volatile WindowManagerService mWms;
++    // Guarded by mWms.mGlobalLock; store roots for pop-ups, leaf tasks for fullscreen.
++    private final ArrayList<Task> mMiniTasks = new ArrayList<>();
++    private Task mPinnedTask;
++    private Task mLastFullscreenTask;
+ 
+-    private final Handler mHandler;
+-    private final ServiceThread mServiceThread;
++    private TopActivityRecorder() {}
+ 
+-    private ActivityInfo mTopFullscreenActivity = null;
+-    private ArrayList<ActivityInfo> mTopMiniWindowActivity = new ArrayList<>();
+-    private ActivityInfo mTopPinnedWindowActivity = null;
++    void initWms(WindowManagerService wms) {
++        mWms = wms;
++    }
+ 
+-    private WindowManagerService mWms;
++    private static Task root(Task task) {
++        return task != null ? task.getRootTask() : null;
++    }
+ 
+-    private TopActivityRecorder() {
+-        mServiceThread = new ServiceThread(TAG, THREAD_PRIORITY_DEFAULT, false);
+-        mServiceThread.start();
+-        mHandler = new Handler(mServiceThread.getLooper());
++    private static boolean sameRoot(Task first, Task second) {
++        if (first == null || second == null) return false;
++        return first == second || (root(first) != null && root(first) == root(second));
+     }
+ 
+-    void initWms(WindowManagerService wms) {
+-        mWms = wms;
++    private boolean isLivePopUp(Task task, boolean mini) {
++        return task != null && task.isAttached()
++                && task.getDisplayContent() == mWms.getDefaultDisplayContentLocked()
++                && (mini ? task.getWindowConfiguration().isMiniExtWindowMode()
++                        : task.getWindowConfiguration().isPinnedExtWindowMode())
++                && task.isAlwaysOnTop()
++                && !PopUpWindowController.getInstance().isPopUpTaskExiting(task);
+     }
+ 
+-    void onAppFocusChanged(ActivityRecord focus, Task task) {
+-        synchronized (mFocusLock) {
+-            if (mWms == null) {
+-                logE("onAppFocusChanged called before initWms - mWms is null");
+-                return;
+-            }
+-            
+-            final DisplayContent dc = mWms.getDefaultDisplayContentLocked();
+-            final ActivityRecord newFocus = focus != null ? focus : dc.topRunningActivity();
+-            if (newFocus == null) {
+-                return;
+-            }
+-            final Task newTask = task != null ? task : newFocus.getTask();
+-            if (newTask == null) {
+-                return;
+-            }
+-            final int windowingMode = newTask.getWindowConfiguration().getWindowingMode();
+-            if (WindowConfiguration.isMiniExtWindowMode(windowingMode)) {
+-                boolean hasTask = false;
+-                for (ActivityInfo ai : mTopMiniWindowActivity) {
+-                    if (ai.task == newTask) {
+-                        hasTask = true;
+-                        ai.componentName = newFocus.mActivityComponent;
+-                        ai.packageName = newFocus.packageName;
+-                        break;
+-                    }
+-                }
+-                if (!hasTask) {
+-                    mTopMiniWindowActivity.add(new ActivityInfo(newFocus, newTask));
+-                }
+-                logD("Top mini-window activity changed to " + newFocus
+-                        + ", addedTaskBefore=" + hasTask);
+-                DimmerWindow.getInstance().setTask(newTask);
+-            } else if (WindowConfiguration.isPinnedExtWindowMode(windowingMode)) {
+-                mTopPinnedWindowActivity = new ActivityInfo(newFocus, newTask);
+-                logD("Top pinned-window activity changed to " + newFocus);
+-                PinnedWindowOverlayController.getInstance().setTask(newTask);
+-            } else if (windowingMode == WindowConfiguration.WINDOWING_MODE_UNDEFINED
+-                    || windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN) {
+-                final ComponentName oldComponent = getTopFullscreenComponentLocked();
+-                final ComponentName newComponent = newFocus.mActivityComponent;
+-                if (!newComponent.equals(oldComponent)) {
+-                    if (mTopFullscreenActivity != null &&
+-                            mTopFullscreenActivity.task == newTask) {
+-                        mTopFullscreenActivity.componentName = newFocus.mActivityComponent;
+-                        mTopFullscreenActivity.packageName = newFocus.packageName;
+-                    } else {
+-                        mTopFullscreenActivity = new ActivityInfo(newFocus, newTask);
+-                    }
+-                    logD("Top fullscreen window activity changed to " + newFocus);
+-                }
+-            }
++    private boolean isFullscreen(Task task, DisplayContent dc) {
++        if (task == null || !task.isAttached() || !task.isLeafTask()
++                || task.getDisplayContent() != dc
++                || task.getWindowingMode() != WindowConfiguration.WINDOWING_MODE_FULLSCREEN
++                || task.getTopNonFinishingActivity() == null) {
++            return false;
+         }
++        final int type = task.getActivityType();
++        return type == WindowConfiguration.ACTIVITY_TYPE_STANDARD
++                || type == WindowConfiguration.ACTIVITY_TYPE_HOME;
+     }
+ 
+-    void updateTopPinnedWindowActivity(ActivityRecord newActivity) {
+-        synchronized (mFocusLock) {
+-            if (mTopPinnedWindowActivity != null &&
+-                    newActivity != null &&
+-                    mTopPinnedWindowActivity.task == newActivity.getTask()) {
+-                mTopPinnedWindowActivity.componentName = newActivity.mActivityComponent;
+-                mTopPinnedWindowActivity.packageName = newActivity.packageName;
+-            } else if (newActivity != null) {
+-                mTopPinnedWindowActivity = new ActivityInfo(newActivity, newActivity.getTask());
+-            }
+-            if (mTopPinnedWindowActivity != null && mTopPinnedWindowActivity.task != null) {
+-                PinnedWindowOverlayController.getInstance().setTask(mTopPinnedWindowActivity.task);
+-                logD("Top pinned-window activity changed to " + newActivity);
+-            } else {
+-                PinnedWindowOverlayController.getInstance().setTask(null);
+-                logD("Top pinned-window activity changed to null");
+-            }
+-        }
++    private static String packageName(Task task) {
++        final ActivityRecord activity = task != null ? task.getTopNonFinishingActivity() : null;
++        return activity != null ? activity.packageName : "";
+     }
+ 
+-    private ComponentName getTopFullscreenComponentLocked() {
+-        if (mTopFullscreenActivity == null) {
+-            return null;
++    private void pruneMiniTasks() {
++        for (int i = mMiniTasks.size() - 1; i >= 0; --i) {
++            if (!isLivePopUp(mMiniTasks.get(i), true)) mMiniTasks.remove(i);
+         }
+-        return mTopFullscreenActivity.componentName;
+     }
+ 
+-    String getTopFullscreenPackage() {
+-        synchronized (mFocusLock) {
+-            if (mTopFullscreenActivity == null) {
+-                return "";
+-            }
+-            return mTopFullscreenActivity.packageName;
++    private Task topMiniExcept(Task except) {
++        pruneMiniTasks();
++        for (int i = mMiniTasks.size() - 1; i >= 0; --i) {
++            final Task task = mMiniTasks.get(i);
++            if (!sameRoot(task, except) && task.isVisibleRequested()) return task;
++        }
++        return null;
++    }
++
++    void activateMini(Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            final Task target = root(task);
++            if (!isLivePopUp(target, true)) return;
++            pruneMiniTasks();
++            mMiniTasks.removeIf(old -> sameRoot(old, target));
++            mMiniTasks.add(target);
++            DimmerWindow.getInstance().setTask(target);
+         }
+     }
+ 
+-    Task getTopFullscreenTask() {
+-        synchronized (mFocusLock) {
+-            if (mTopFullscreenActivity == null) {
+-                return null;
++    void onAppFocusChanged(ActivityRecord focus, Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            final DisplayContent dc = wms.getDefaultDisplayContentLocked();
++            if (dc == null) return;
++            final ActivityRecord activity = focus != null ? focus : dc.topRunningActivity();
++            final Task target = task != null ? task : activity != null ? activity.getTask() : null;
++            final Task targetRoot = root(target);
++            if (isLivePopUp(targetRoot, true)) {
++                activateMini(targetRoot);
++            } else if (isLivePopUp(targetRoot, false)) {
++                mPinnedTask = targetRoot;
++                PinnedWindowOverlayController.getInstance().setTask(targetRoot);
++            } else if (isFullscreen(target, dc)) {
++                // Task identity can change even when the component name stays the same.
++                mLastFullscreenTask = target;
+             }
+-            return mTopFullscreenActivity.task;
++            if (!isFullscreen(mLastFullscreenTask, dc)) mLastFullscreenTask = null;
+         }
+     }
+ 
+-    int getTopFullscreenTaskId() {
+-        synchronized (mFocusLock) {
+-            return getTopFullscreenTaskIdLocked();
++    Task getTopFullscreenTask() {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return null;
++        synchronized (wms.mGlobalLock) {
++            final DisplayContent dc = wms.getDefaultDisplayContentLocked();
++            if (dc == null) return null;
++            final Task visible = dc.getTask(task -> isFullscreen(task, dc)
++                    && task.isVisibleRequested());
++            if (visible != null) {
++                mLastFullscreenTask = visible;
++                return visible;
++            }
++            if (isFullscreen(mLastFullscreenTask, dc)) return mLastFullscreenTask;
++            // Visibility can lag a mode transition. A live home task is a safe destination.
++            mLastFullscreenTask = dc.getTask(task -> isFullscreen(task, dc)
++                    && task.isActivityTypeHome());
++            return mLastFullscreenTask;
+         }
+     }
+ 
+-    int getTopFullscreenTaskIdLocked() {
+-        if (mTopFullscreenActivity == null) {
+-            return INVALID_TASK_ID;
+-        }
+-        if (mTopFullscreenActivity.task == null) {
+-            return INVALID_TASK_ID;
++    String getTopFullscreenPackage() {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return "";
++        synchronized (wms.mGlobalLock) {
++            return packageName(getTopFullscreenTask());
+         }
+-        return mTopFullscreenActivity.task.mTaskId;
+     }
+ 
+-    String getTopMiniWindowPackage() {
+-        synchronized (mFocusLock) {
+-            final int n = mTopMiniWindowActivity.size();
+-            if (n == 0) {
+-                return "";
+-            }
+-            return mTopMiniWindowActivity.get(n - 1).packageName;
+-        }
++    int getTopFullscreenTaskId() {
++        final Task task = getTopFullscreenTask();
++        return task != null ? task.mTaskId : INVALID_TASK_ID;
+     }
+ 
+-    private Task getTopMiniWindowTaskLocked() {
+-        final int n = mTopMiniWindowActivity.size();
+-        if (n == 0) {
+-            return null;
+-        }
+-        return mTopMiniWindowActivity.get(n - 1).task;
++    int getTopFullscreenTaskIdLocked() {
++        return getTopFullscreenTaskId();
+     }
+ 
+     boolean isTopFullscreenActivityHome() {
+-        synchronized (mFocusLock) {
+-            if (mTopFullscreenActivity == null) {
+-                return false;
+-            }
+-            return mTopFullscreenActivity.isHome;
++        final WindowManagerService wms = mWms;
++        if (wms == null) return false;
++        synchronized (wms.mGlobalLock) {
++            final Task task = getTopFullscreenTask();
++            return task != null && task.isActivityTypeHome();
+         }
+     }
+ 
+-    boolean isPackageAtTop(String packageName) {
+-        return getTopFullscreenPackage().equals(packageName) ||
+-                getTopMiniWindowPackage().equals(packageName) ||
+-                getTopPinnedWindowPackage().equals(packageName);
++    String getTopMiniWindowPackage() {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return "";
++        synchronized (wms.mGlobalLock) {
++            return packageName(topMiniExcept(null));
++        }
+     }
+ 
+     public boolean hasMiniWindow() {
+-        synchronized (mFocusLock) {
+-            return mTopMiniWindowActivity.size() > 0;
+-        }
++        return getTopMiniWindowExceptTask(null) != null;
+     }
+ 
+-    private String getPackageNameFromTask(Task task) {
+-        final ActivityRecord taskActivity = task.getActivity((r) -> true);
+-        if (taskActivity != null) {
+-            return taskActivity.packageName;
++    Task getTopMiniWindowExceptTask(Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return null;
++        synchronized (wms.mGlobalLock) {
++            return topMiniExcept(task);
+         }
+-        return "";
+     }
+ 
+-    private static boolean isSameTaskOrRoot(Task first, Task second) {
+-        if (first == null || second == null) return false;
+-        if (first == second) return true;
+-        final Task root = first.getRootTask();
+-        return root != null && root == second.getRootTask();
++    boolean isTaskTopMini(Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return false;
++        synchronized (wms.mGlobalLock) {
++            return sameRoot(topMiniExcept(null), task);
++        }
+     }
+ 
+     void removeMiniWindowTask(Task task) {
+-        synchronized (mFocusLock) {
+-            final int n = mTopMiniWindowActivity.size();
+-            for (int i = n - 1; i >= 0; --i) {
+-                if (isSameTaskOrRoot(mTopMiniWindowActivity.get(i).task, task)) {
+-                    final ActivityInfo ai = mTopMiniWindowActivity.remove(i);
+-                    logD("removeMiniWindowTask: " + ai);
+-                    // An old task's delayed exit must not remove a newer task's control bar.
+-                    if (isSameTaskOrRoot(DimmerWindow.getInstance().getTask(), ai.task)) {
+-                        DimmerWindow.getInstance().setTask(n == 1 ? null
+-                                : mTopMiniWindowActivity.get(n - 2).task);
+-                    }
+-                    return;
+-                }
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            mMiniTasks.removeIf(old -> sameRoot(old, task));
++            pruneMiniTasks();
++            if (sameRoot(DimmerWindow.getInstance().getTask(), task)) {
++                DimmerWindow.getInstance().setTask(topMiniExcept(null));
+             }
+-            logD("removeMiniWindowTask, unable to find task: " + task);
+         }
+     }
+ 
+     void moveTopMiniToFull() {
+-        synchronized (mFocusLock) {
+-            logD("moveTopMiniToFull");
+-            final int n = mTopMiniWindowActivity.size();
+-            if (n > 0) {
+-                final ComponentName oldComponent = getTopFullscreenComponentLocked();
+-                mTopFullscreenActivity = new ActivityInfo(mTopMiniWindowActivity.get(n - 1));
+-                logD("Top fullscreen window activity changed to " + mTopFullscreenActivity);
+-            }
+-            mTopMiniWindowActivity.clear();
+-            DimmerWindow.getInstance().setTask(null);
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            final Task task = root(DimmerWindow.getInstance().getTask());
++            if (task != null) removeMiniWindowTask(task);
+         }
+     }
+ 
+     void clearMiniWindow() {
+-        synchronized (mFocusLock) {
+-            logD("clearMiniWindow");
+-            mTopMiniWindowActivity.clear();
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            mMiniTasks.clear();
+             DimmerWindow.getInstance().setTask(null);
+         }
+     }
+ 
+     void moveTopMiniToPinned(Task task) {
+-        synchronized (mFocusLock) {
+-            final int n = mTopMiniWindowActivity.size();
+-            if (n == 0) {
+-                return;
+-            }
+-            final Task prevPinnedTask = PinnedWindowOverlayController.getInstance().getTask();
+-            if (prevPinnedTask != null && prevPinnedTask != task) {
+-                prevPinnedTask.setAlwaysOnTop(false);
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            final Task target = root(task);
++            if (target == null || !target.isAttached()) return;
++            final Task previous = getTopPinnedWindowTask();
++            removeMiniWindowTask(target);
++            mPinnedTask = target;
++            // The caller binds the root overlay after setting PINNED. No delayed rebinding.
++            if (previous != null && !sameRoot(previous, target)) {
++                PopUpWindowController.getInstance().moveActivityTaskToBack(previous,
++                        PopUpWindowController.MOVE_TO_BACK_NEW_PIN);
+             }
+-            int targetIndex = n - 1;
+-            final Task rootTask = task != null ? task.getRootTask() : null;
+-            for (int i = n - 1; i >= 0; --i) {
+-                final Task miniTask = mTopMiniWindowActivity.get(i).task;
+-                final Task miniRootTask = miniTask != null ? miniTask.getRootTask() : null;
+-                if (miniTask == task || miniRootTask == rootTask) {
+-                    targetIndex = i;
+-                    break;
+-                }
+-            }
+-            mTopPinnedWindowActivity = new ActivityInfo(mTopMiniWindowActivity.get(targetIndex));
+-            logD("moveTopMiniToPinned: " + mTopPinnedWindowActivity);
+-            mTopMiniWindowActivity.clear();
+-            DimmerWindow.getInstance().setTask(null);
+-            mHandler.postDelayed(() -> {
+-                PinnedWindowOverlayController.getInstance().setTask(task);
+-                if (prevPinnedTask != null && prevPinnedTask != task) {
+-                    PopUpWindowController.getInstance().moveActivityTaskToBack(prevPinnedTask,
+-                            PopUpWindowController.MOVE_TO_BACK_NEW_PIN);
+-                }
+-            }, WindowChangeAnimationSpecExt.ANIMATION_DURATION_MODE_CHANGING);
+         }
+     }
+ 
+-    Task moveTopPinnedToMini() {
+-        synchronized (mFocusLock) {
+-            if (mTopPinnedWindowActivity == null) {
+-                return null;
++    Task moveTopPinnedToMini(Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return null;
++        synchronized (wms.mGlobalLock) {
++            final Task target = root(task);
++            if (target == null || !target.isAttached()) return null;
++            final Task previous = topMiniExcept(target);
++            removePinnedWindowTask(target);
++            // The caller activates this exact root once MINI mode and geometry are ready.
++            return previous;
++        }
++    }
++
++    void updateTopPinnedWindowActivity(ActivityRecord activity) {
++        final WindowManagerService wms = mWms;
++        if (wms == null || activity == null) return;
++        synchronized (wms.mGlobalLock) {
++            final Task task = root(activity.getTask());
++            if (isLivePopUp(task, false)) {
++                mPinnedTask = task;
++                PinnedWindowOverlayController.getInstance().setTask(task);
+             }
+-            final Task prevMiniTask = getTopMiniWindowTaskLocked();
+-            final Task pinnedTask = mTopPinnedWindowActivity.task;
+-            mTopMiniWindowActivity.clear();
+-            mTopMiniWindowActivity.add(new ActivityInfo(mTopPinnedWindowActivity));
+-            logD("moveTopPinnedToMini: " + mTopPinnedWindowActivity);
+-            DimmerWindow.getInstance().setTask(pinnedTask);
+-            mTopPinnedWindowActivity = null;
+-            PinnedWindowOverlayController.getInstance().setTask(null);
+-            if (prevMiniTask == pinnedTask) {
+-                return null;
++        }
++    }
++
++    void removePinnedWindowTask(Task task) {
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            if (sameRoot(mPinnedTask, task)) mPinnedTask = null;
++            if (sameRoot(PinnedWindowOverlayController.getInstance().getTask(), task)) {
++                PinnedWindowOverlayController.getInstance().setTask(null);
+             }
+-            return prevMiniTask;
+         }
+     }
+ 
+     void clearPinnedWindow() {
+-        synchronized (mFocusLock) {
+-            logD("clearPinnedWindow");
+-            mTopPinnedWindowActivity = null;
++        final WindowManagerService wms = mWms;
++        if (wms == null) return;
++        synchronized (wms.mGlobalLock) {
++            mPinnedTask = null;
+             PinnedWindowOverlayController.getInstance().setTask(null);
+         }
+     }
+ 
+-    void moveTopPinnedToFull() {
+-        synchronized (mFocusLock) {
+-            logD("moveTopPinnedToFull");
+-            if (mTopPinnedWindowActivity != null) {
+-                mTopFullscreenActivity = new ActivityInfo(mTopPinnedWindowActivity);
+-                logD("Top fullscreen window activity changed to " + mTopFullscreenActivity);
+-            }
+-            mTopPinnedWindowActivity = null;
+-            PinnedWindowOverlayController.getInstance().setTask(null);
+-        }
++    void moveTopPinnedToFull(Task task) {
++        removePinnedWindowTask(task);
+     }
+ 
+     Task getTopPinnedWindowTask() {
+-        synchronized (mFocusLock) {
+-            return mTopPinnedWindowActivity != null ? mTopPinnedWindowActivity.task : null;
++        final WindowManagerService wms = mWms;
++        if (wms == null) return null;
++        synchronized (wms.mGlobalLock) {
++            if (!isLivePopUp(mPinnedTask, false)) mPinnedTask = null;
++            return mPinnedTask;
+         }
+     }
+ 
+     String getTopPinnedWindowPackage() {
+-        synchronized (mFocusLock) {
+-            return mTopPinnedWindowActivity != null ? mTopPinnedWindowActivity.packageName : "";
++        final WindowManagerService wms = mWms;
++        if (wms == null) return "";
++        synchronized (wms.mGlobalLock) {
++            return packageName(getTopPinnedWindowTask());
+         }
+     }
+ 
+-    boolean isTaskTopMini(Task task) {
+-        synchronized (mFocusLock) {
+-            final int n = mTopMiniWindowActivity.size();
+-            return n > 0 && mTopMiniWindowActivity.get(n - 1).task == task;
+-        }
+-    }
+-
+-    Task getTopMiniWindowExceptTask(Task task) {
+-        synchronized (mFocusLock) {
+-            final int n = mTopMiniWindowActivity.size();
+-            for (int i = n - 1; i >= 0; --i) {
+-                final Task miniTask = mTopMiniWindowActivity.get(i).task;
+-                if (miniTask != null && miniTask.isAttached()
+-                        && miniTask.getWindowConfiguration().isMiniExtWindowMode()
+-                        && !isSameTaskOrRoot(miniTask, task)) {
+-                    return miniTask;
+-                }
+-            }
+-            return null;
+-        }
++    boolean isPackageAtTop(String packageName) {
++        return packageName != null && (packageName.equals(getTopFullscreenPackage())
++                || packageName.equals(getTopMiniWindowPackage())
++                || packageName.equals(getTopPinnedWindowPackage()));
+     }
+ 
+     void onForceStopPackage(String packageName) {
+-        synchronized (mFocusLock) {
+-            for (int i = mTopMiniWindowActivity.size() - 1; i >= 0; --i) {
+-                if (packageName.equals(mTopMiniWindowActivity.get(i).packageName)) {
+-                    mTopMiniWindowActivity.remove(i);
+-                }
++        final WindowManagerService wms = mWms;
++        if (wms == null || packageName == null) return;
++        synchronized (wms.mGlobalLock) {
++            mMiniTasks.removeIf(task -> packageName.equals(packageName(task)));
++            pruneMiniTasks();
++            final Task dimmerTask = DimmerWindow.getInstance().getTask();
++            if (!isLivePopUp(dimmerTask, true)
++                    || packageName.equals(packageName(dimmerTask))) {
++                DimmerWindow.getInstance().setTask(topMiniExcept(null));
++            }
++            if (!isLivePopUp(mPinnedTask, false)
++                    || packageName.equals(packageName(mPinnedTask))) {
++                clearPinnedWindow();
+             }
+         }
+     }
+-
+-    private static final class ActivityInfo {
+-        ComponentName componentName;
+-        String packageName;
+-        Task task;
+-        boolean isHome;
+-
+-        ActivityInfo(ActivityRecord r, Task task) {
+-            this.componentName = r.mActivityComponent;
+-            this.packageName = r.packageName;
+-            this.task = task;
+-            this.isHome = r.isActivityTypeHome();
+-        }
+-
+-        ActivityInfo(ActivityInfo other) {
+-            this.componentName = other.componentName;
+-            this.packageName = other.packageName;
+-            this.task = other.task;
+-            this.isHome = other.isHome;
+-        }
+-
+-        @Override
+-        public String toString() {
+-            final StringBuilder sb = new StringBuilder();
+-            sb.append("componentName=").append(componentName);
+-            sb.append(", task=").append(task);
+-            sb.append(", isHome=").append(isHome);
+-            return sb.toString();
+-        }
+-    }
+-
+-    private static void logD(String msg) {
+-        if (DEBUG_WMS_TOP_APP) {
+-            Slog.d(TAG, msg);
+-        }
+-    }
+-
+-    private static void logE(String msg) {
+-        Slog.e(TAG, msg);
+-    }
+ }
