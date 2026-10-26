@@ -396,6 +396,12 @@
     "ofrp_rebuilt": false,
     "artifact_record": "docs/releases/batch38-20261026/ARTIFACTS.json",
     "portable_failure_diagnostic_test_cases": 59,
-    "portable_failure_diagnostic_assertions": 284
+    "portable_failure_diagnostic_assertions": 284,
+    "distribution": {
+      "status": "published-maintainer-confirmed",
+      "quark_url": "https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh",
+      "google_drive_available": false,
+      "cloud_download_hash_independently_verified": false
+    }
   }
 }

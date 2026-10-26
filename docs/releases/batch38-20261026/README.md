@@ -29,4 +29,4 @@ OFRP 沿用 20261016-review2，本次没有更新。
 
 [文件及完整 SHA256](ARTIFACTS.json) · [二进制校验清单](SHA256SUMS) · [ROM 安装](../../../INSTALL.md) · [OFRP 安装](../../../OFRP-INSTALL.md)
 
-网盘由维护者分发和更新，请核对完整 batch38 文件名与哈希；下载入口见 [项目首页](../../../README.md)。
+已发布至 [夸克网盘](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh)，提取码：`anJh`。本次暂无 Google Drive。请核对完整 batch38 文件名与上述 SHA256。
