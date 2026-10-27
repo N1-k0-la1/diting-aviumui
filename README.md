@@ -19,13 +19,13 @@
 ## 下载与入口
 
 - [batch38 夸克网盘](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh)，提取码：`anJh`
-- 本次暂无 Google Drive 下载。
+- [batch38 Google Drive](https://drive.google.com/drive/folders/16xuvdTWn3oIPGrZfRo1UZXWgvKExMOQV?usp=drive_link)
 - [当前文件名与哈希](docs/releases/batch38-20261026/ARTIFACTS.json) · [本批 SHA256](docs/releases/batch38-20261026/SHA256SUMS)
 - [ROM 安装](INSTALL.md) · [OFRP 安装](OFRP-INSTALL.md) · [发布说明](RELEASE.md) · [验证记录](VALIDATION.json)
 - [构建说明](BUILD.md) · [补丁清单](patch-series.json) · [固定上游](manifests/default.xml)
 - [鸣谢](CREDITS.md) · [许可范围](LICENSES.md) · [外部输入](external-artifacts.json) · [内核](KERNEL.md)
 
-batch38 成品已由维护者发布至上述夸克网盘。仓库提供源码补丁、说明和校验记录，不托管完整 ROM；请按完整文件名、SHA256 与随包清单核对批次。
+batch38 成品已由维护者发布至上述夸克网盘和 Google Drive。仓库提供源码补丁、说明和校验记录，不托管完整 ROM；请按完整文件名、SHA256 与随包清单核对批次。
 
 ## 本次更新
 
@@ -73,5 +73,5 @@ The maintainer reports no current problems after testing GMS on 12T Pro; this do
 Changes include opt-in simultaneous dual-band Wi-Fi, unset GMS defaults, floating-window layout/lifecycle/control ownership, IME and navigation gestures, attachment permissions, installer failure handling, Dolby service compatibility and storage diagnostics.
 Dual-band connectivity does not automatically aggregate ordinary-app traffic. Unconfirmed reports are investigation leads, not established ROM defects or claimed fixes.
 OFRP remains 20261016-review2. Use each variant's own boot and verify exact [artifact hashes](docs/releases/batch38-20261026/ARTIFACTS.json).
-Download batch38 from [Quark](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh), extraction code `anJh`. No Google Drive download is available for this release.
+Download batch38 from [Quark](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh), extraction code `anJh`. A [Google Drive mirror](https://drive.google.com/drive/folders/16xuvdTWn3oIPGrZfRo1UZXWgvKExMOQV?usp=drive_link) is also available.
 See [Build](BUILD.md), [Install](INSTALL.md), [Licensing](LICENSES.md) and the [documentation index](docs/README.md).

@@ -2,7 +2,7 @@
 
 当前 AviumUI 16.2.2 / Android 16 的源码、两变体成品与验证记录见 [本批说明](docs/releases/batch38-20261026/README.md)。
 
-已发布至 [夸克网盘](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh)，提取码：`anJh`。本次暂无 Google Drive。
+已发布至 [夸克网盘](https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh)，提取码：`anJh`。另提供 [Google Drive 下载](https://drive.google.com/drive/folders/16xuvdTWn3oIPGrZfRo1UZXWgvKExMOQV?usp=drive_link)。
 
 - 新增双频 Wi-Fi 连接开关：条件满足时同时连接同一网络的 2.4GHz 与 5GHz；默认关闭，不保证普通应用自动叠加带宽。
 - 修正 GMS 版本中未设置过的 GMS 开关默认值，保留用户已有选择。

@@ -2,7 +2,7 @@
   "batch_number": 38,
   "version": "AviumUI 16.2.2 / Android 16",
   "release_date": "2026-10-26",
-  "distribution": "Published by the maintainer on Quark; verify exact filenames and SHA256.",
+  "distribution": "Published by the maintainer on Quark and Google Drive; verify exact filenames and SHA256.",
   "public_patch_count": 113,
   "public_patch_series_sha256": "3dacfb8a80e02d58f51b8c050908f173ea7fc8129916fed0254439db1c26bc92",
   "source_manifest_sha256": "2a27c87bed07ba256fd02a2450950cb07e203e53172e3b0098e3f708b6391e43",
@@ -165,8 +165,11 @@
       "url": "https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh",
       "extraction_code": "anJh"
     },
-    "google_drive": null,
+    "google_drive": {
+      "url": "https://drive.google.com/drive/folders/16xuvdTWn3oIPGrZfRo1UZXWgvKExMOQV?usp=drive_link"
+    },
     "publication_confirmed_by": "maintainer",
-    "publication_confirmed_date": "2026-10-26"
+    "publication_confirmed_date": "2026-10-26",
+    "google_drive_added_date": "2026-10-27"
   }
 }

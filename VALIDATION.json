@@ -400,8 +400,9 @@
     "distribution": {
       "status": "published-maintainer-confirmed",
       "quark_url": "https://pan.quark.cn/s/84341ea9ed0e?pwd=anJh",
-      "google_drive_available": false,
-      "cloud_download_hash_independently_verified": false
+      "google_drive_available": true,
+      "cloud_download_hash_independently_verified": false,
+      "google_drive_url": "https://drive.google.com/drive/folders/16xuvdTWn3oIPGrZfRo1UZXWgvKExMOQV?usp=drive_link"
     }
   }
 }
